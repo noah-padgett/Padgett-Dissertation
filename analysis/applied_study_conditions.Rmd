@@ -1,0 +1,361 @@
+---
+title: "Applied Study Conditions"
+author: "R. Noah Padgett"
+date: "2022-01-31"
+output: html_document
+---
+
+```{r set-up, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages & utility functions
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+```
+
+```{r data}
+library(readxl)
+mydata <- read_excel("data/temp_data_extracted.xlsx") %>%
+  filter(is.na(EXCLUSION_FLAG)==T)
+
+```
+
+
+## Journal Information
+
+```{r}
+
+mydata %>%
+  select(Journal) %>%
+  table()
+
+
+mydata %>%
+  select(`Analysis (CFA, EFA, IRT, SEM, etc.)`) %>%
+  table()
+
+
+```
+
+
+## Data Conditions
+
+
+```{r}
+
+f <- function(x){
+  c(mean(x, na.rm=T), sd(x, na.rm=T), quantile(x, c(0, 0.25, 0.5, 0.75, 1), na.rm=T))
+}
+
+sum_dat <- mydata %>% 
+  summarise(
+    SS = f(`Sample Size`),
+    NLV = f(`Number of Latent Variables`),
+    NOV = f(`Number of Observed Variables`),
+    Min_Ind = f(`Minimum Number of Indicators per Factor`),
+    Avg_Ind = f(`Average Number of Indicators per Factor`),
+    Max_Ind = f(`Maximum Number of Indicators per Factor`),
+    Min_FL = f(abs(`Minimum Factor Loading`)),
+    Avg_FL = f(`Average Factor Loading`),
+    Max_FL = f(`Maximum Factor Loading`),
+    Min_Rel = f(`Min Reliability`),
+    Avg_Rel = f(`Avg Reliability`),
+    Max_Rel = f(`Max Reliability`)
+  ) %>% as.data.frame()
+  
+rownames(sum_dat) <- c("avg", "sd", "min", "q1", "median", "q3", "max")
+sum_dat <- t(sum_dat)
+
+kable(sum_dat, format="html", digits=2) %>%
+  kable_styling(full_width = T)
+
+
+print(xtable(sum_dat[,c(1:3,5,7)]))
+
+
+mydata %>%
+  select(`Scale of Indicators (list)`) %>%
+  table()
+```
+
+### Sample Size
+
+```{r}
+p <- mydata %>%
+  mutate(`Sample Size` = ifelse(`Sample Size`>5000, 5000, `Sample Size`))%>%
+  ggplot(aes(x=`Sample Size`))+
+    geom_histogram(aes(y = ..density..), binwidth = 200)+
+    geom_density(adjust=2, fill="grey", alpha=0.5)+
+    geom_vline(xintercept = 500, color="red")+
+    geom_vline(xintercept = 2500, color="red")+
+    scale_x_continuous(breaks=seq(0,5000,500),limits = c(0,5000))+
+    labs(y=NULL,x=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+p
+ggsave(filename = "fig/study0_sample_size.pdf",plot=p,width = 4, height=3,units="in")
+ggsave(filename = "fig/study0_sample_size.png",plot=p,width = 4, height=3,units="in")
+ggsave(filename = "fig/study0_sample_size.eps",plot=p,width = 4, height=3,units="in")
+
+```
+
+### Indicators
+
+```{r}
+
+p<-mydata %>%
+  ggplot(aes(x=`Average Number of Indicators per Factor`))+
+    geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill="grey", alpha=0.5)+
+    geom_vline(xintercept = 5, color="red")+
+    geom_vline(xintercept = 10, color="red")+
+    geom_vline(xintercept = 20, color="red")+
+    scale_x_continuous(breaks=seq(0,40, 5),limits = c(0,45))+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+p
+ggsave(filename = "fig/study0_indicators.pdf",plot=p,width = 4, height=3,units="in")
+ggsave(filename = "fig/study0_indicators.png",plot=p,width = 4, height=3,units="in")
+ggsave(filename = "fig/study0_indicators.eps",plot=p,width = 4, height=3,units="in")
+
+mydata %>%
+  ggplot(aes(x=`Minimum Number of Indicators per Factor`))+
+    geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill="grey", alpha=0.5)+
+    geom_vline(xintercept = 5, color="red")+
+    geom_vline(xintercept = 10, color="red")+
+    geom_vline(xintercept = 20, color="red")+
+    scale_x_continuous(breaks=seq(0,40, 5),limits = c(0,45))+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+
+mydata %>%
+  ggplot(aes(x=`Maximum Number of Indicators per Factor`))+
+    geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill="grey", alpha=0.5)+
+    geom_vline(xintercept = 5, color="red")+
+    geom_vline(xintercept = 10, color="red")+
+    geom_vline(xintercept = 20, color="red")+
+    scale_x_continuous(breaks=seq(0,40, 5),limits = c(0,45))+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+    
+
+```
+
+
+### Factor Loadings
+
+```{r}
+
+mydata %>%
+  ggplot(aes(x=`Minimum Factor Loading`))+
+    #geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill="grey", alpha=0.5)+
+    geom_vline(xintercept = 0.9, color="red")+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+
+
+mydata %>%
+  ggplot(aes(x=`Average Factor Loading`))+
+    #geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill="grey", alpha=0.5)+
+    geom_vline(xintercept = 0.9, color="red")+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+
+mydata %>%
+  ggplot(aes(x=`Maximum Factor Loading`))+
+    #geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill="grey", alpha=0.5)+
+    geom_vline(xintercept = 0.9, color="red")+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+    
+
+
+# combine for plot
+p<-mydata %>%
+  select(`Minimum Factor Loading`, `Average Factor Loading`, `Maximum Factor Loading`)%>%
+  pivot_longer(
+    cols=everything(),
+    names_to="type",
+    values_to="value"
+  )%>%  
+  ggplot(aes(x=value))+
+    geom_histogram(binwidth=0.1,aes(y = ..density..))+
+    geom_density(adjust=2, fill="grey", alpha=0.5)+
+    geom_vline(xintercept = 0.9, color="red")+
+    scale_x_continuous(breaks=seq(0,1, .25),limits = c(-0.1,1.1))+
+    labs(y=NULL,x=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+p
+ggsave(filename = "fig/study0_factor_loadings.pdf",plot=p,width = 4, height=3,units="in")
+ggsave(filename = "fig/study0_factor_loadings.png",plot=p,width = 4, height=3,units="in")
+ggsave(filename = "fig/study0_factor_loadings.eps",plot=p,width = 4, height=3,units="in")
+```
+
+
+### Reliability
+
+```{r}
+
+mydata %>%
+  ggplot(aes(x=`Min Reliability`))+
+    #geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill="grey", alpha=0.5)+
+    geom_vline(xintercept = 0.80, color="red")+
+    geom_vline(xintercept = 0.89, color="red")+
+    geom_vline(xintercept = 0.94, color="red")+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+
+
+mydata %>%
+  ggplot(aes(x=`Avg Reliability`))+
+    #geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill="grey", alpha=0.5)+
+    geom_vline(xintercept = 0.80, color="red")+
+    geom_vline(xintercept = 0.89, color="red")+
+    geom_vline(xintercept = 0.94, color="red")+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+
+mydata %>%
+  ggplot(aes(x=`Max Reliability`))+
+    #geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill="grey", alpha=0.5)+
+    geom_vline(xintercept = 0.80, color="red")+
+    geom_vline(xintercept = 0.89, color="red")+
+    geom_vline(xintercept = 0.94, color="red")+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+    
+# combine for plot
+p<-mydata %>%
+  select(`Min Reliability`, `Avg Reliability`, `Max Reliability`)%>%
+  pivot_longer(
+    cols=everything(),
+    names_to="type",
+    values_to="value"
+  )%>%  
+  ggplot(aes(x=value))+
+    geom_histogram(binwidth=0.05,aes(y = ..density..))+
+    geom_density(adjust=2, fill="grey", alpha=0.5)+
+    geom_vline(xintercept = 0.80, color="red")+
+    geom_vline(xintercept = 0.89, color="red")+
+    geom_vline(xintercept = 0.94, color="red")+
+    scale_x_continuous(breaks=seq(0,1, .25),limits = c(0,1))+
+    labs(y=NULL,x=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+p
+ggsave(filename = "fig/study0_reliability.pdf",plot=p,width = 4, height=3,units="in")
+ggsave(filename = "fig/study0_reliability.png",plot=p,width = 4, height=3,units="in")
+ggsave(filename = "fig/study0_reliability.eps",plot=p,width = 4, height=3,units="in")
+
+
+
+sum(mydata$`Method of Computing Reliability` == "omega", na.rm=T)/nrow(mydata)
+
+```
+
+
+### Response Categories
+
+```{r}
+
+mydata %>%
+  select(`Scale of Indicators (list)`) %>%
+  table()
+
+indCats <- mydata$`Scale of Indicators (list)`
+
+ind2 <- ind3 <- ind4 <- ind5 <- ind6 <- ind7 <- indSS <- numeric(length(indCats))
+for(i in 1:length(indCats)){
+  indi <- str_split(indCats[i], ",", simplify = T)
+  ind2[i] <- ifelse(any(indi %like% "dichotomous"), 1, 0)
+  ind3[i] <- ifelse(any(indi %like% "3pt"), 1, 0)
+  ind4[i] <- ifelse(any(indi %like% "4pt"), 1, 0)
+  ind5[i] <- ifelse(any(indi %like% "5pt"), 1, 0)
+  ind6[i] <- ifelse(any(indi %like% "6pt"), 1, 0)
+  ind7[i] <- ifelse(any(indi %like% "7pt"), 1, 0)
+  indSS[i] <- ifelse(any(indi %like% "sum-score"), 1, 0)
+}
+
+catDat <- as.data.frame(cbind(ind2, ind3, ind4, ind5, ind6, ind7, indSS))
+
+catDat$multi <- ifelse(rowSums(catDat) > 1, 1, 0)
+
+# summarizing
+mean(ind2)
+mean(ind3)
+mean(ind4)
+mean(ind5)
+mean(ind6)
+mean(ind7)
+mean(indSS)
+mean(catDat$multi)
+
+```

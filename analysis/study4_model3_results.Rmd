@@ -1,0 +1,294 @@
+---
+title: "Study 4: Extroversion Data Analysis"
+subtitle: "Model 3 Results"
+author: "R. Noah Padgett"
+date: "2022-01-17"
+output: html_document
+---
+
+```{r set-up, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages & utility functions
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+```
+
+
+# Describing the Observed Data
+
+```{r}
+
+# Load diffIRT package with data
+library(diffIRT)
+data("extraversion")
+mydata <- na.omit(extraversion)
+
+# separate data then recombine
+d1 <- mydata %>%
+  as.data.frame() %>%
+  select(contains("X"))%>%
+  mutate(id = 1:n()) %>%
+  pivot_longer(
+    cols=contains("X"),
+    names_to = c("item"),
+    values_to = "Response"
+  ) %>%
+  mutate(
+    item = ifelse(nchar(item)==4,substr(item, 3,3),substr(item, 3,4))
+  )
+d2 <- mydata %>%
+  as.data.frame() %>%
+  select(contains("T"))%>%
+  mutate(id = 1:n()) %>%
+  pivot_longer(
+    cols=starts_with("T"),
+    names_to = c("item"),
+    values_to = "Time"
+  ) %>%
+  mutate(
+    item = ifelse(nchar(item)==4,substr(item, 3,3),substr(item, 3,4))
+  )
+dat <- left_join(d1, d2)
+
+dat_sum <- dat %>%
+  select(item, Response, Time) %>%
+  group_by(item) %>%
+  summarize(
+    M1 = mean(Response, na.rm=T),
+    Mt = mean(Time, na.rm=T),
+    SDt = sd(Time, na.rm=T),
+    Mlogt = mean(log(Time), na.rm=T),
+  )
+
+colnames(dat_sum) <-
+  c(
+    "Item",
+    "Proportion Endorsed",
+    "Mean Response Time",
+    "SD Response Time",
+    "Mean Log Response Time"
+  )
+
+kable(dat_sum, format = "html", digits = 3) %>%
+  kable_styling(full_width = T)
+
+# covariance among items
+kable(cov(mydata[,colnames(mydata) %like% "X"]), digits = 3) %>%
+  kable_styling(full_width = T)
+# correlation matrix
+psych::polychoric(mydata[,colnames(mydata) %like% "X"])
+
+```
+
+
+# Model 3: IFA with RT only
+
+## Model details
+
+```{r model3-code}
+
+cat(read_file(paste0(w.d, "/code/study_4/model_3.txt")))
+
+```
+
+
+## Model results
+
+```{r model3, cache=TRUE, autodep=TRUE}
+
+# Save parameters
+jags.params <- c("tau", "lambda", "theta", "reli.omega", "lambda.std")
+# initial-values
+jags.inits <- function(){
+    list(
+      "tau"=matrix(c(-0.64, -0.09, -1.05, -1.42, -0.11, -1.29, -1.59, -1.81, -0.93, -1.11),
+                   ncol=1, nrow=10),
+      "lambda"=rep(0.7,10),
+      "eta"=rnorm(142),
+      "ystar"=matrix(c(0.7*rep(rnorm(142),10)), ncol=10)
+    )
+  }
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+model.fit <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_3.txt"),
+  parameters.to.save = jags.params,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(model.fit, width=1000)
+
+```
+
+## Posterior Distribution Summary
+
+```{r}
+jags.mcmc <- as.mcmc(model.fit)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+fit.mcmc <- data.frame(as.matrix(jags.mcmc, chains = T, iters = T))
+colnames(fit.mcmc) <- c("chain", "iter", a)
+fit.mcmc.ggs <- ggmcmc::ggs(jags.mcmc) # for GRB plot
+
+# save posterior draws for later
+write.csv(x=fit.mcmc, file=paste0(getwd(),"/data/study_4/posterior_draws_m3.csv"))
+```
+
+### Categroy Thresholds ($\tau$)
+
+```{r post-summary-tau}
+# tau
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "tau", prob = 0.8); ggsave("fig/study4_model3_tau_dens.pdf")
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "tau"); ggsave("fig/study4_model3_tau_acf.pdf")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "tau"); ggsave("fig/study4_model3_tau_trace.pdf")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "tau"); ggsave("fig/study4_model3_tau_grb.pdf")
+```
+
+### Factor Loadings ($\lambda$)
+
+```{r post-summary-lambda}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambda", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambda")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambda")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambda")
+```
+
+```{r post-summary-lambda-std}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambda.std", prob = 0.8); ggsave("fig/study4_model3_lambda_dens.pdf")
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambda.std"); ggsave("fig/study4_model3_lambda_acf.pdf")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambda.std"); ggsave("fig/study4_model3_lambda_trace.pdf")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambda.std"); ggsave("fig/study4_model3_lambda_grb.pdf")
+```
+
+### Latent Response Total Variance ($\theta$)
+
+```{r post-summary-theta}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "theta", prob = 0.8); ggsave("fig/study4_model3_theta_dens.pdf")
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "theta"); ggsave("fig/study4_model3_theta_acf.pdf")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "theta"); ggsave("fig/study4_model3_theta_trace.pdf")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "theta"); ggsave("fig/study4_model3_theta_grb.pdf")
+```
+
+### Factor Reliability Omega ($\omega$)
+
+```{r post-summary-omega}
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "reli.omega", prob = 0.8); ggsave("fig/study4_model3_omega_dens.pdf")
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "reli.omega"); ggsave("fig/study4_model3_omega_acf.pdf")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "reli.omega"); ggsave("fig/study4_model3_omega_trace.pdf")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "reli.omega"); ggsave("fig/study4_model3_omega_grb.pdf")
+
+# extract omega posterior for results comparison
+extracted_omega <- data.frame(model_3 = fit.mcmc$reli.omega)
+write.csv(x=extracted_omega, file=paste0(getwd(),"/data/study_4/extracted_omega_m3.csv"))
+
+```
+
+## Posterior Predictive Distributions
+
+```{r study4-model3-ppd, cache=TRUE, autodep=TRUE}
+
+# Posterior Predictive Check
+Niter <- 200
+model.fit$model$recompile()
+fit.extra <- rjags::jags.samples(model.fit$model, variable.names = "omega", n.iter = Niter)
+N <- 142
+nit <- 10
+nchain<-4
+C <- 2
+n <- i <- iter <- ppc.row.i <- 1
+y.prob.ppc <- array(dim=c(Niter*nchain, nit, C))
+for(chain in 1:nchain){
+  for(iter in 1:Niter){
+    # initialize simulated y for this iteration
+    y <- matrix(nrow=N, ncol=nit)
+    # loop over item
+    for(i in 1:nit){
+      # simulated data for item i for each person
+      for(n in 1:N){
+        y[n,i] <- sample(1:C, 1, prob = fit.extra$omega[n, i, 1:C, iter, chain])
+      }
+      # computer proportion of each response category
+      for(c in 1:C){
+        y.prob.ppc[ppc.row.i,i,c] <- sum(y[,i]==c)/N
+      }
+    }
+    
+    # update row of output
+    ppc.row.i = ppc.row.i + 1
+  }
+}
+
+yppcmat <- matrix(c(y.prob.ppc), ncol=1)
+z <- expand.grid(1:(Niter*nchain), 1:nit, 1:C)
+yppcmat <- data.frame(  iter = z[,1], nit=z[,2], C=z[,3], yppc = yppcmat)
+
+ymat <- model.fit$model$data()[["y"]]
+y.prob <- matrix(ncol=C, nrow=nit)
+for(i in 1:nit){
+  for(c in 1:C){
+    y.prob[i,c] <- sum(ymat[,i]==c-1)/N
+  }
+}
+yobsmat <- matrix(c(y.prob), ncol=1)
+z <- expand.grid(1:nit, 1:C)
+yobsmat <- data.frame(nit=z[,1], C=z[,2], yobs = yobsmat)
+plot.ppc <- full_join(yppcmat, yobsmat)
+
+p <- plot.ppc %>%
+  mutate(C    = as.factor(C),
+         item = nit) %>%
+  ggplot()+
+  geom_boxplot(aes(x=C,y=y.prob.ppc), outlier.colour = NA)+
+  geom_point(aes(x=C,y=yobs), color="red")+
+  lims(y=c(0, 1))+
+  labs(y="Posterior Predictive Category Proportion", x="Item Category")+
+  facet_wrap(.~nit, nrow=1)+
+  theme_bw()+
+  theme(
+    panel.grid = element_blank(),
+    strip.background = element_rect(fill="white")
+  )
+p
+ggsave(filename = "fig/study4_model3_ppc_y.pdf",plot=p,width = 6, height=3,units="in")
+ggsave(filename = "fig/study4_model3_ppc_y.png",plot=p,width = 6, height=3,units="in")
+ggsave(filename = "fig/study4_model3_ppc_y.eps",plot=p,width = 6, height=3,units="in")
+
+```
+
+
+# Manuscript Table  and Figures
+
+## Table
+
+```{r man-tables}
+
+# print to xtable
+print(
+  xtable(
+    model.fit$BUGSoutput$summary,
+    caption = c("study4 Model 3 posterior distribution summary")
+    ,align = "lrrrrrrrrr"
+  ),
+  include.rownames=T,
+  booktabs=T
+)
+
+```
+
+
+## Figure
+
+

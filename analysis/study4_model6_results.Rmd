@@ -1,0 +1,946 @@
+---
+title: "Study 4: Extroversion Data Analysis"
+subtitle: "Model 6 Results - Hyper-Prior on Prior Precision"
+author: "R. Noah Padgett"
+date: "2022-03-07"
+output: html_document
+---
+
+```{r set-up, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages & utility functions
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+
+NBURN = 5000
+NITER = 10000
+```
+
+
+# Describing the Observed Data
+
+```{r}
+
+# Load diffIRT package with data
+library(diffIRT)
+data("extraversion")
+mydata <- na.omit(extraversion)
+
+# separate data then recombine
+d1 <- mydata %>%
+  as.data.frame() %>%
+  select(contains("X"))%>%
+  mutate(id = 1:n()) %>%
+  pivot_longer(
+    cols=contains("X"),
+    names_to = c("item"),
+    values_to = "Response"
+  ) %>%
+  mutate(
+    item = ifelse(nchar(item)==4,substr(item, 3,3),substr(item, 3,4))
+  )
+d2 <- mydata %>%
+  as.data.frame() %>%
+  select(contains("T"))%>%
+  mutate(id = 1:n()) %>%
+  pivot_longer(
+    cols=starts_with("T"),
+    names_to = c("item"),
+    values_to = "Time"
+  ) %>%
+  mutate(
+    item = ifelse(nchar(item)==4,substr(item, 3,3),substr(item, 3,4))
+  )
+dat <- left_join(d1, d2)
+
+dat_sum <- dat %>%
+  select(item, Response, Time) %>%
+  group_by(item) %>%
+  summarize(
+    M1 = mean(Response, na.rm=T),
+    Mt = mean(Time, na.rm=T),
+    SDt = sd(Time, na.rm=T),
+    Mlogt = mean(log(Time), na.rm=T),
+  )
+
+colnames(dat_sum) <-
+  c(
+    "Item",
+    "Proportion Endorsed",
+    "Mean Response Time",
+    "SD Response Time",
+    "Mean Log Response Time"
+  )
+
+kable(dat_sum, format = "html", digits = 3) %>%
+  kable_styling(full_width = T)
+
+# covariance among items
+kable(cov(mydata[,colnames(mydata) %like% "X"]), digits = 3) %>%
+  kable_styling(full_width = T)
+# correlation matrix
+psych::polychoric(mydata[,colnames(mydata) %like% "X"])
+
+```
+
+# Sensitivity Analysis of Full IFA with Misclassification
+
+## Uniform Hyper-prior for $\lambda$
+
+```{r model6-code}
+
+cat(read_file(paste0(w.d, "/code/study_4/model_6_uniform.txt")))
+
+```
+
+### Model results
+
+```{r model6, cache=TRUE, autodep=TRUE}
+# Save parameters
+jags.params <- c("tau",
+                 "lambda","lambda.std", "lambdatau","invlambdatau",
+                 "theta",
+                 "icept",
+                 "prec",
+                 "prec.s",
+                 "sigma.ts",
+                 "rho",
+                 "reli.omega")
+# initial-values
+jags.inits <- function(){
+    list(
+      "tau"=matrix(c(-0.64, -0.09, -1.05, -1.42, -0.11, -1.29, -1.59, -1.81, -0.93, -1.11), ncol=1, nrow=10),
+      "lambda"=rep(0.7,10),
+      "eta"=rnorm(142),
+      "speed"=rnorm(142),
+      "ystar"=matrix(c(0.7*rep(rnorm(142),10)), ncol=10),
+      "rho"=0.1,
+      "icept"=rep(0, 10),
+      "prec.s"=10,
+      "prec"=rep(4, 10),
+      "sigma.ts"=0.1
+    )
+  }
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+model.fit1 <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_6_uniform.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(model.fit1, width=1000)
+
+```
+
+### Posterior Distribution Summary
+
+```{r}
+jags.mcmc <- as.mcmc(model.fit1)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+fit.mcmc <- data.frame(as.matrix(jags.mcmc, chains = T, iters = T))
+colnames(fit.mcmc) <- c("chain", "iter", a)
+fit.mcmc.ggs <- ggmcmc::ggs(jags.mcmc) # for GRB plot
+
+```
+
+#### Factor Loadings ($\lambda$)
+
+```{r post-summary-lambda-1}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambda", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambda")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambda")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambda")
+```
+
+```{r post-summary-lambda-std-1}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambda.std", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambda.std")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambda.std")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambda.std")
+```
+
+#### Factor Reliability Omega ($\omega$)
+
+```{r post-summary-omega-1}
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "reli.omega", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "reli.omega")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "reli.omega")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "reli.omega")
+
+```
+
+
+#### Factor Loading Precision Hyper-Prior ($\omega$)
+
+
+```{r post-summary-hyperprior-1}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambdatau", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambdatau")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambdatau")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambdatau")
+
+
+ggplot(fit.mcmc, aes(x=lambdatau, y=reli.omega))+
+  geom_density_2d(adjust=2, color="black")+
+  geom_hline(yintercept = 0.7, color="gray50")+
+  lims(x=c(0.01, 10),y=c(0,1))+
+  theme_classic()
+
+ggplot(fit.mcmc, aes(x=invlambdatau, y=reli.omega))+
+  geom_density_2d(adjust=2, color="black")+
+  geom_hline(yintercept = 0.7, color="gray50")+
+  lims(y=c(0,1))+
+  theme_classic()
+
+ggplot(fit.mcmc, aes(x=reli.omega))+
+  geom_density(adjust=2)+
+  lims(x=c(0,1))+
+  theme_classic()
+
+
+```
+
+```{r manuscript-figure}
+
+# PRIOR INFORMATION
+nsim <- 10000
+prior_omega <- function(lambda, theta){
+  (sum(lambda)**2)/(sum(lambda)**2 + sum(theta))
+}
+prior_lambda_tau <- function(){
+  runif(1, 0.01, 10)
+  #rgamma(1, 2.5, 1)
+}
+prior_lambda_G <- function(n, lambda_tau){
+  rnorm(n, 0, sqrt(1/lambda_tau))
+}
+sim_omega <- numeric(nsim)
+sim_lambda_tau <- numeric(nsim)
+for(i in 1:nsim){
+  sim_lambda_tau[i] <- prior_lambda_tau()
+  lam_vec <- prior_lambda_G(10,sim_lambda_tau[i])
+  tht_vec <- rep(1, 10)
+  sim_omega[i] <- prior_omega(lam_vec, tht_vec)
+}
+prior_data <- data.frame(omega=sim_omega, lambda_tau=sim_lambda_tau)
+
+# GENERATE THREE PLOTS TO COMBINE
+cols=c("Posterior"="#0072b2", "Prior"="black") #"#56B4E9", "#E69F00" "#CC79A7", "#d55e00", "#f0e442, "#0072b2"
+lty =c("Prior"="dashed", "Post"="solid")
+# PLOT 1 - JOINT DENSITY PLOT
+pB <- ggplot()+
+  geom_point(
+    data=fit.mcmc, alpha=0.05,
+    aes(x=lambdatau, y=reli.omega, color="Posterior"))+
+  geom_hline(yintercept = 0.7, color="grey30", linetype="dashed")+
+  #geom_vline(xintercept = 0.44, color="red")+
+  geom_density_2d(
+    data=prior_data,
+    aes(x=lambda_tau, y=omega, color="Prior"),
+    adjust=4)+
+  geom_density_2d(
+    data=fit.mcmc, 
+    aes(x=lambdatau, y=reli.omega, color="Posterior"),
+    adjust=4)+
+  scale_color_manual(values=cols,name=NULL)+
+  labs(y="Reliability (omega)",
+       x="Factor Loading Prior Precision")+
+  theme_classic()+
+  theme(
+    legend.position = c(0.75, 0.85),
+    legend.background = element_blank()
+  )
+pA <-  ggplot()+
+  geom_density(
+    data=prior_data,  alpha=0.5,
+    aes(x=lambda_tau, color="Prior", fill="Prior"),
+    adjust=4)+
+  geom_density(
+    data=fit.mcmc,  alpha=0.5, 
+    aes(x=lambdatau, color="Posterior", fill="Posterior"),
+    adjust=4)+
+  scale_color_manual(values=cols,name=NULL)+
+  scale_fill_manual(values=cols,name=NULL)+
+  labs(y=NULL, x=NULL)+
+  theme_classic()+
+  theme(
+    legend.position = "none",
+    axis.text = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+pC <- ggplot()+
+  geom_density(
+    data=prior_data,  alpha=0.5,
+    aes(y=omega, color="Prior", fill="Prior"),
+    adjust=4)+
+  geom_density(
+    data=fit.mcmc,  alpha=0.5,
+    aes(y=reli.omega, color="Posterior", fill="Posterior"),
+    adjust=4)+
+  scale_color_manual(values=cols,name=NULL)+
+  scale_fill_manual(values=cols,name=NULL)+
+  labs(y=NULL, x=NULL)+
+  theme_classic()+
+  theme(
+    legend.position = "none",
+    axis.text = element_blank(),
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+laydes <- "
+AA#
+BBC
+BBC
+"
+p <- pA + pB + pC + 
+  plot_layout(design = laydes) +
+  plot_annotation(tag_levels = "a")
+
+p
+
+ggsave(filename = "fig/discussion_posterior_sensitity_omega.pdf",
+       plot=p,
+       width = 7, height=4.5,units="in")
+ggsave(filename = "fig/discussion_posterior_sensitity_omega.png",
+       plot=p,
+       width = 7, height=4.5,units="in")
+
+
+```
+
+
+## Uniform Hyper-prior for $\lambda^+$
+
+```{r model6-code}
+
+cat(read_file(paste0(w.d, "/code/study_4/model_6_uniform_v2.txt")))
+
+```
+
+### Model results
+
+```{r model6b, cache=TRUE, autodep=TRUE}
+# Save parameters
+jags.params <- c("tau",
+                 "lambda","lambda.std", "lambdatau","invlambdatau",
+                 "theta",
+                 "icept",
+                 "prec",
+                 "prec.s",
+                 "sigma.ts",
+                 "rho",
+                 "reli.omega")
+# initial-values
+jags.inits <- function(){
+    list(
+      "tau"=matrix(c(-0.64, -0.09, -1.05, -1.42, -0.11, -1.29, -1.59, -1.81, -0.93, -1.11), ncol=1, nrow=10),
+      "lambda"=rep(0.7,10),
+      "eta"=rnorm(142),
+      "speed"=rnorm(142),
+      "ystar"=matrix(c(0.7*rep(rnorm(142),10)), ncol=10),
+      "rho"=0.1,
+      "icept"=rep(0, 10),
+      "prec.s"=10,
+      "prec"=rep(4, 10),
+      "sigma.ts"=0.1
+    )
+  }
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+model.fit1 <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_6_uniform_v2.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(model.fit1, width=1000)
+
+```
+
+### Posterior Distribution Summary
+
+```{r}
+jags.mcmc <- as.mcmc(model.fit1)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+fit.mcmc <- data.frame(as.matrix(jags.mcmc, chains = T, iters = T))
+colnames(fit.mcmc) <- c("chain", "iter", a)
+fit.mcmc.ggs <- ggmcmc::ggs(jags.mcmc) # for GRB plot
+
+```
+
+#### Factor Loadings ($\lambda$)
+
+```{r post-summary-lambda-1b}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambda", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambda")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambda")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambda")
+```
+
+```{r post-summary-lambda-std-1b}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambda.std", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambda.std")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambda.std")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambda.std")
+```
+
+#### Factor Reliability Omega ($\omega$)
+
+```{r post-summary-omega-1b}
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "reli.omega", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "reli.omega")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "reli.omega")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "reli.omega")
+
+```
+
+
+#### Factor Loading Precision Hyper-Prior ($\omega$)
+
+
+```{r post-summary-hyperprior-1b}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambdatau", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambdatau")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambdatau")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambdatau")
+
+
+ggplot(fit.mcmc, aes(x=lambdatau, y=reli.omega))+
+  geom_density_2d(adjust=2, color="black")+
+  geom_hline(yintercept = 0.7, color="gray50")+
+  lims(x=c(0.01, 10),y=c(0,1))+
+  theme_classic()
+
+ggplot(fit.mcmc, aes(x=invlambdatau, y=reli.omega))+
+  geom_density_2d(adjust=2, color="black")+
+  geom_hline(yintercept = 0.7, color="gray50")+
+  lims(y=c(0,1))+
+  theme_classic()
+
+ggplot(fit.mcmc, aes(x=reli.omega))+
+  geom_density(adjust=2)+
+  lims(x=c(0,1))+
+  theme_classic()
+
+
+```
+
+```{r manuscript-figure-b}
+
+# PRIOR INFORMATION
+nsim <- 10000
+prior_omega <- function(lambda, theta){
+  (sum(lambda)**2)/(sum(lambda)**2 + sum(theta))
+}
+prior_lambda_tau <- function(){
+  runif(1, 0.01, 10)
+  #rgamma(1, 2.5, 1)
+}
+prior_lambda_G <- function(n, lambda_tau){
+  x <- numeric(n)
+  for(i in 1:n){
+    while(x[i] < 0){
+      x[i] <- rnorm(1, 0, sqrt(1/lambda_tau))
+    }
+  }
+  return(x)
+}
+sim_omega <- numeric(nsim)
+sim_lambda_tau <- numeric(nsim)
+for(i in 1:nsim){
+  sim_lambda_tau[i] <- prior_lambda_tau()
+  lam_vec <- prior_lambda_G(10,sim_lambda_tau[i])
+  tht_vec <- rep(1, 10)
+  sim_omega[i] <- prior_omega(lam_vec, tht_vec)
+}
+prior_data <- data.frame(omega=sim_omega, lambda_tau=sim_lambda_tau)
+
+# GENERATE THREE PLOTS TO COMBINE
+cols=c("Posterior"="#0072b2", "Prior"="black") #"#56B4E9", "#E69F00" "#CC79A7", "#d55e00", "#f0e442, "#0072b2"
+lty =c("Prior"="dashed", "Post"="solid")
+# PLOT 1 - JOINT DENSITY PLOT
+pB <- ggplot()+
+  geom_point(
+    data=fit.mcmc, alpha=0.05,
+    aes(x=lambdatau, y=reli.omega, color="Posterior"))+
+  geom_hline(yintercept = 0.7, color="grey30", linetype="dashed")+
+  geom_density_2d(
+    data=prior_data,
+    aes(x=lambda_tau, y=omega, color="Prior"),
+    adjust=4)+
+  geom_density_2d(
+    data=fit.mcmc, 
+    aes(x=lambdatau, y=reli.omega, color="Posterior"),
+    adjust=4)+
+  scale_color_manual(values=cols,name=NULL)+
+  labs(y="Reliability (omega)",
+       x="Factor Loading Prior Precision")+
+  theme_classic()+
+  theme(
+    legend.position = c(0.75, 0.85),
+    legend.background = element_blank()
+  )
+pA <-  ggplot()+
+  geom_density(
+    data=prior_data,  alpha=0.5,
+    aes(x=lambda_tau, color="Prior", fill="Prior"),
+    adjust=4)+
+  geom_density(
+    data=fit.mcmc,  alpha=0.5, 
+    aes(x=lambdatau, color="Posterior", fill="Posterior"),
+    adjust=4)+
+  scale_color_manual(values=cols,name=NULL)+
+  scale_fill_manual(values=cols,name=NULL)+
+  labs(y=NULL, x=NULL)+
+  theme_classic()+
+  theme(
+    legend.position = "none",
+    axis.text = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+pC <- ggplot()+
+  geom_density(
+    data=prior_data,  alpha=0.5,
+    aes(y=omega, color="Prior", fill="Prior"),
+    adjust=4)+
+  geom_density(
+    data=fit.mcmc,  alpha=0.5,
+    aes(y=reli.omega, color="Posterior", fill="Posterior"),
+    adjust=4)+
+  scale_color_manual(values=cols,name=NULL)+
+  scale_fill_manual(values=cols,name=NULL)+
+  labs(y=NULL, x=NULL)+
+  theme_classic()+
+  theme(
+    legend.position = "none",
+    axis.text = element_blank(),
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+laydes <- "
+AA#
+BBC
+BBC
+"
+p <- pA + pB + pC + 
+  plot_layout(design = laydes) +
+  plot_annotation(tag_levels = "a")
+
+p
+
+ggsave(filename = "fig/discussion_posterior_sensitity_omega_v2.pdf",
+       plot=p,
+       width = 7, height=4.5,units="in")
+ggsave(filename = "fig/discussion_posterior_sensitity_omega_v2.png",
+       plot=p,
+       width = 7, height=4.5,units="in")
+
+
+```
+
+
+## Half-Cauchy Hyper-prior for $\lambda$
+
+```{r model6-code}
+
+cat(read_file(paste0(w.d, "/code/study_4/model_6_cauchy.txt")))
+
+```
+
+### Model results
+
+```{r model6, cache=TRUE, autodep=TRUE}
+# Save parameters
+jags.params <- c("tau",
+                 "lambda","lambda.std", "lambdatau","invlambdatau",
+                 "theta",
+                 "icept",
+                 "prec",
+                 "prec.s",
+                 "sigma.ts",
+                 "rho",
+                 "reli.omega")
+# initial-values
+jags.inits <- function(){
+    list(
+      "tau"=matrix(c(-0.64, -0.09, -1.05, -1.42, -0.11, -1.29, -1.59, -1.81, -0.93, -1.11), ncol=1, nrow=10),
+      "lambda"=rep(0.7,10),
+      "eta"=rnorm(142),
+      "speed"=rnorm(142),
+      "ystar"=matrix(c(0.7*rep(rnorm(142),10)), ncol=10),
+      "rho"=0.1,
+      "icept"=rep(0, 10),
+      "prec.s"=10,
+      "prec"=rep(4, 10),
+      "sigma.ts"=0.1
+    )
+  }
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+model.fit2 <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_6_cauchy.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(model.fit2, width=1000)
+
+```
+
+### Posterior Distribution Summary
+
+```{r}
+jags.mcmc <- as.mcmc(model.fit2)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+fit.mcmc <- data.frame(as.matrix(jags.mcmc, chains = T, iters = T))
+colnames(fit.mcmc) <- c("chain", "iter", a)
+fit.mcmc.ggs <- ggmcmc::ggs(jags.mcmc) # for GRB plot
+
+```
+
+#### Factor Loadings ($\lambda$)
+
+```{r post-summary-lambda-2}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambda", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambda")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambda")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambda")
+```
+
+```{r post-summary-lambda-std-2}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambda.std", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambda.std")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambda.std")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambda.std")
+```
+
+#### Factor Reliability Omega ($\omega$)
+
+```{r post-summary-omega-2}
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "reli.omega", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "reli.omega")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "reli.omega")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "reli.omega")
+
+```
+
+#### Factor Loading Precision Hyper-Prior
+
+```{r post-summary-hyperprior-2}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambdatau", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambdatau")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambdatau")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambdatau")
+
+
+ggplot(fit.mcmc, aes(x=lambdatau, y=reli.omega))+
+  geom_density_2d(adjust=2, color="black")+
+  geom_hline(yintercept = 0.7, color="gray50")+
+  lims(x=c(0.01, 10),y=c(0,1))+
+  theme_classic()
+
+ggplot(fit.mcmc, aes(x=invlambdatau, y=reli.omega))+
+  geom_density_2d(adjust=2, color="black")+
+  geom_hline(yintercept = 0.7, color="gray50")+
+  lims(x=c(0.01, 5),y=c(0,1))+
+  theme_classic()
+
+ggplot(fit.mcmc, aes(x=reli.omega))+
+  geom_density(adjust=2)+
+  lims(x=c(0,1))+
+  theme_classic()
+
+
+```
+
+
+```{r manuscript-figure-cauchy}
+
+# PRIOR INFORMATION
+nsim <- 10000
+prior_omega <- function(lambda, theta){
+  (sum(lambda)**2)/(sum(lambda)**2 + sum(theta))
+}
+prior_lambda_tau <- function(){
+  y <- -1
+  while(y <= 0){
+    y <- rt(1, 4)
+  }
+  return(y)
+}
+prior_lambda_G <- function(n, lambda_tau){
+  rnorm(n, 0, sqrt(1/lambda_tau))
+}
+sim_omega <- numeric(nsim)
+sim_lambda_tau <- numeric(nsim)
+for(i in 1:nsim){
+  sim_lambda_tau[i] <- prior_lambda_tau()
+  lam_vec <- prior_lambda_G(10,sim_lambda_tau[i])
+  tht_vec <- rep(1, 10)
+  sim_omega[i] <- prior_omega(lam_vec, tht_vec)
+}
+prior_data <- data.frame(omega=sim_omega, lambda_tau=sim_lambda_tau)
+
+# GENERATE THREE PLOTS TO COMBINE
+cols=c("Posterior"="#0072b2", "Prior"="black") #"#56B4E9", "#E69F00" "#CC79A7", "#d55e00", "#f0e442, "#0072b2"
+lty =c("Prior"="dashed", "Post"="solid")
+# PLOT 1 - JOINT DENSITY PLOT
+pB <- ggplot()+
+  geom_point(
+    data=fit.mcmc, alpha=0.05,
+    aes(x=lambdatau, y=reli.omega, color="Posterior"))+
+  geom_hline(yintercept = 0.7, color="grey30", linetype="dashed")+
+  geom_density_2d(
+    data=prior_data, linemitre = 2,
+    aes(x=lambda_tau, y=omega, color="Prior"),
+    adjust=2)+
+  geom_density_2d(
+    data=fit.mcmc, 
+    aes(x=lambdatau, y=reli.omega, color="Posterior"),
+    adjust=2)+
+  scale_color_manual(values=cols,name=NULL)+
+  labs(y="Reliability (omega)",
+       x="Factor Loading Prior Precision")+
+  theme_classic()+
+  theme(
+    legend.position = c(0.75, 0.85),
+    legend.background = element_blank()
+  )
+pA <-  ggplot()+
+  geom_density(
+    data=prior_data,  alpha=0.5,
+    aes(x=lambda_tau, color="Prior", fill="Prior"),
+    adjust=4)+
+  geom_density(
+    data=fit.mcmc,  alpha=0.5, 
+    aes(x=lambdatau, color="Posterior", fill="Posterior"),
+    adjust=4)+
+  scale_color_manual(values=cols,name=NULL)+
+  scale_fill_manual(values=cols,name=NULL)+
+  labs(y=NULL, x=NULL)+
+  theme_classic()+
+  theme(
+    legend.position = "none",
+    axis.text = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+pC <- ggplot()+
+  geom_density(
+    data=prior_data,  alpha=0.5,
+    aes(y=omega, color="Prior", fill="Prior"),
+    adjust=4)+
+  geom_density(
+    data=fit.mcmc,  alpha=0.5,
+    aes(y=reli.omega, color="Posterior", fill="Posterior"),
+    adjust=4)+
+  scale_color_manual(values=cols,name=NULL)+
+  scale_fill_manual(values=cols,name=NULL)+
+  labs(y=NULL, x=NULL)+
+  theme_classic()+
+  theme(
+    legend.position = "none",
+    axis.text = element_blank(),
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+laydes <- "
+AA#
+BBC
+BBC
+"
+p <- pA + pB + pC + 
+  plot_layout(design = laydes) +
+  plot_annotation(tag_levels = "a")
+
+p
+
+ggsave(filename = "fig/discussion_posterior_sensitity_omega_halfcauchy.pdf",
+       plot=p,
+       width = 7, height=4.5,units="in")
+ggsave(filename = "fig/discussion_posterior_sensitity_omega_halfcauchy.png",
+       plot=p,
+       width = 7, height=4.5,units="in")
+
+
+```
+
+## Inv-gamma Hyper-prior for $\lambda$
+
+```{r model6-code}
+
+cat(read_file(paste0(w.d, "/code/study_4/model_6_invgamma.txt")))
+
+```
+
+### Model results
+
+```{r model6, cache=TRUE, autodep=TRUE}
+# Save parameters
+jags.params <- c("tau",
+                 "lambda","lambda.std", "lambdatau","invlambdatau",
+                 "theta",
+                 "icept",
+                 "prec",
+                 "prec.s",
+                 "sigma.ts",
+                 "rho",
+                 "reli.omega")
+# initial-values
+jags.inits <- function(){
+    list(
+      "tau"=matrix(c(-0.64, -0.09, -1.05, -1.42, -0.11, -1.29, -1.59, -1.81, -0.93, -1.11), ncol=1, nrow=10),
+      "lambda"=rep(0.7,10),
+      "eta"=rnorm(142),
+      "speed"=rnorm(142),
+      "ystar"=matrix(c(0.7*rep(rnorm(142),10)), ncol=10),
+      "rho"=0.1,
+      "icept"=rep(0, 10),
+      "prec.s"=10,
+      "prec"=rep(4, 10),
+      "sigma.ts"=0.1
+    )
+  }
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+model.fit3 <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_6_invgamma.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(model.fit3, width=1000)
+
+```
+
+### Posterior Distribution Summary
+
+```{r}
+jags.mcmc <- as.mcmc(model.fit3)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+fit.mcmc <- data.frame(as.matrix(jags.mcmc, chains = T, iters = T))
+colnames(fit.mcmc) <- c("chain", "iter", a)
+fit.mcmc.ggs <- ggmcmc::ggs(jags.mcmc) # for GRB plot
+
+```
+
+#### Factor Loadings ($\lambda$)
+
+```{r post-summary-lambda-3}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambda", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambda")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambda")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambda")
+```
+
+```{r post-summary-lambda-std-3}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambda.std", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambda.std")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambda.std")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambda.std")
+```
+
+#### Factor Reliability Omega ($\omega$)
+
+```{r post-summary-omega-3}
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "reli.omega", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "reli.omega")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "reli.omega")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "reli.omega")
+
+```
+
+#### Factor Loading Precision Hyper-Prior
+
+```{r post-summary-hyperprior-3}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambdatau", prob = 0.8)
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambdatau")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambdatau")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambdatau")
+
+
+ggplot(fit.mcmc, aes(x=lambdatau, y=reli.omega))+
+  geom_density_2d(adjust=2, color="black")+
+  geom_hline(yintercept = 0.7, color="gray50")+
+  lims(x=c(0.01, 10),y=c(0,1))+
+  theme_classic()
+
+ggplot(fit.mcmc, aes(x=invlambdatau, y=reli.omega))+
+  geom_density_2d(adjust=2, color="black")+
+  geom_hline(yintercept = 0.7, color="gray50")+
+  lims(x=c(0.01, 5),y=c(0,1))+
+  theme_classic()
+
+ggplot(fit.mcmc, aes(x=reli.omega))+
+  geom_density(adjust=2)+
+  lims(x=c(0,1))+
+  theme_classic()
+
+
+```
+

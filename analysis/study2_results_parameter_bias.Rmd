@@ -1,0 +1,1399 @@
+---
+title: "Simulation Study 2"
+subtitle: "Parameter Bias"
+author: "R. Noah Padgett"
+date: "2022-01-07"
+output: html_document
+---
+
+```{r setup, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+# results folder
+res_folder <- paste0(w.d, "/data/study_2")
+
+# read in data
+source("code/load_extracted_data.R")
+
+```
+
+# Parameter Bias
+
+The true values (those used to simulated the data) are defined below.
+
+```{r study-2-true-values}
+
+true_params <- list(
+  lambda = 0.9 # factor loadings
+  , tau = NULL # item thresholds
+  , theta = 1 + 0.9**2 # total variance of latent response variables
+  , beta_lrt = 1.5 # intercept for response time
+  , sigma_lrt = 1/0.25 # precision of obs. RT
+  , sigma_s = 1/0.1 # precision of Latent Speed Variable
+  , sigma_st = -sqrt(0.1)*0.23 # covariance between factors
+  , rho = 0.1 # relationship between PID and response time
+  , omega = NULL # factor reliability
+)
+
+# Item Thresholds
+# Tau depends on N_cat, N_items
+getTau <- function(N_cat, N_items, lambda=0.9, seed=1){
+  set.seed(seed)
+  if(N_cat == 2){
+    tau <- matrix(
+      runif(N_items, -0.5, 0.5),
+      ncol=N_cat - 1,
+      nrow=N_items,
+      byrow=T
+    )
+    tau = -tau
+  }
+  if(N_cat > 2 & N_cat < 7){
+    tau <- matrix(ncol=N_cat-1, nrow=N_items)
+    for(c in 1:(N_cat-1)){
+      if(c == 1){
+        tau[,1] <- runif(N_items, -1, -0.33)
+      }
+      if(c > 1){
+        tau[,c] <- tau[,c-1] + runif(N_items, 0.25, 1)
+      }
+    }
+  }
+  if(N_cat == 7){
+        tau <- matrix(ncol=N_cat-1, nrow=N_items)
+        for(c in 1:(N_cat-1)){
+      if(c == 1){
+        tau[,1] <- runif(N_items, -2, -1.33)
+      }
+      if(c > 1){
+        tau[,c] <- tau[,c-1] + runif(N_items, 0.33, 1.0)
+      }
+    }
+  }
+  tau = tau*lambda
+  return(tau)
+}
+# ex. N_cat=2 & N_items=5
+getTau(2, 5)
+getTau(2, 10)
+getTau(2, 20)
+# ex. N_cat=5 & N_items=5
+getTau(3, 5)
+getTau(3, 10)
+getTau(3, 20)
+# ex. N_cat=5 & N_items=5
+getTau(5, 5)
+getTau(5, 10)
+getTau(5, 20)
+# ex. N_cat=5 & N_items=5
+getTau(7, 5)
+getTau(7, 10)
+getTau(7, 20)
+# factor reliability
+# depends on N_items & simulated lambda value
+getOmega <- function(lambda, N_items){
+  (lambda*N_items)**2/((lambda*N_items)**2 + N_items)
+}
+# ex. N_items = 5
+getOmega(0.9, 5)
+getOmega(0.9, 10)
+getOmega(0.9, 20)
+
+```
+
+The code below loops through the posterior summaries to compute the relative bias for each parameter.
+
+```{r study2-compute-bias}
+
+# compute relative bias
+mydata <- mydata %>%
+  # use posterior median & mean for comparison
+  mutate(
+    post_median_rb_est = (post_q50 - true_value)/true_value*100,
+    post_mean_rb_est = (post_mean - true_value)/true_value*100,
+    post_median_bias_est = post_q50 - true_value,
+    post_mean_bias_est = post_mean - true_value,
+    # compute convergence
+    converge = ifelse(Rhat - 1.10 < 0, 1, 0)
+  ) %>%
+  filter(converge == 1)
+
+# Update condition labels for plotting
+mydata$condition_lbs <- factor(
+  mydata$condition, 
+  levels = 1:24,
+  labels = c(
+    "nCat=2, nItem=  5, N=  500",
+    "nCat=2, nItem=  5, N=2500",
+    "nCat=2, nItem=10, N=  500",
+    "nCat=2, nItem=10, N=2500",
+    "nCat=2, nItem=20, N=  500",
+    "nCat=2, nItem=20, N=2500",
+    "nCat=5, nItem=  5, N=  500",
+    "nCat=5, nItem=  5, N=2500",
+    "nCat=5, nItem=10, N=  500",
+    "nCat=5, nItem=10, N=2500",
+    "nCat=5, nItem=20, N=  500",
+    "nCat=5, nItem=20, N=2500",
+    "nCat=3, nItem=  5, N=  500",
+    "nCat=3, nItem=  5, N=2500",
+    "nCat=3, nItem=10, N=  500",
+    "nCat=3, nItem=10, N=2500",
+    "nCat=3, nItem=20, N=  500",
+    "nCat=3, nItem=20, N=2500",
+    "nCat=7, nItem=  5, N=  500",
+    "nCat=7, nItem=  5, N=2500",
+    "nCat=7, nItem=10, N=  500",
+    "nCat=7, nItem=10, N=2500",
+    "nCat=7, nItem=20, N=  500",
+    "nCat=7, nItem=20, N=2500"
+  )
+)
+
+# columns to keep
+keep_cols <- c("condition","condition_lbs", "iter", "N", "N_items", "N_cat", "parameter_group", "rb_est", "rb_est_paragrp")
+```
+
+# Summaring Relative Bias
+
+## Factor Loadings ($\lambda$)
+
+```{r study2-summary-rel-bias-lambda}
+param = "FACTOR LOADING"
+
+rb <- mydata %>%
+  filter(parameter_group == "lambda")
+
+# tabular summary of relative bias
+rb_tbl <- rb %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(N_converge = n(),
+            true = mean(true_value),
+            avg_median_est = mean(post_q50),
+            avg_mean_est = mean(post_mean),
+            Post_Median_RB_Mean = mean(post_median_rb_est),
+            Post_Median_RB_SD = sd(post_median_rb_est),
+            Post_Mean_RB_Mean = mean(post_mean_rb_est),
+            Post_Mean_RB_SD = sd(post_mean_rb_est),
+            Post_Median_AB = mean(post_median_bias_est),
+            Post_Mean_AB = mean(post_mean_bias_est))
+kable(rb_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize RB estimates
+p1 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_rb_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_RB_Mean),
+             color = "black") +
+  geom_abline(intercept = -10,
+              slope = 0,
+              linetype = "dashed") +
+  geom_abline(intercept = 10,
+              slope = 0,
+              linetype = "dashed") +
+  lims(y = c(-100, 100)) +
+  coord_flip() +
+  labs(
+    title = paste0("Relative Bias for ", param, " posterior median"),
+    subtitle = "Plot includes RB estimate for each parameter estimate (boxplot) and\n average RB esimate (black dot)",
+    caption = "Note. Dashed lines represent +/-10% relative bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_bias_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_AB),
+             color = "black") +
+  geom_abline(intercept = 0,
+              slope = 0,
+              linetype = "dashed")+
+  coord_flip() +
+  labs(
+    title = paste0("Average Bias for ", param, " posterior median"),
+    subtitle = "Plot includes AB estimate for each parameter estimate (boxplot) and\n average AB esimate (black dot)",
+    caption = "Note. Dashed line represent 0 bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p1 + p2
+
+```
+
+
+## Item Thresholds ($\tau$)
+
+```{r study2-summary-rel-bias-tau}
+param = "Item Thresholds"
+
+rb <- mydata %>%
+  filter(parameter_group == "tau") 
+
+# tabular summary of relative bias
+rb_tbl <- rb %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(N_converge = n(),
+            true = mean(true_value),
+            avg_median_est = mean(post_q50),
+            avg_mean_est = mean(post_mean),
+            Post_Median_RB_Mean = mean(post_median_rb_est),
+            Post_Median_RB_SD = sd(post_median_rb_est),
+            Post_Mean_RB_Mean = mean(post_mean_rb_est),
+            Post_Mean_RB_SD = sd(post_mean_rb_est),
+            Post_Median_AB = mean(post_median_bias_est),
+            Post_Mean_AB = mean(post_mean_bias_est))
+kable(rb_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize RB estimates
+p1 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_rb_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_RB_Mean),
+             color = "black") +
+  geom_abline(intercept = -10,
+              slope = 0,
+              linetype = "dashed") +
+  geom_abline(intercept = 10,
+              slope = 0,
+              linetype = "dashed") +
+  lims(y = c(-100, 100)) +
+  coord_flip() +
+  labs(
+    title = paste0("Relative Bias for ", param, " posterior median"),
+    subtitle = "Plot includes RB estimate for each parameter estimate (boxplot) and\n average RB esimate (black dot)",
+    caption = "Note. Dashed lines represent +/-10% relative bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_bias_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_AB),
+             color = "black") +
+  geom_abline(intercept = 0,
+              slope = 0,
+              linetype = "dashed")+
+  coord_flip() +
+  labs(
+    title = paste0("Average Bias for ", param, " posterior median"),
+    subtitle = "Plot includes AB estimate for each parameter estimate (boxplot) and\n average AB esimate (black dot)",
+    caption = "Note. Dashed line represent 0 bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p1 + p2
+
+```
+
+## Latent Response Variance ($\theta$)
+
+```{r study2-summary-rel-bias-theta}
+param = "Latent Response Variance"
+
+rb <- mydata %>%
+  filter(parameter_group == "theta")
+
+# tabular summary of relative bias
+rb_tbl <- rb %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(N_converge = n(),
+            true = mean(true_value),
+            avg_median_est = mean(post_q50),
+            avg_mean_est = mean(post_mean),
+            Post_Median_RB_Mean = mean(post_median_rb_est),
+            Post_Median_RB_SD = sd(post_median_rb_est),
+            Post_Mean_RB_Mean = mean(post_mean_rb_est),
+            Post_Mean_RB_SD = sd(post_mean_rb_est),
+            Post_Median_AB = mean(post_median_bias_est),
+            Post_Mean_AB = mean(post_mean_bias_est))
+kable(rb_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize RB estimates
+p1 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_rb_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_RB_Mean),
+             color = "black") +
+  geom_abline(intercept = -10,
+              slope = 0,
+              linetype = "dashed") +
+  geom_abline(intercept = 10,
+              slope = 0,
+              linetype = "dashed") +
+  lims(y = c(-100, 100)) +
+  coord_flip() +
+  labs(
+    title = paste0("Relative Bias for ", param, " posterior median"),
+    subtitle = "Plot includes RB estimate for each parameter estimate (boxplot) and\n average RB esimate (black dot)",
+    caption = "Note. Dashed lines represent +/-10% relative bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_bias_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_AB),
+             color = "black") +
+  geom_abline(intercept = 0,
+              slope = 0,
+              linetype = "dashed")+
+  coord_flip() +
+  labs(
+    title = paste0("Average Bias for ", param, " posterior median"),
+    subtitle = "Plot includes AB estimate for each parameter estimate (boxplot) and\n average AB esimate (black dot)",
+    caption = "Note. Dashed line represent 0 bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p1 + p2
+
+```
+
+## Response Time Intercepts ($\beta_{lrt}$)
+
+```{r study2-summary-rel-bias-beta}
+param = "RT Intercepts"
+
+rb <- mydata %>%
+  filter(parameter_group == "beta_lrt")
+
+# tabular summary of relative bias
+rb_tbl <- rb %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(N_converge = n(),
+            true = mean(true_value),
+            avg_median_est = mean(post_q50),
+            avg_mean_est = mean(post_mean),
+            Post_Median_RB_Mean = mean(post_median_rb_est),
+            Post_Median_RB_SD = sd(post_median_rb_est),
+            Post_Mean_RB_Mean = mean(post_mean_rb_est),
+            Post_Mean_RB_SD = sd(post_mean_rb_est),
+            Post_Median_AB = mean(post_median_bias_est),
+            Post_Mean_AB = mean(post_mean_bias_est))
+kable(rb_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize RB estimates
+p1 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_rb_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_RB_Mean),
+             color = "black") +
+  geom_abline(intercept = -10,
+              slope = 0,
+              linetype = "dashed") +
+  geom_abline(intercept = 10,
+              slope = 0,
+              linetype = "dashed") +
+  lims(y = c(-100, 100)) +
+  coord_flip() +
+  labs(
+    title = paste0("Relative Bias for ", param, " posterior median"),
+    subtitle = "Plot includes RB estimate for each parameter estimate (boxplot) and\n average RB esimate (black dot)",
+    caption = "Note. Dashed lines represent +/-10% relative bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_bias_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_AB),
+             color = "black") +
+  geom_abline(intercept = 0,
+              slope = 0,
+              linetype = "dashed")+
+  coord_flip() +
+  labs(
+    title = paste0("Average Bias for ", param, " posterior median"),
+    subtitle = "Plot includes AB estimate for each parameter estimate (boxplot) and\n average AB esimate (black dot)",
+    caption = "Note. Dashed line represent 0 bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p1 + p2
+```
+
+## Response Time Precision ($\sigma_{lrt}$)
+
+```{r study2-summary-rel-bias-sigma-lrt}
+param = "RT Precision"
+
+rb <- mydata %>%
+  filter(parameter_group == "sigma_lrt")
+
+# tabular summary of relative bias
+rb_tbl <- rb %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(N_converge = n(),
+            true = mean(true_value),
+            avg_median_est = mean(post_q50),
+            avg_mean_est = mean(post_mean),
+            Post_Median_RB_Mean = mean(post_median_rb_est),
+            Post_Median_RB_SD = sd(post_median_rb_est),
+            Post_Mean_RB_Mean = mean(post_mean_rb_est),
+            Post_Mean_RB_SD = sd(post_mean_rb_est),
+            Post_Median_AB = mean(post_median_bias_est),
+            Post_Mean_AB = mean(post_mean_bias_est))
+kable(rb_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize RB estimates
+p1 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_rb_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_RB_Mean),
+             color = "black") +
+  geom_abline(intercept = -10,
+              slope = 0,
+              linetype = "dashed") +
+  geom_abline(intercept = 10,
+              slope = 0,
+              linetype = "dashed") +
+  lims(y = c(-100, 100)) +
+  coord_flip() +
+  labs(
+    title = paste0("Relative Bias for ", param, " posterior median"),
+    subtitle = "Plot includes RB estimate for each parameter estimate (boxplot) and\n average RB esimate (black dot)",
+    caption = "Note. Dashed lines represent +/-10% relative bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_bias_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_AB),
+             color = "black") +
+  geom_abline(intercept = 0,
+              slope = 0,
+              linetype = "dashed")+
+  coord_flip() +
+  labs(
+    title = paste0("Average Bias for ", param, " posterior median"),
+    subtitle = "Plot includes AB estimate for each parameter estimate (boxplot) and\n average AB esimate (black dot)",
+    caption = "Note. Dashed line represent 0 bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p1 + p2
+
+```
+
+## Response Time Factor Precision ($\sigma_s$)
+
+```{r study2-summary-rel-bias-sigma-s}
+param = "Speed LV Precision"
+
+rb <- mydata %>%
+  filter(parameter_group == "sigma_s")
+
+# tabular summary of relative bias
+rb_tbl <- rb %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(N_converge = n(),
+            true = mean(true_value),
+            avg_median_est = mean(post_q50),
+            avg_mean_est = mean(post_mean),
+            Post_Median_RB_Mean = mean(post_median_rb_est),
+            Post_Median_RB_SD = sd(post_median_rb_est),
+            Post_Mean_RB_Mean = mean(post_mean_rb_est),
+            Post_Mean_RB_SD = sd(post_mean_rb_est),
+            Post_Median_AB = mean(post_median_bias_est),
+            Post_Mean_AB = mean(post_mean_bias_est))
+kable(rb_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize RB estimates
+p1 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_rb_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_RB_Mean),
+             color = "black") +
+  geom_abline(intercept = -10,
+              slope = 0,
+              linetype = "dashed") +
+  geom_abline(intercept = 10,
+              slope = 0,
+              linetype = "dashed") +
+  lims(y = c(-100, 100)) +
+  coord_flip() +
+  labs(
+    title = paste0("Relative Bias for ", param, " posterior median"),
+    subtitle = "Plot includes RB estimate for each parameter estimate (boxplot) and\n average RB esimate (black dot)",
+    caption = "Note. Dashed lines represent +/-10% relative bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_bias_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_AB),
+             color = "black") +
+  geom_abline(intercept = 0,
+              slope = 0,
+              linetype = "dashed")+
+  coord_flip() +
+  labs(
+    title = paste0("Average Bias for ", param, " posterior median"),
+    subtitle = "Plot includes AB estimate for each parameter estimate (boxplot) and\n average AB esimate (black dot)",
+    caption = "Note. Dashed line represent 0 bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p1 + p2
+
+```
+
+## Factor Covariance ($\sigma_{st}$)
+
+```{r study2-summary-rel-bias-sigma-st}
+param = "Latent Covariance"
+
+rb <- mydata %>%
+  filter(parameter_group == "sigma_st")
+
+# tabular summary of relative bias
+rb_tbl <- rb %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(N_converge = n(),
+            true = mean(true_value),
+            avg_median_est = mean(post_q50),
+            avg_mean_est = mean(post_mean),
+            Post_Median_RB_Mean = mean(post_median_rb_est),
+            Post_Median_RB_SD = sd(post_median_rb_est),
+            Post_Mean_RB_Mean = mean(post_mean_rb_est),
+            Post_Mean_RB_SD = sd(post_mean_rb_est),
+            Post_Median_AB = mean(post_median_bias_est),
+            Post_Mean_AB = mean(post_mean_bias_est))
+kable(rb_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize RB estimates
+p1 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_rb_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_RB_Mean),
+             color = "black") +
+  geom_abline(intercept = -10,
+              slope = 0,
+              linetype = "dashed") +
+  geom_abline(intercept = 10,
+              slope = 0,
+              linetype = "dashed") +
+  lims(y = c(-100, 100)) +
+  coord_flip() +
+  labs(
+    title = paste0("Relative Bias for ", param, " posterior median"),
+    subtitle = "Plot includes RB estimate for each parameter estimate (boxplot) and\n average RB esimate (black dot)",
+    caption = "Note. Dashed lines represent +/-10% relative bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_bias_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_AB),
+             color = "black") +
+  geom_abline(intercept = 0,
+              slope = 0,
+              linetype = "dashed")+
+  coord_flip() +
+  labs(
+    title = paste0("Average Bias for ", param, " posterior median"),
+    subtitle = "Plot includes AB estimate for each parameter estimate (boxplot) and\n average AB esimate (black dot)",
+    caption = "Note. Dashed line represent 0 bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p1 + p2
+  
+```
+
+## PID Relationship ($\rho$)
+
+```{r study2-summary-rel-bias-rho}
+param = "PID Relationship"
+
+rb <- mydata %>%
+  filter(parameter_group == "rho")
+
+# tabular summary of relative bias
+rb_tbl <- rb %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(N_converge = n(),
+            true = mean(true_value),
+            avg_median_est = mean(post_q50),
+            avg_mean_est = mean(post_mean),
+            Post_Median_RB_Mean = mean(post_median_rb_est),
+            Post_Median_RB_SD = sd(post_median_rb_est),
+            Post_Mean_RB_Mean = mean(post_mean_rb_est),
+            Post_Mean_RB_SD = sd(post_mean_rb_est),
+            Post_Median_AB = mean(post_median_bias_est),
+            Post_Mean_AB = mean(post_mean_bias_est))
+kable(rb_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize RB estimates
+p1 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_rb_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_RB_Mean),
+             color = "black") +
+  geom_abline(intercept = -10,
+              slope = 0,
+              linetype = "dashed") +
+  geom_abline(intercept = 10,
+              slope = 0,
+              linetype = "dashed") +
+  lims(y = c(-100, 100)) +
+  coord_flip() +
+  labs(
+    title = paste0("Relative Bias for ", param, " posterior median"),
+    subtitle = "Plot includes RB estimate for each parameter estimate (boxplot) and\n average RB esimate (black dot)",
+    caption = "Note. Dashed lines represent +/-10% relative bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_bias_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_AB),
+             color = "black") +
+  geom_abline(intercept = 0,
+              slope = 0,
+              linetype = "dashed")+
+  coord_flip() +
+  labs(
+    title = paste0("Average Bias for ", param, " posterior median"),
+    subtitle = "Plot includes AB estimate for each parameter estimate (boxplot) and\n average AB esimate (black dot)",
+    caption = "Note. Dashed line represent 0 bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p1 + p2
+  
+```
+
+
+## Factor Reliability ($\omega$)
+
+```{r study2-summary-rel-bias-omega}
+param = "RELIABILITY"
+
+rb <- mydata %>%
+  filter(parameter_group == "omega")
+
+# tabular summary of relative bias
+rb_tbl <- rb %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(N_converge = n(),
+            true = mean(true_value),
+            avg_median_est = mean(post_q50),
+            avg_mean_est = mean(post_mean),
+            Post_Median_RB_Mean = mean(post_median_rb_est),
+            Post_Median_RB_SD = sd(post_median_rb_est),
+            Post_Mean_RB_Mean = mean(post_mean_rb_est),
+            Post_Mean_RB_SD = sd(post_mean_rb_est),
+            Post_Median_AB = mean(post_median_bias_est),
+            Post_Mean_AB = mean(post_mean_bias_est))
+kable(rb_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize RB estimates
+p1 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_rb_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_RB_Mean),
+             color = "black") +
+  geom_abline(intercept = -10,
+              slope = 0,
+              linetype = "dashed") +
+  geom_abline(intercept = 10,
+              slope = 0,
+              linetype = "dashed") +
+  lims(y = c(-100, 100)) +
+  coord_flip() +
+  labs(
+    title = paste0("Relative Bias for ", param, " posterior median"),
+    subtitle = "Plot includes RB estimate for each parameter estimate (boxplot) and\n average RB esimate (black dot)",
+    caption = "Note. Dashed lines represent +/-10% relative bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(x = condition, y = post_median_bias_est,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(x = condition, y = Post_Median_AB),
+             color = "black") +
+  geom_abline(intercept = 0,
+              slope = 0,
+              linetype = "dashed")+
+  coord_flip() +
+  labs(
+    title = paste0("Average Bias for ", param, " posterior median"),
+    subtitle = "Plot includes AB estimate for each parameter estimate (boxplot) and\n average AB esimate (black dot)",
+    caption = "Note. Dashed line represent 0 bias"
+  ) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p1 + p2
+  
+```
+
+
+# Effect of Simulated Conditions
+
+```{r study2-omega2-saved, echo=FALSE}
+saved_omega <- as.data.frame(matrix(nrow=9, ncol=7))
+saved_eta <- as.data.frame(matrix(nrow=9, ncol=7))
+rownames(saved_omega) <- rownames(saved_eta) <- c(
+  "lambda", "tau", "theta", "beta_lrt", "sigma_lrt", "sigma_s", "sigma_ts", "rho", "omega"
+)
+colnames(saved_omega) <- colnames(saved_eta) <- c(
+  "N_cat", "N_items", "N", "N_cat:N_items", "N_cat:N", "N_items:N", "N_cat:N_items:N"
+)
+```
+
+## Factor Loadings ($\lambda$)
+
+```{r study2-summary-anova-lambda}
+
+rb <- mydata %>%
+  filter(parameter_group == "lambda") %>%
+  group_by(condition, iter, N, N_cat, N_items) %>%
+  summarise(
+    rb_est = mean(post_median_bias_est)
+  )
+
+## ANOVA on Relative Bias values
+anova_assumptions_check(
+  dat = rb, outcome = 'rb_est',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('rb_est ~ N_cat*N_items*N'))
+fit <- summary(aov(rb_est ~ N_cat*N_items*N, data=rb))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[1,] <- omega2(fit)
+saved_eta[1,] <- eta_est
+
+```
+
+## Item Thresholds ($\tau$)
+
+```{r study2-summary-anova-tau}
+
+rb <- mydata %>%
+  filter(parameter_group == "tau") %>%
+  group_by(condition, iter, N, N_cat, N_items) %>%
+  summarise(
+    rb_est = mean(post_median_bias_est)
+  )
+
+## ANOVA on Relative Bias values
+anova_assumptions_check(
+  dat = rb, outcome = 'rb_est',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('rb_est ~ N_cat*N_items*N'))
+fit <- summary(aov(rb_est ~ N_cat*N_items*N, data=rb))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[2,] <- omega2(fit)
+saved_eta[2,] <- eta_est
+
+```
+
+
+## Latent Response Variance ($\theta$)
+
+```{r study2-summary-anova-theta}
+
+rb <- mydata %>%
+  filter(parameter_group == "theta") %>%
+  group_by(condition, iter, N, N_cat, N_items) %>%
+  summarise(
+    rb_est = mean(post_median_bias_est)
+  )
+
+## ANOVA on Relative Bias values
+anova_assumptions_check(
+  dat = rb, outcome = 'rb_est',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('rb_est ~ N_cat*N_items*N'))
+fit <- summary(aov(rb_est ~ N_cat*N_items*N, data=rb))
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[3,] <- omega2(fit)
+saved_eta[3,] <- eta_est
+
+```
+
+
+## Response Time Intercepts ($\beta_{lrt}$)
+
+```{r study2-summary-anova-beta}
+
+rb <- mydata %>%
+  filter(parameter_group == "beta_lrt") %>%
+  group_by(condition, iter, N, N_cat, N_items) %>%
+  summarise(
+    rb_est = mean(post_median_bias_est)
+  )
+
+## ANOVA on Relative Bias values
+anova_assumptions_check(
+  dat = rb, outcome = 'rb_est',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('rb_est ~ N_cat*N_items*N'))
+fit <- summary(aov(rb_est ~ N_cat*N_items*N, data=rb))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[4,] <- omega2(fit)
+saved_eta[4,] <- eta_est
+
+```
+
+
+## Response Time Precision ($\sigma_{lrt}$)
+
+```{r study2-summary-anova-sigma-lrt}
+
+rb <- mydata %>%
+  filter(parameter_group == "sigma_lrt") %>%
+  group_by(condition, iter, N, N_cat, N_items) %>%
+  summarise(
+    rb_est = mean(post_median_bias_est)
+  )
+
+## ANOVA on Relative Bias values
+anova_assumptions_check(
+  dat = rb, outcome = 'rb_est',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('rb_est ~ N_cat*N_items*N'))
+fit <- summary(aov(rb_est ~ N_cat*N_items*N, data=rb))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[5,] <- omega2(fit)
+saved_eta[5,] <- eta_est
+
+```
+
+
+## Response Time Factor Precision ($\sigma_s$)
+
+```{r study2-summary-anova-sigma-s}
+
+rb <- mydata %>%
+  filter(parameter_group == "sigma_s") %>%
+  group_by(condition, iter, N, N_cat, N_items) %>%
+  summarise(
+    rb_est = mean(post_median_bias_est)
+  )
+
+## ANOVA on Relative Bias values
+anova_assumptions_check(
+  dat = rb, outcome = 'rb_est',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('rb_est ~ N_cat*N_items*N'))
+fit <- summary(aov(rb_est ~ N_cat*N_items*N, data=rb))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[6,] <- omega2(fit)
+saved_eta[6,] <- eta_est
+
+```
+
+
+## Factor Covariance ($\sigma_{st}$)
+
+```{r study2-summary-anova-sigma-st}
+
+rb <- mydata %>%
+  filter(parameter_group == "sigma_st") %>%
+  group_by(condition, iter, N, N_cat, N_items) %>%
+  summarise(
+    rb_est = mean(post_median_bias_est)
+  )
+
+## ANOVA on Relative Bias values
+anova_assumptions_check(
+  dat = rb, outcome = 'rb_est',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('rb_est ~ N_cat*N_items*N'))
+fit <- summary(aov(rb_est ~ N_cat*N_items*N, data=rb))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[7,] <- omega2(fit)
+saved_eta[7,] <- eta_est
+
+```
+
+
+## PID Relationship ($\rho$)
+
+```{r study2-summary-anova-rho}
+
+rb <- mydata %>%
+  filter(parameter_group == "rho") %>%
+  group_by(condition, iter, N, N_cat, N_items) %>%
+  summarise(
+    rb_est = mean(post_median_bias_est)
+  )
+
+## ANOVA on Relative Bias values
+anova_assumptions_check(
+  dat = rb, outcome = 'rb_est',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('rb_est ~ N_cat*N_items*N'))
+fit <- summary(aov(rb_est ~ N_cat*N_items*N, data=rb))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[8,] <- omega2(fit)
+saved_eta[8,] <- eta_est
+
+```
+
+
+## Factor Reliability ($\omega$)
+
+```{r study2-summary-anova-omega}
+
+rb <- mydata %>%
+  filter(parameter_group == "omega") %>%
+  group_by(condition, iter, N, N_cat, N_items) %>%
+  summarise(
+    rb_est = mean(post_median_bias_est)
+  )
+
+## ANOVA on Relative Bias values
+anova_assumptions_check(
+  dat = rb, outcome = 'rb_est',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('rb_est ~ N_cat*N_items*N'))
+fit <- summary(aov(rb_est ~ N_cat*N_items*N, data=rb))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[9,] <- omega2(fit)
+saved_eta[9,] <- eta_est
+
+```
+
+# Manuscript Figures and Tables (latex formated)
+
+## Tables
+
+```{r latex-tables}
+
+keep_cols <- c("condition", "iter", "N", "N_items", "N_cat", "parameter_group", "post_median_rb_est", "post_median_bias_est")
+
+tbl_dat <- mydata %>%
+  select(all_of(keep_cols)) %>%
+  filter(
+    !is.na(parameter_group)
+    , parameter_group != "lambda (STD)"
+  )
+
+# get average Rhat and SD for each condition and parameter group
+sum_tab <- tbl_dat %>%
+  group_by(N_cat, N_items, N, parameter_group) %>%
+  summarise(
+    Post_Median_RB_Mean = mean(post_median_rb_est),
+    Post_Median_AB_Mean = mean(post_median_bias_est)
+  )
+
+# table 1: 2 category data
+T1 <- sum_tab %>%
+  filter(N_cat == 2) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = all_of(c("Post_Median_RB_Mean", "Post_Median_AB_Mean"))
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+#T1 <- T1[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+print(
+  xtable(
+    T1[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) , ]
+    , caption = c("Posterior Bias: Dichotomous items")
+    ,align = "lllrrrrrr"
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+# table 2: 5 category data
+T2 <- sum_tab %>%
+  filter(N_cat == 5) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = all_of(c("Post_Median_RB_Mean", "Post_Median_AB_Mean"))
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+print(
+  xtable(
+    T2[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) , ]
+    , caption = c("Posterior Bias: Five category items")
+    ,align = "lllrrrrrr"
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+# table 3: 3 category data
+T3 <- sum_tab %>%
+  filter(N_cat == 3) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = all_of(c("Post_Median_RB_Mean", "Post_Median_AB_Mean"))
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+print(
+  xtable(
+    T3[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) , ]
+    , caption = c("Posterior Bias: three category items")
+    ,align = "lllrrrrrr"
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+# table 4: 7 category data
+T4 <- sum_tab %>%
+  filter(N_cat == 5) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = all_of(c("Post_Median_RB_Mean", "Post_Median_AB_Mean"))
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+print(
+  xtable(
+    T4[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) , ]
+    , caption = c("Posterior Bias: seven category items")
+    ,align = "lllrrrrrr"
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+# effect size
+print(
+  xtable(
+    t(saved_eta)
+    , caption = c("Effect of design factors on relative bias estimates: eta2")
+    ,align = "lrrrrrrrrr", digits = 3
+  ),
+  include.rownames=T,
+  booktabs=T
+)
+print(
+  xtable(
+    t(saved_omega)
+    , caption = c("Effect of design factors on relative bias estimates: omega2")
+    ,align = "lrrrrrrrrr", digits = 3
+  ),
+  include.rownames=T,
+  booktabs=T
+)
+
+```
+
+
+## Figures
+
+Only make "nice" figures for omega to start.
+
+```{r study2-manuscript-figures}
+
+rb <- mydata %>%
+  filter(parameter_group == "omega") %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  mutate(Post_Median_ARB = mean(post_median_rb_est),
+         Post_Median_AB = mean(post_median_bias_est))
+
+# Create summary stats for plotting
+rb_tbl <- rb %>%
+  group_by(condition, condition_lbs, N_cat, N_items, N) %>%
+  summarise(Post_Median_ARB = mean(post_median_rb_est),
+            Post_Median_AB = mean(post_median_bias_est)) %>%
+  arrange(Post_Median_ARB)
+rb_tbl$lbs = factor(
+  rb_tbl$condition_lbs,
+  levels=rb_tbl$condition_lbs,
+  ordered=T
+)
+rb$lbs <- factor(
+  rb$condition_lbs,
+  levels=rb_tbl$condition_lbs,
+  ordered=T
+)
+
+# visualize bias estimates
+p1 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(y = lbs, x = post_median_rb_est,
+        group = lbs),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(y = lbs, x = Post_Median_ARB),
+             color = "black") +
+  geom_vline(xintercept = -10,
+              linetype = "dashed") +
+  geom_vline(xintercept = 10,
+              linetype = "dashed") +
+  lims(x = c(-20, 20)) +
+  labs(y="Simulation Condition (arranged by ARB)",
+       x="Relative Bias")+
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(y = lbs, x = post_median_bias_est,
+        group = lbs),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(y = lbs, x = Post_Median_AB),
+             color = "black") +
+  geom_vline(xintercept = 0,
+              linetype = "dashed")+
+  lims(x = c(-0.125, 0.125)) +
+  labs(x="Bias")+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank())
+p <- p1 + p2 + plot_layout(guides="collect") + plot_annotation(tag_levels = "A")
+p
+
+ggsave(filename = "fig/study2_parameter_bias_omega_2357.pdf",plot=p,width = 7, height=4,units="in")
+ggsave(filename = "fig/study2_parameter_bias_omega_2357.png",plot=p,width = 7, height=4,units="in")
+ggsave(filename = "fig/study2_parameter_bias_omega_2357.eps",plot=p,width = 7, height=4,units="in")
+
+
+# visualize bias estimates
+rb <- mydata %>%
+  filter(parameter_group == "omega", N_cat%in%c(2,5)) %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  mutate(Post_Median_ARB = mean(post_median_rb_est),
+         Post_Median_AB = mean(post_median_bias_est))
+
+# Create summary stats for plotting
+rb_tbl <- rb %>%
+  group_by(condition, condition_lbs, N_cat, N_items, N) %>%
+  summarise(Post_Median_ARB = mean(post_median_rb_est),
+            Post_Median_AB = mean(post_median_bias_est)) %>%
+  arrange(Post_Median_ARB)
+rb_tbl$lbs = factor(
+  rb_tbl$condition_lbs,
+  levels=rb_tbl$condition_lbs,
+  ordered=T
+)
+rb$lbs <- factor(
+  rb$condition_lbs,
+  levels=rb_tbl$condition_lbs,
+  ordered=T
+)
+p1 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(y = lbs, x = post_median_rb_est,
+        group = lbs),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(y = lbs, x = Post_Median_ARB),
+             color = "black") +
+  geom_vline(xintercept = -10,
+              linetype = "dashed") +
+  geom_vline(xintercept = 10,
+              linetype = "dashed") +
+  lims(x = c(-20, 20)) +
+  labs(y="Simulation Condition (arranged by ARB)",
+       x="Relative Bias")+
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  stat_summary(
+    data = rb,
+    aes(y = lbs, x = post_median_bias_est,
+        group = lbs),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = rb_tbl,
+             aes(y = lbs, x = Post_Median_AB),
+             color = "black") +
+  geom_vline(xintercept = 0,
+              linetype = "dashed")+
+  lims(x = c(-0.125, 0.125)) +
+  labs(x="Bias")+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank())
+p <- p1 + p2 + plot_layout(guides="collect") + plot_annotation(tag_levels = "A")
+p
+
+ggsave(filename = "fig/study2_parameter_bias_omega_25.pdf",plot=p,width = 7, height=4,units="in")
+ggsave(filename = "fig/study2_parameter_bias_omega_25.png",plot=p,width = 7, height=4,units="in")
+ggsave(filename = "fig/study2_parameter_bias_omega_25.eps",plot=p,width = 7, height=4,units="in")
+
+ggsave(filename = "fig/study2_parameter_bias_omega_25a.pdf",plot=p1,width = 4, height=4,units="in")
+ggsave(filename = "fig/study2_parameter_bias_omega_25a.png",plot=p1,width = 4, height=4,units="in")
+ggsave(filename = "fig/study2_parameter_bias_omega_25a.eps",plot=p1,width = 4, height=4,units="in")
+
+
+```

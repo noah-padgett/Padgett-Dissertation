@@ -1,0 +1,1002 @@
+---
+title: "Simulation Study 2"
+subtitle: "Posterior Convergence"
+author: "R. Noah Padgett"
+date: "2022-01-09"
+output: html_document
+---
+
+```{r setup, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+# results folder
+res_folder <- paste0(w.d, "/data/study_2")
+
+# read in data
+source("code/load_extracted_data.R")
+
+```
+
+# Convergence
+
+This is component of the project, a coarse grain investigation of the posteriors' convergence will be assessed.
+In the proposal, I stated that I will evaluate convergence of the posteriors using the R-hat value as measures of convergence.
+R-hat values close to 1, within 0.1, will be considered a "converged" posterior for the parameter.
+
+The code below loops through the posterior summaries to identify converged solutions.
+
+```{r study2-identify-converge}
+
+mydata <- mydata %>%
+  # group by condition, iteration, and parameter group to get Rhat more summarised
+  group_by(condition, iter, parameter_group) %>%
+  mutate(Rhat_paragrp = mean(Rhat)) %>%
+  ungroup() %>%
+  mutate(
+    converge = ifelse(Rhat - 1.10 < 0, 1, 0),
+    converge_paragrp = ifelse(Rhat_paragrp - 1.10 < 0, 1, 0)
+  ) %>%
+  group_by(condition, iter, parameter_group) %>%
+  mutate(
+     converge_proportion_paragrp = sum(converge)/n(),
+  )
+
+# Update condition labels for plotting
+mydata$condition_lbs <- factor(
+  mydata$condition, 
+  levels = 1:24,
+  labels = c(
+    "nCat=2, nItem=  5, N=  500",
+    "nCat=2, nItem=  5, N=2500",
+    "nCat=2, nItem=10, N=  500",
+    "nCat=2, nItem=10, N=2500",
+    "nCat=2, nItem=20, N=  500",
+    "nCat=2, nItem=20, N=2500",
+    "nCat=5, nItem=  5, N=  500",
+    "nCat=5, nItem=  5, N=2500",
+    "nCat=5, nItem=10, N=  500",
+    "nCat=5, nItem=10, N=2500",
+    "nCat=5, nItem=20, N=  500",
+    "nCat=5, nItem=20, N=2500",
+    "nCat=3, nItem=  5, N=  500",
+    "nCat=3, nItem=  5, N=2500",
+    "nCat=3, nItem=10, N=  500",
+    "nCat=3, nItem=10, N=2500",
+    "nCat=3, nItem=20, N=  500",
+    "nCat=3, nItem=20, N=2500",
+    "nCat=7, nItem=  5, N=  500",
+    "nCat=7, nItem=  5, N=2500",
+    "nCat=7, nItem=10, N=  500",
+    "nCat=7, nItem=10, N=2500",
+    "nCat=7, nItem=20, N=  500",
+    "nCat=7, nItem=20, N=2500"
+  )
+)
+
+# columns to keep
+keep_cols <- c("condition","condition_lbs", "iter", "N", "N_items", "N_cat", "parameter_group", "Rhat_paragrp", "converge_paragrp")
+
+```
+
+# Summaring Convergence
+
+## Factor Loadings ($\lambda$)
+
+```{r study2-summary-converge-lambda}
+param = "FACTOR LOADING"
+
+conv <- mydata %>%
+  filter(parameter_group == "lambda")
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "lambda") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+# tabular summary
+conv_tbl <- conv %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+conv_grp_tbl <- conv_para_grp %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge_paragrp),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_grp_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+# visualize Rhat values
+conv_grp <- conv %>%
+  select(condition_lbs, iter, N_cat, N_items, N, Rhat_paragrp, converge_paragrp) %>%
+  distinct()
+  
+ggplot() +
+  geom_violin(data=conv, aes(x=condition_lbs , y=Rhat, group=condition))+
+  geom_jitter(data=conv_grp, aes(x=condition_lbs , y=Rhat_paragrp), color="red", alpha=0.75)+
+  geom_abline(intercept = 1.10, slope=0, linetype="dashed")+
+  coord_flip()+
+  labs(
+    title=paste0("Estimates of Rhat for ", param, " posteriors" ),
+    subtitle ="Plot includes Rhat for each parameter estimate (violin plot) and\n average Rhat of all similar parameters (e.g., all loadings)",
+    caption = "Note. Dashed line represent Rhat = 1.10 for a 'converged' posterior"
+  ) +
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+  
+
+```
+
+## Item Thresholds ($\tau$)
+
+```{r study2-summary-converge-tau}
+param = "Item Thresholds"
+
+conv <- mydata %>%
+  filter(parameter_group == "tau")
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "tau") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+# tabular summary
+conv_tbl <- conv %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+conv_grp_tbl <- conv_para_grp %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge_paragrp),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_grp_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+# visualize Rhat values
+conv_grp <- conv %>%
+  select(condition_lbs, iter, N_cat, N_items, N, Rhat_paragrp, converge_paragrp) %>%
+  distinct()
+  
+ggplot() +
+  geom_violin(data=conv, aes(x=condition_lbs , y=Rhat, group=condition))+
+  geom_jitter(data=conv_grp, aes(x=condition_lbs , y=Rhat_paragrp), color="red", alpha=0.75)+
+  geom_abline(intercept = 1.10, slope=0, linetype="dashed")+
+  coord_flip()+
+  labs(
+    title=paste0("Estimates of Rhat for ", param, " posteriors" ),
+    subtitle ="Plot includes Rhat for each parameter estimate (violin plot) and\n average Rhat of all similar parameters (e.g., all loadings)",
+    caption = "Note. Dashed line represent Rhat = 1.10 for a 'converged' posterior"
+  ) +
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+  
+
+```
+
+## Latent Response Variance ($\theta$)
+
+```{r study2-summary-converge-theta}
+param = "Latent Response Variance"
+
+conv <- mydata %>%
+  filter(parameter_group == "theta")
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "theta") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+# tabular summary
+conv_tbl <- conv %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+conv_grp_tbl <- conv_para_grp %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge_paragrp),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_grp_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+# visualize Rhat values
+conv_grp <- conv %>%
+  select(condition_lbs, iter, N_cat, N_items, N, Rhat_paragrp, converge_paragrp) %>%
+  distinct()
+  
+ggplot() +
+  geom_violin(data=conv, aes(x=condition_lbs , y=Rhat, group=condition))+
+  geom_jitter(data=conv_grp, aes(x=condition_lbs , y=Rhat_paragrp), color="red", alpha=0.75)+
+  geom_abline(intercept = 1.10, slope=0, linetype="dashed")+
+  coord_flip()+
+  labs(
+    title=paste0("Estimates of Rhat for ", param, " posteriors" ),
+    subtitle ="Plot includes Rhat for each parameter estimate (violin plot) and\n average Rhat of all similar parameters (e.g., all loadings)",
+    caption = "Note. Dashed line represent Rhat = 1.10 for a 'converged' posterior"
+  ) +
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+  
+
+```
+
+## Response Time Intercepts ($\beta_{lrt}$)
+
+```{r study2-summary-converge-beta}
+param = "RT Intercepts"
+
+conv <- mydata %>%
+  filter(parameter_group == "beta_lrt")
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "beta_lrt") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+# tabular summary
+conv_tbl <- conv %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+conv_grp_tbl <- conv_para_grp %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge_paragrp),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_grp_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+# visualize Rhat values
+conv_grp <- conv %>%
+  select(condition_lbs, iter, N_cat, N_items, N, Rhat_paragrp, converge_paragrp) %>%
+  distinct()
+  
+ggplot() +
+  geom_violin(data=conv, aes(x=condition_lbs , y=Rhat, group=condition))+
+  geom_jitter(data=conv_grp, aes(x=condition_lbs , y=Rhat_paragrp), color="red", alpha=0.75)+
+  geom_abline(intercept = 1.10, slope=0, linetype="dashed")+
+  coord_flip()+
+  labs(
+    title=paste0("Estimates of Rhat for ", param, " posteriors" ),
+    subtitle ="Plot includes Rhat for each parameter estimate (violin plot) and\n average Rhat of all similar parameters (e.g., all loadings)",
+    caption = "Note. Dashed line represent Rhat = 1.10 for a 'converged' posterior"
+  ) +
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+  
+
+```
+
+## Response Time Precision ($\sigma_{lrt}$)
+
+```{r study2-summary-converge-sigma-lrt}
+param = "RT Precision"
+
+conv <- mydata %>%
+  filter(parameter_group == "sigma_lrt")
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "sigma_lrt") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+# tabular summary
+conv_tbl <- conv %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+conv_grp_tbl <- conv_para_grp %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge_paragrp),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_grp_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+# visualize Rhat values
+conv_grp <- conv %>%
+  select(condition_lbs, iter, N_cat, N_items, N, Rhat_paragrp, converge_paragrp) %>%
+  distinct()
+  
+ggplot() +
+  geom_violin(data=conv, aes(x=condition_lbs , y=Rhat, group=condition))+
+  geom_jitter(data=conv_grp, aes(x=condition_lbs , y=Rhat_paragrp), color="red", alpha=0.75)+
+  geom_abline(intercept = 1.10, slope=0, linetype="dashed")+
+  coord_flip()+
+  labs(
+    title=paste0("Estimates of Rhat for ", param, " posteriors" ),
+    subtitle ="Plot includes Rhat for each parameter estimate (violin plot) and\n average Rhat of all similar parameters (e.g., all loadings)",
+    caption = "Note. Dashed line represent Rhat = 1.10 for a 'converged' posterior"
+  ) +
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+  
+
+```
+
+## Response Time Factor Precision ($\sigma_s$)
+
+```{r study2-summary-converge-sigma-s}
+param = "Speed LV Precision"
+
+conv <- mydata %>%
+  filter(parameter_group == "sigma_s")
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "sigma_s") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+# tabular summary
+conv_tbl <- conv %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+conv_grp_tbl <- conv_para_grp %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge_paragrp),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_grp_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+# visualize Rhat values
+conv_grp <- conv %>%
+  select(condition_lbs, iter, N_cat, N_items, N, Rhat_paragrp, converge_paragrp) %>%
+  distinct()
+  
+ggplot() +
+  geom_violin(data=conv, aes(x=condition_lbs , y=Rhat, group=condition))+
+  geom_jitter(data=conv_grp, aes(x=condition_lbs , y=Rhat_paragrp), color="red", alpha=0.75)+
+  geom_abline(intercept = 1.10, slope=0, linetype="dashed")+
+  coord_flip()+
+  labs(
+    title=paste0("Estimates of Rhat for ", param, " posteriors" ),
+    subtitle ="Plot includes Rhat for each parameter estimate (violin plot) and\n average Rhat of all similar parameters (e.g., all loadings)",
+    caption = "Note. Dashed line represent Rhat = 1.10 for a 'converged' posterior"
+  ) +
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+  
+
+```
+
+## Factor Covariance ($\sigma_{st}$)
+
+```{r study2-summary-converge-sigma-st}
+param = "Latent Covariance"
+
+conv <- mydata %>%
+  filter(parameter_group == "sigma_st")
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "sigma_st") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+# tabular summary
+conv_tbl <- conv %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+conv_grp_tbl <- conv_para_grp %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge_paragrp),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_grp_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+# visualize Rhat values
+conv_grp <- conv %>%
+  select(condition_lbs, iter, N_cat, N_items, N, Rhat_paragrp, converge_paragrp) %>%
+  distinct()
+  
+ggplot() +
+  geom_violin(data=conv, aes(x=condition_lbs , y=Rhat, group=condition))+
+  geom_jitter(data=conv_grp, aes(x=condition_lbs , y=Rhat_paragrp), color="red", alpha=0.75)+
+  geom_abline(intercept = 1.10, slope=0, linetype="dashed")+
+  coord_flip()+
+  labs(
+    title=paste0("Estimates of Rhat for ", param, " posteriors" ),
+    subtitle ="Plot includes Rhat for each parameter estimate (violin plot) and\n average Rhat of all similar parameters (e.g., all loadings)",
+    caption = "Note. Dashed line represent Rhat = 1.10 for a 'converged' posterior"
+  ) +
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+  
+
+```
+
+## PID Relationship ($\rho$)
+
+```{r study2-summary-converge-rho}
+param = "PID Relationship"
+
+conv <- mydata %>%
+  filter(parameter_group == "rho")
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "rho") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+# tabular summary
+conv_tbl <- conv %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+conv_grp_tbl <- conv_para_grp %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge_paragrp),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_grp_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+# visualize Rhat values
+conv_grp <- conv %>%
+  select(condition_lbs, iter, N_cat, N_items, N, Rhat_paragrp, converge_paragrp) %>%
+  distinct()
+  
+ggplot() +
+  geom_violin(data=conv, aes(x=condition_lbs , y=Rhat, group=condition))+
+  geom_jitter(data=conv_grp, aes(x=condition_lbs , y=Rhat_paragrp), color="red", alpha=0.75)+
+  geom_abline(intercept = 1.10, slope=0, linetype="dashed")+
+  coord_flip()+
+  labs(
+    title=paste0("Estimates of Rhat for ", param, " posteriors" ),
+    subtitle ="Plot includes Rhat for each parameter estimate (violin plot) and\n average Rhat of all similar parameters (e.g., all loadings)",
+    caption = "Note. Dashed line represent Rhat = 1.10 for a 'converged' posterior"
+  ) +
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+  
+
+```
+
+
+## Factor Reliability ($\omega$)
+
+```{r study2-summary-converge-omega}
+param = "RELIABILITY"
+
+conv <- mydata %>%
+  filter(parameter_group == "omega")
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "omega") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+# tabular summary
+conv_tbl <- conv %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+conv_grp_tbl <- conv_para_grp %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Max_Converged=n(),
+            Obs_Converged=sum(converge_paragrp),
+            Prop_Converged=Obs_Converged/Max_Converged)
+kable(conv_grp_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T)
+
+# visualize Rhat values
+conv_grp <- conv %>%
+  select(condition_lbs, iter, N_cat, N_items, N, Rhat_paragrp, converge_paragrp) %>%
+  distinct()
+  
+ggplot() +
+  geom_violin(data=conv, aes(x=condition_lbs , y=Rhat, group=condition))+
+  geom_jitter(data=conv_grp, aes(x=condition_lbs , y=Rhat_paragrp), color="red", alpha=0.75)+
+  geom_abline(intercept = 1.10, slope=0, linetype="dashed")+
+  coord_flip()+
+  labs(
+    title=paste0("Estimates of Rhat for ", param, " posteriors" ),
+    subtitle ="Plot includes Rhat for each parameter estimate (violin plot) and\n average Rhat of all similar parameters (e.g., all loadings)",
+    caption = "Note. Dashed line represent Rhat = 1.10 for a 'converged' posterior"
+  ) +
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+  
+
+```
+
+
+# Effect of Simulated Conditions
+
+```{r study2-omega2-saved, echo=FALSE}
+saved_omega <- as.data.frame(matrix(nrow=9, ncol=7))
+saved_eta <- as.data.frame(matrix(nrow=9, ncol=7))
+rownames(saved_omega) <- rownames(saved_eta) <- c(
+  "lambda", "tau", "theta", "beta_lrt", "sigma_lrt", "sigma_s", "sigma_ts", "rho", "omega"
+)
+colnames(saved_omega) <- colnames(saved_eta) <- c(
+  "N_cat", "N_items", "N", "N_cat:N_items", "N_cat:N", "N_items:N", "N_cat:N_items:N"
+)
+```
+
+## Factor Loadings ($\lambda$)
+
+```{r study2-summary-anova-lambda}
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "lambda") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+## ANOVA on Rhat values
+anova_assumptions_check(
+  dat = conv_para_grp, outcome = 'Rhat_paragrp',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('Rhat_paragrp ~ N_cat*N_items*N'))
+fit <- summary(aov(Rhat_paragrp ~ N_cat*N_items*N, data=conv_para_grp))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[1,] <- omega2(fit)
+saved_eta[1,] <- eta_est
+
+```
+
+## Item Thresholds ($\tau$)
+
+```{r study2-summary-anova-tau}
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "tau") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+## ANOVA on Rhat values
+anova_assumptions_check(
+  dat = conv_para_grp, outcome = 'Rhat_paragrp',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('Rhat_paragrp ~ N_cat*N_items*N'))
+fit <- summary(aov(Rhat_paragrp ~ N_cat*N_items*N, data=conv_para_grp))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[2,] <- omega2(fit)
+saved_eta[2,] <- eta_est
+
+```
+
+
+## Latent Response Variance ($\theta$)
+
+```{r study2-summary-anova-theta}
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "theta") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+## ANOVA on Rhat values
+anova_assumptions_check(
+  dat = conv_para_grp, outcome = 'Rhat_paragrp',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('Rhat_paragrp ~ N_cat*N_items*N'))
+fit <- summary(aov(Rhat_paragrp ~ N_cat*N_items*N, data=conv_para_grp))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[3,] <- omega2(fit)
+saved_eta[3,] <- eta_est
+
+```
+
+
+## Response Time Intercepts ($\beta_{lrt}$)
+
+```{r study2-summary-anova-beta}
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "beta_lrt") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+## ANOVA on Rhat values
+anova_assumptions_check(
+  dat = conv_para_grp, outcome = 'Rhat_paragrp',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('Rhat_paragrp ~ N_cat*N_items*N'))
+fit <- summary(aov(Rhat_paragrp ~ N_cat*N_items*N, data=conv_para_grp))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[4,] <- omega2(fit)
+saved_eta[4,] <- eta_est
+
+```
+
+
+## Response Time Precision ($\sigma_{lrt}$)
+
+```{r study2-summary-anova-sigma-lrt}
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "sigma_lrt") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+## ANOVA on Rhat values
+anova_assumptions_check(
+  dat = conv_para_grp, outcome = 'Rhat_paragrp',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('Rhat_paragrp ~ N_cat*N_items*N'))
+fit <- summary(aov(Rhat_paragrp ~ N_cat*N_items*N, data=conv_para_grp))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[5,] <- omega2(fit)
+saved_eta[5,] <- eta_est
+```
+
+
+## Response Time Factor Precision ($\sigma_s$)
+
+```{r study2-summary-anova-sigma-s}
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "sigma_s") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+## ANOVA on Rhat values
+anova_assumptions_check(
+  dat = conv_para_grp, outcome = 'Rhat_paragrp',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('Rhat_paragrp ~ N_cat*N_items*N'))
+fit <- summary(aov(Rhat_paragrp ~ N_cat*N_items*N, data=conv_para_grp))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[6,] <- omega2(fit)
+saved_eta[6,] <- eta_est
+
+```
+
+
+## Factor Covariance ($\sigma_{st}$)
+
+```{r study2-summary-anova-sigma-st}
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "sigma_st") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+## ANOVA on Rhat values
+anova_assumptions_check(
+  dat = conv_para_grp, outcome = 'Rhat_paragrp',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('Rhat_paragrp ~ N_cat*N_items*N'))
+fit <- summary(aov(Rhat_paragrp ~ N_cat*N_items*N, data=conv_para_grp))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[7,] <- omega2(fit)
+saved_eta[7,] <- eta_est
+
+```
+
+
+## PID Relationship ($\rho$)
+
+```{r study2-summary-anova-rho}
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "rho") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+## ANOVA on Rhat values
+anova_assumptions_check(
+  dat = conv_para_grp, outcome = 'Rhat_paragrp',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('Rhat_paragrp ~ N_cat*N_items*N'))
+fit <- summary(aov(Rhat_paragrp ~ N_cat*N_items*N, data=conv_para_grp))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[8,] <- omega2(fit)
+saved_eta[8,] <- eta_est
+
+```
+
+
+## Factor Reliability ($\omega$)
+
+```{r study2-summary-anova-omega}
+
+conv_para_grp <- mydata %>%
+  filter(parameter_group == "omega") %>%
+  select(all_of(keep_cols)) %>%
+  distinct()
+
+## ANOVA on Rhat values
+anova_assumptions_check(
+  dat = conv_para_grp, outcome = 'Rhat_paragrp',
+  factors = c('N_cat', 'N_items', 'N'),
+  model = as.formula('Rhat_paragrp ~ N_cat*N_items*N'))
+fit <- summary(aov(Rhat_paragrp ~ N_cat*N_items*N, data=conv_para_grp))
+fit
+eta_est <- (fit[[1]]$`Sum Sq`/sum(fit[[1]]$`Sum Sq`))[1:7]
+cbind(omega2(fit),p_omega2(fit), eta_est)
+
+saved_omega[9,] <- omega2(fit)
+saved_eta[9,] <- eta_est
+
+```
+
+# Manuscript Tables and Figures (latex formated)
+
+## Tables
+
+```{r latex-tables}
+
+print(
+  xtable(
+    t(saved_omega)
+    , caption = c("Effect of design factors on relative bias estimates: omega2")
+    ,align = "lrrrrrrrrr", digits = 3
+  ),
+  include.rownames=T,
+  booktabs=T
+)
+print(
+  xtable(
+    t(saved_eta)
+    , caption = c("Effect of design factors on relative bias estimates: eta2")
+    ,align = "lrrrrrrrrr", digits = 3
+  ),
+  include.rownames=T,
+  booktabs=T
+)
+
+
+
+keep_cols <- c("condition", "iter", "N", "N_items", "N_cat", "parameter_group", "Rhat_paragrp", "converge_paragrp", "converge_proportion_paragrp")
+
+tbl_dat <- mydata %>%
+  select(all_of(keep_cols)) %>%
+  filter(
+    !is.na(parameter_group)
+    , parameter_group != "lambda (STD)"
+  ) %>%
+  distinct() %>%
+  mutate(
+    prop_con = ifelse(converge_proportion_paragrp > 0.5, ">50% Converged", "<=50% Converged")
+  )
+
+
+# get average Rhat and SD for each condition and parameter group
+sum_tab <- tbl_dat %>%
+  group_by(N_cat, N_items, N, parameter_group) %>%
+  summarise(
+    AvgRhat = mean(Rhat_paragrp),
+    SDRhat = sd(Rhat_paragrp),
+    AvgPropConv = mean(converge_proportion_paragrp)
+  )
+
+# table 1: 2 category data
+T1 <- sum_tab %>%
+  filter(N_cat == 2) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = all_of(c("AvgRhat", "SDRhat", "AvgPropConv"))
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+T1 <- T1[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+print(
+  xtable(
+    T1
+    , caption = c("Posterior convergence by Rhat summary: Dichotomous items")
+    ,align = "llrrrrrrrrrr"
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+# table 2: 5 category data
+T2 <- sum_tab %>%
+  filter(N_cat == 5) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = all_of(c("AvgRhat", "SDRhat", "AvgPropConv"))
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+T2 <- T2[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+print(
+  xtable(
+    T2
+    , caption = c("Posterior convergence by Rhat summary: Five category items")
+    ,align = "llrrrrrrrrrr"
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+
+# table 3: 3 category data
+T3 <- sum_tab %>%
+  filter(N_cat == 3) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = all_of(c("AvgRhat", "SDRhat", "AvgPropConv"))
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+T3 <- T3[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+print(
+  xtable(
+    T3
+    , caption = c("Posterior convergence by Rhat summary: Three category items")
+    ,align = "llrrrrrrrrrr"
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+# table 4: 7 category data
+T4 <- sum_tab %>%
+  filter(N_cat == 7) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = all_of(c("AvgRhat", "SDRhat", "AvgPropConv"))
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+T4 <- T4[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+print(
+  xtable(
+    T4
+    , caption = c("Posterior convergence by Rhat summary: Seven category items")
+    ,align = "llrrrrrrrrrr"
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+
+```
+
+<!-- ## Figures -->
+
+
+<!-- ```{r} -->
+
+<!-- keep_cols <- c("condition_lbs", "iter", "N", "N_items", "N_cat", "parameter_group", "Rhat_paragrp", "converge_paragrp", "converge_proportion_paragrp") -->
+
+<!-- tbl_dat <- mydata %>% -->
+<!--   select(all_of(keep_cols)) %>% -->
+<!--   filter( -->
+<!--     !is.na(parameter_group) -->
+<!--     , parameter_group != "lambda (STD)" -->
+<!--   ) %>% -->
+<!--   distinct() %>% -->
+<!--   mutate( -->
+<!--     prop_con = ifelse(converge_proportion_paragrp > 0.5, ">50% Converged", "<=50% Converged") -->
+<!--   ) -->
+
+
+<!-- # get average Rhat and SD for each condition and parameter group -->
+<!-- sum_tab <- tbl_dat %>% -->
+<!--   group_by(condition_lbs, N_cat, N_items, N, parameter_group) %>% -->
+<!--   summarise( -->
+<!--     AvgRhat = mean(Rhat_paragrp), -->
+<!--     SDRhat = sd(Rhat_paragrp), -->
+<!--     AvgPropConv = mean(converge_proportion_paragrp) -->
+<!--   ) -->
+
+
+<!-- # visualizing Rhat values across conditions -->
+<!-- p <- ggplot() + -->
+<!--   geom_violin(data=tbl_dat, aes(x=condition_lbs, y=Rhat_paragrp, group=condition_lbs))+ -->
+<!--   geom_point(data=sum_tab, aes(x=condition_lbs, y=AvgRhat), color="red", alpha=0.75)+ -->
+<!--   geom_abline(intercept = 1.10, slope=0, linetype="dashed")+ -->
+<!--   coord_flip()+ -->
+<!--   #labs() + -->
+<!--   facet_wrap(.~parameter_group)+ -->
+<!--   theme_bw()+ -->
+<!--   theme( -->
+<!--     panel.grid = element_blank() -->
+<!--   ) -->
+
+<!-- p -->
+
+<!-- p <- ggplot(tbl_dat, aes(y=Rhat_paragrp, x=)) + -->
+<!--   geom_violin(data=tbl_dat, aes(x=condition_lbs, y=Rhat_paragrp, group=condition_lbs))+ -->
+<!--   geom_point(data=sum_tab, aes(x=condition_lbs, y=AvgRhat), color="red", alpha=0.75)+ -->
+<!--   geom_abline(intercept = 1.10, slope=0, linetype="dashed")+ -->
+<!--   #labs() + -->
+<!--   theme_bw()+ -->
+<!--   theme( -->
+<!--     panel.grid = element_blank() -->
+<!--   ) -->
+
+<!-- p -->
+
+
+
+<!-- ggsave("fig/study_2_Rhat_violin_plot.pdf", plot=p, width=7, height=4, units="in") -->
+<!-- ggsave("fig/study_2_Rhat_violin_plot.png", plot=p, width=7, height=4, units="in") -->
+<!-- ggsave("fig/study_2_Rhat_violin_plot.eps", plot=p, width=7, height=4, units="in") -->
+
+<!-- ``` -->

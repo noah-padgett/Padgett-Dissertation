@@ -1,0 +1,1025 @@
+---
+title: "Study 4: Extroversion Data Analysis"
+subtitle: "Full Model Prior-Posterior Sensitivity Part 3"
+author: "R. Noah Padgett"
+date: "2022-01-17"
+output: html_document
+---
+
+```{r set-up, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages & utility functions
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+library(diffIRT)
+data("extraversion")
+mydata <- na.omit(extraversion)
+
+# model constants
+# Save parameters
+jags.params <- c("tau",
+                 "lambda","lambda.std",
+                 "theta",
+                 "icept",
+                 "prec",
+                 "prec.s",
+                 "sigma.ts",
+                 "rho",
+                 "reli.omega")
+#data
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+
+NBURN = 5000
+NITER = 10000
+
+```
+
+# Overview
+
+In part 1, the emphasis was on investigating the effect of the factor loading prior on estimates of $\omega$.
+In part 2, the emphasis was on investigating the effect of a tuning parameter for misclassification..
+Here, the aim will be to see if there is an interaction between these two testing a smaller set of possible conditions.
+
+
+```{r}
+
+dat.updated <- mydata %>%
+  as.data.frame()
+dat.updated$var.x <- 0
+for(i in 1:nrow(dat.updated)){
+  dat.updated$var.x[i] <- var(unlist(c(dat.updated[i,1:10])))
+}
+
+which(dat.updated$var.x == max(dat.updated$var.x))
+  
+ppdat <- dat.updated[which(dat.updated$var.x == max(dat.updated$var.x)),]
+kable(ppdat, format="html", digits=2) %>%
+  kable_styling(full_width = T)
+# 98 & 109
+# item 1
+```
+
+# Analyses
+
+## Misclassification Tuning Alternatives
+
+A tuning parameter was added to the model to control how strong the parameters controlling misclassification are.
+The same five altnerative priors for factor loadings will be investigated in turn as well.
+
+### Base Model
+
+For the base model, the priors are
+
+\[\lambda \sim N^+(0,.44)\]
+\[\xi = 1\]
+
+
+```{r model4-base-base, cache=TRUE, autodep=TRUE}
+
+# Save parameters
+jags.params <- c("lambda.std",
+                 "reli.omega",
+                 "gamma[109,1,1,1]",
+                 "gamma[109,1,1,2]",
+                 "gamma[109,1,2,1]",
+                 "gamma[109,1,2,2]",
+                 "omega[109,1,2]",
+                 "pi[109,1,2]",
+                 "gamma[98,1,1,1]",
+                 "gamma[98,1,1,2]",
+                 "gamma[98,1,2,1]",
+                 "gamma[98,1,2,2]",
+                 "omega[98,1,2]",
+                 "pi[98,1,2]")
+# initial-values
+jags.inits <- function(){
+    list(
+      "tau"=matrix(c(-0.64, -0.09, -1.05, -1.42, -0.11, -1.29, -1.59, -1.81, -0.93, -1.11), ncol=1, nrow=10),
+      "lambda"=rep(0.7,10),
+      "eta"=rnorm(142),
+      "speed"=rnorm(142),
+      "ystar"=matrix(c(0.7*rep(rnorm(142),10)), ncol=10),
+      "rho"=0.1,
+      "icept"=rep(0, 10),
+      "prec.s"=10,
+      "prec"=rep(4, 10),
+      "sigma.ts"=0.1
+    )
+  }
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 1
+)
+
+# Run model
+fit.base_prior <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4w_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.base_prior, width=1000)
+
+```
+
+
+### Base $\lambda$ Prior with Alt Tune A $\xi = 0.1$
+
+\[\lambda \sim N^+(0,.44)\]
+\[\xi = 0.1\]
+
+```{r model4-base-alt-a, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 0.1
+)
+
+# Run model
+fit.base_alt_a <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4w_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.base_alt_a, width=1000)
+
+```
+
+### Base $\lambda$ Prior with Alt Tune B $\xi = 10$
+
+\[\lambda \sim N^+(0,.44)\]
+\[\xi = 10\]
+
+```{r model4-base-alt-b, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 10
+)
+
+# Run model
+fit.base_alt_b <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4w_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.base_alt_b, width=1000)
+
+```
+
+### Base $\lambda$ Prior with Alt Tune C $\xi G(1,1)$
+
+\[\lambda \sim N^+(0,.44)\]
+\[\xi \sim Gamma(1,1)\]
+
+
+```{r model4-base-alt-c, cache=TRUE, autodep=TRUE}
+
+jags.params <- c("lambda.std",
+                 "reli.omega",
+                 "gamma[109,1,1,1]",
+                 "gamma[109,1,1,2]",
+                 "gamma[109,1,2,1]",
+                 "gamma[109,1,2,2]",
+                 "omega[109,1,2]",
+                 "pi[109,1,2]",
+                 "gamma[98,1,1,1]",
+                 "gamma[98,1,1,2]",
+                 "gamma[98,1,2,1]",
+                 "gamma[98,1,2,2]",
+                 "omega[98,1,2]",
+                 "pi[98,1,2]",
+                 "xi")
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+fit.base_alt_c <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4w_xi_gamma.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.base_alt_c, width=1000)
+
+```
+
+
+### Alt $\lambda$ Prior A with Base Tune $\xi = 1$
+
+\[\lambda \sim N^+(0,.01)\]
+\[\xi = 1\]
+
+
+```{r model4-alt-a-base, cache=TRUE, autodep=TRUE}
+
+# Save parameters
+jags.params <- c("lambda.std",
+                 "reli.omega",
+                 "gamma[109,1,1,1]",
+                 "gamma[109,1,1,2]",
+                 "gamma[109,1,2,1]",
+                 "gamma[109,1,2,2]",
+                 "omega[109,1,2]",
+                 "pi[109,1,2]",
+                 "gamma[98,1,1,1]",
+                 "gamma[98,1,1,2]",
+                 "gamma[98,1,2,1]",
+                 "gamma[98,1,2,2]",
+                 "omega[98,1,2]",
+                 "pi[98,1,2]")
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 1
+)
+
+# Run model
+fit.alt_a_base <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4Aw_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.alt_a_base, width=1000)
+
+```
+
+
+### Alt $\lambda$ Prior A with Alt Tune A $\xi = 0.1$
+
+\[\lambda \sim N^+(0,.01)\]
+\[\xi = 0.1\]
+
+```{r model4-alt-a-alt-a, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 0.1
+)
+
+# Run model
+fit.alt_a_alt_a <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4Aw_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.alt_a_alt_a, width=1000)
+
+```
+
+### Alt $\lambda$ Prior A with Alt Tune B $\xi = 10$
+
+\[\lambda \sim N^+(0,.01)\]
+\[\xi = 10\]
+
+```{r model4-alt-a-alt-b, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 10
+)
+
+# Run model
+fit.alt_a_alt_b <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4Aw_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.alt_a_alt_b, width=1000)
+
+```
+
+### Alt $\lambda$ Prior A with Alt Tune C $\xi G(1,1)$
+
+\[\lambda \sim N^+(0,.01)\]
+\[\xi \sim Gamma(1,1)\]
+
+```{r model4-alt-a-alt-c, cache=TRUE, autodep=TRUE}
+
+jags.params <- c("lambda.std",
+                 "reli.omega",
+                 "gamma[109,1,1,1]",
+                 "gamma[109,1,1,2]",
+                 "gamma[109,1,2,1]",
+                 "gamma[109,1,2,2]",
+                 "omega[109,1,2]",
+                 "pi[109,1,2]",
+                 "gamma[98,1,1,1]",
+                 "gamma[98,1,1,2]",
+                 "gamma[98,1,2,1]",
+                 "gamma[98,1,2,2]",
+                 "omega[98,1,2]",
+                 "pi[98,1,2]",
+                 "xi")
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+fit.alt_a_alt_c <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4Aw_xi_gamma.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.alt_a_alt_c, width=1000)
+
+```
+
+### Alt $\lambda$ Prior B with Base Tune $\xi = 1$
+
+\[\lambda \sim N^+(0,5)\]
+\[\xi = 1\]
+
+
+```{r model4-alt-b-base, cache=TRUE, autodep=TRUE}
+
+# Save parameters
+jags.params <- c("lambda.std",
+                 "reli.omega",
+                 "gamma[109,1,1,1]",
+                 "gamma[109,1,1,2]",
+                 "gamma[109,1,2,1]",
+                 "gamma[109,1,2,2]",
+                 "omega[109,1,2]",
+                 "pi[109,1,2]",
+                 "gamma[98,1,1,1]",
+                 "gamma[98,1,1,2]",
+                 "gamma[98,1,2,1]",
+                 "gamma[98,1,2,2]",
+                 "omega[98,1,2]",
+                 "pi[98,1,2]")
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 1
+)
+
+# Run model
+fit.alt_b_base <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4Bw_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.alt_b_base, width=1000)
+
+```
+
+
+### Alt $\lambda$ Prior B with Alt Tune A $\xi = 0.1$
+
+\[\lambda \sim N^+(0,5)\]
+\[\xi = 0.1\]
+
+```{r model4-alt-b-alt-a, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 0.1
+)
+
+# Run model
+fit.alt_b_alt_a <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4Bw_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.alt_b_alt_a, width=1000)
+
+```
+
+### Alt $\lambda$ Prior B with Alt Tune B $\xi = 10$
+
+\[\lambda \sim N^+(0,5)\]
+\[\xi = 10\]
+
+```{r model4-alt-b-alt-b, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 10
+)
+
+# Run model
+fit.alt_b_alt_b <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4Bw_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.alt_b_alt_b, width=1000)
+
+```
+
+### Alt $\lambda$ Prior B with Alt Tune C $\xi G(1,1)$
+
+\[\lambda \sim N^+(0,5)\]
+\[\xi \sim Gamma(1,1)\]
+
+```{r model4-alt-b-alt-c, cache=TRUE, autodep=TRUE}
+
+jags.params <- c("lambda.std",
+                 "reli.omega",
+                 "gamma[109,1,1,1]",
+                 "gamma[109,1,1,2]",
+                 "gamma[109,1,2,1]",
+                 "gamma[109,1,2,2]",
+                 "omega[109,1,2]",
+                 "pi[109,1,2]",
+                 "gamma[98,1,1,1]",
+                 "gamma[98,1,1,2]",
+                 "gamma[98,1,2,1]",
+                 "gamma[98,1,2,2]",
+                 "omega[98,1,2]",
+                 "pi[98,1,2]",
+                 "xi")
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+fit.alt_b_alt_c <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4Bw_xi_gamma.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.alt_b_alt_c, width=1000)
+
+```
+
+
+
+### Alt $\lambda$ Prior C with Base Tune $\xi = 1$
+
+\[\lambda \sim N^+(0,5)\]
+\[\xi = 1\]
+
+
+```{r model4-alt-c-base, cache=TRUE, autodep=TRUE}
+
+# Save parameters
+jags.params <- c("lambda.std",
+                 "reli.omega",
+                 "gamma[109,1,1,1]",
+                 "gamma[109,1,1,2]",
+                 "gamma[109,1,2,1]",
+                 "gamma[109,1,2,2]",
+                 "omega[109,1,2]",
+                 "pi[109,1,2]",
+                 "gamma[98,1,1,1]",
+                 "gamma[98,1,1,2]",
+                 "gamma[98,1,2,1]",
+                 "gamma[98,1,2,2]",
+                 "omega[98,1,2]",
+                 "pi[98,1,2]")
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 1
+)
+
+# Run model
+fit.alt_c_base <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4Cw_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.alt_c_base, width=1000)
+
+```
+
+
+### Alt $\lambda$ Prior C with Alt Tune A $\xi = 0.1$
+
+\[\lambda \sim N(0,5)\]
+\[\xi = 0.1\]
+
+```{r model4-alt-c-alt-a, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 0.1
+)
+
+# Run model
+fit.alt_c_alt_a <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4Cw_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.alt_c_alt_a, width=1000)
+
+```
+
+### Alt $\lambda$ Prior C with Alt Tune B $\xi = 10$
+
+\[\lambda \sim N(0,5)\]
+\[\xi = 10\]
+
+```{r model4-alt-c-alt-b, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 10
+)
+
+# Run model
+fit.alt_c_alt_b <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4Cw_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.alt_c_alt_b, width=1000)
+
+```
+
+### Alt $\lambda$ Prior C with Alt Tune C $\xi G(1,1)$
+
+\[\lambda \sim N(0,5)\]
+\[\xi \sim Gamma(1,1)\]
+
+```{r model4-alt-c-alt-c, cache=TRUE, autodep=TRUE}
+
+jags.params <- c("lambda.std",
+                 "reli.omega",
+                 "gamma[109,1,1,1]",
+                 "gamma[109,1,1,2]",
+                 "gamma[109,1,2,1]",
+                 "gamma[109,1,2,2]",
+                 "omega[109,1,2]",
+                 "pi[109,1,2]",
+                 "gamma[98,1,1,1]",
+                 "gamma[98,1,1,2]",
+                 "gamma[98,1,2,1]",
+                 "gamma[98,1,2,2]",
+                 "omega[98,1,2]",
+                 "pi[98,1,2]",
+                 "xi")
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+fit.alt_c_alt_c <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4Cw_xi_gamma.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = NBURN,
+  n.iter = NITER
+)
+
+print(fit.alt_c_alt_c, width=1000)
+
+```
+
+
+
+## Compare Posteriors
+
+```{r model4-post-comp}
+
+prior_lambda_base <- data.frame(
+  Base = fit.base_prior$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_A = fit.base_alt_a$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_B = fit.base_alt_b$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_C = fit.base_alt_c$BUGSoutput$sims.matrix[,"reli.omega"]
+)
+prior_lambda_alt_a <- data.frame(
+  Base = fit.alt_a_base$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_A = fit.alt_a_alt_a$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_B = fit.alt_a_alt_b$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_C = fit.alt_a_alt_c$BUGSoutput$sims.matrix[,"reli.omega"]
+)
+prior_lambda_alt_b <- data.frame(
+  Base = fit.alt_b_base$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_A = fit.alt_b_alt_a$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_B = fit.alt_b_alt_b$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_C = fit.alt_b_alt_c$BUGSoutput$sims.matrix[,"reli.omega"]
+)
+prior_lambda_alt_c <- data.frame(
+  Base = fit.alt_c_base$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_A = fit.alt_c_alt_a$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_B = fit.alt_c_alt_b$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_C = fit.alt_c_alt_c$BUGSoutput$sims.matrix[,"reli.omega"]
+)
+
+plot.post.base <- prior_lambda_base %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Tune",
+    values_to="omega"
+  ) %>%
+  mutate(
+    Tune = factor(Tune, levels=c("Base", "Alt_A", "Alt_B", "Alt_C")),
+    Lambda = "Base"
+  )
+plot.post.a <- prior_lambda_alt_a %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Tune",
+    values_to="omega"
+  ) %>%
+  mutate(
+    Tune = factor(Tune, levels=c("Base", "Alt_A", "Alt_B", "Alt_C")),
+    Lambda = "Alt_A"
+  )
+plot.post.b <- prior_lambda_alt_b %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Tune",
+    values_to="omega"
+  ) %>%
+  mutate(
+    Tune = factor(Tune, levels=c("Base", "Alt_A", "Alt_B", "Alt_C")),
+    Lambda = "Alt_B"
+  )
+plot.post.c <- prior_lambda_alt_c %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Tune",
+    values_to="omega"
+  ) %>%
+  mutate(
+    Tune = factor(Tune, levels=c("Base", "Alt_A", "Alt_B", "Alt_C")),
+    Lambda = "Alt_C"
+  )
+cols=c("Base"="black", "Alt_A"="#009e73", "Alt_B"="#E69F00", "Alt_C"="#CC79A7")#,"Alt_D"="#56B4E9","Alt_E"="#d55e00","Alt_F"="#f0e442") #"#56B4E9", "#E69F00" "#CC79A7", "#d55e00", "#f0e442, "	#0072b2"
+
+# joint prior and post samples
+#plot.prior$type="Prior"
+#plot.post$type="Post"
+plot.dat <- full_join(plot.post.base, plot.post.a) %>%
+  full_join(plot.post.b) %>%
+  full_join(plot.post.c) %>%
+  mutate(
+    Lambda = factor(Lambda,
+                    levels=c("Base", "Alt_A", "Alt_B", "Alt_C"),
+                    labels=c("lambda%~%N(list(0, 0.44))>0", "lambda%~%N(list(0, 0.01))>0", "lambda%~%N(list(0, 5))>0", "lambda%~%N(list(0, 5))"))
+  )
+
+p <- ggplot(plot.dat, aes(x=omega, color=Tune, fill=Tune))+
+  geom_density(adjust=2, alpha=0.1)+
+  scale_color_manual(values=cols, name="Tune")+
+  scale_fill_manual(values=cols, name="Tune")+
+  facet_wrap(.~Lambda, scales="free_y",
+             labeller = label_parsed)+
+  theme_bw()+
+  theme(
+    panel.grid = element_blank(),
+    legend.position = "bottom"
+  )
+p
+ggsave(filename = "fig/study4_prior_interactions.pdf",plot=p,width = 7, height=4,units="in")
+ggsave(filename = "fig/study4_prior_interactions.png",plot=p,width = 7, height=4,units="in")
+
+```
+
+
+### Comparing Response Probabilities
+
+```{r model4-post-comp-response-prob}
+
+prior_lambda_base <- data.frame(
+  Base = fit.base_prior$BUGSoutput$sims.matrix[,"omega[109,1,2]"],
+  Alt_A = fit.base_alt_a$BUGSoutput$sims.matrix[,"omega[109,1,2]"],
+  Alt_B = fit.base_alt_b$BUGSoutput$sims.matrix[,"omega[109,1,2]"],
+  Alt_C = fit.base_alt_c$BUGSoutput$sims.matrix[,"omega[109,1,2]"]
+)
+prior_lambda_alt_a <- data.frame(
+  Base = fit.alt_a_base$BUGSoutput$sims.matrix[,"omega[109,1,2]"],
+  Alt_A = fit.alt_a_alt_a$BUGSoutput$sims.matrix[,"omega[109,1,2]"],
+  Alt_B = fit.alt_a_alt_b$BUGSoutput$sims.matrix[,"omega[109,1,2]"],
+  Alt_C = fit.alt_a_alt_c$BUGSoutput$sims.matrix[,"omega[109,1,2]"]
+)
+prior_lambda_alt_b <- data.frame(
+  Base = fit.alt_b_base$BUGSoutput$sims.matrix[,"omega[109,1,2]"],
+  Alt_A = fit.alt_b_alt_a$BUGSoutput$sims.matrix[,"omega[109,1,2]"],
+  Alt_B = fit.alt_b_alt_b$BUGSoutput$sims.matrix[,"omega[109,1,2]"],
+  Alt_C = fit.alt_b_alt_c$BUGSoutput$sims.matrix[,"omega[109,1,2]"]
+)
+prior_lambda_alt_c <- data.frame(
+  Base = fit.alt_c_base$BUGSoutput$sims.matrix[,"omega[109,1,2]"],
+  Alt_A = fit.alt_c_alt_a$BUGSoutput$sims.matrix[,"omega[109,1,2]"],
+  Alt_B = fit.alt_c_alt_b$BUGSoutput$sims.matrix[,"omega[109,1,2]"],
+  Alt_C = fit.alt_c_alt_c$BUGSoutput$sims.matrix[,"omega[109,1,2]"]
+)
+
+plot.post.base <- prior_lambda_base %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Tune",
+    values_to="omega"
+  ) %>%
+  mutate(
+    Tune = factor(Tune, levels=c("Base", "Alt_A", "Alt_B", "Alt_C")),
+    Lambda = "Base"
+  )
+plot.post.a <- prior_lambda_alt_a %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Tune",
+    values_to="omega"
+  ) %>%
+  mutate(
+    Tune = factor(Tune, levels=c("Base", "Alt_A", "Alt_B", "Alt_C")),
+    Lambda = "Alt_A"
+  )
+plot.post.b <- prior_lambda_alt_b %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Tune",
+    values_to="omega"
+  ) %>%
+  mutate(
+    Tune = factor(Tune, levels=c("Base", "Alt_A", "Alt_B", "Alt_C")),
+    Lambda = "Alt_B"
+  )
+plot.post.c <- prior_lambda_alt_c %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Tune",
+    values_to="omega"
+  ) %>%
+  mutate(
+    Tune = factor(Tune, levels=c("Base", "Alt_A", "Alt_B", "Alt_C")),
+    Lambda = "Alt_C"
+  )
+cols=c("Base"="black", "Alt_A"="#009e73", "Alt_B"="#E69F00", "Alt_C"="#CC79A7")#,"Alt_D"="#56B4E9","Alt_E"="#d55e00","Alt_F"="#f0e442") #"#56B4E9", "#E69F00" "#CC79A7", "#d55e00", "#f0e442, "	#0072b2"
+
+# joint prior and post samples
+#plot.prior$type="Prior"
+#plot.post$type="Post"
+plot.dat <- full_join(plot.post.base, plot.post.a) %>%
+  full_join(plot.post.b) %>%
+  full_join(plot.post.c) %>%
+  mutate(
+    Lambda = factor(Lambda,
+                    levels=c("Base", "Alt_A", "Alt_B", "Alt_C"),
+                    labels=c("lambda%~%N(list(0, 0.44))>0", "lambda%~%N(list(0, 0.01))>0", "lambda%~%N(list(0, 5))>0", "lambda%~%N(list(0, 5))"))
+  )
+
+p <- ggplot(plot.dat, aes(x=omega, color=Tune, fill=Tune))+
+  geom_density(adjust=2, alpha=0.1)+
+  scale_color_manual(values=cols, name="Tune")+
+  scale_fill_manual(values=cols, name="Tune")+
+  labs(x="Pr(y=1|id=109) {obs y = 0}")+
+  facet_wrap(.~Lambda, scales="free_y",
+             labeller = label_parsed)+
+  theme_bw()+
+  theme(
+    panel.grid = element_blank(),
+    legend.position = "bottom"
+  )
+p
+ggsave(filename = "fig/study4_prior_interactions_response_prob_id109.pdf",plot=p,width = 7, height=4,units="in")
+ggsave(filename = "fig/study4_prior_interactions_response_prob_id109.png",plot=p,width = 7, height=4,units="in")
+
+```
+
+```{r model4-post-comp-latent-response-prob}
+
+prior_lambda_base <- data.frame(
+  Base = fit.base_prior$BUGSoutput$sims.matrix[,"pi[109,1,2]"],
+  Alt_A = fit.base_alt_a$BUGSoutput$sims.matrix[,"pi[109,1,2]"],
+  Alt_B = fit.base_alt_b$BUGSoutput$sims.matrix[,"pi[109,1,2]"],
+  Alt_C = fit.base_alt_c$BUGSoutput$sims.matrix[,"pi[109,1,2]"]
+)
+prior_lambda_alt_a <- data.frame(
+  Base = fit.alt_a_base$BUGSoutput$sims.matrix[,"pi[109,1,2]"],
+  Alt_A = fit.alt_a_alt_a$BUGSoutput$sims.matrix[,"pi[109,1,2]"],
+  Alt_B = fit.alt_a_alt_b$BUGSoutput$sims.matrix[,"pi[109,1,2]"],
+  Alt_C = fit.alt_a_alt_c$BUGSoutput$sims.matrix[,"pi[109,1,2]"]
+)
+prior_lambda_alt_b <- data.frame(
+  Base = fit.alt_b_base$BUGSoutput$sims.matrix[,"pi[109,1,2]"],
+  Alt_A = fit.alt_b_alt_a$BUGSoutput$sims.matrix[,"pi[109,1,2]"],
+  Alt_B = fit.alt_b_alt_b$BUGSoutput$sims.matrix[,"pi[109,1,2]"],
+  Alt_C = fit.alt_b_alt_c$BUGSoutput$sims.matrix[,"pi[109,1,2]"]
+)
+prior_lambda_alt_c <- data.frame(
+  Base = fit.alt_c_base$BUGSoutput$sims.matrix[,"pi[109,1,2]"],
+  Alt_A = fit.alt_c_alt_a$BUGSoutput$sims.matrix[,"pi[109,1,2]"],
+  Alt_B = fit.alt_c_alt_b$BUGSoutput$sims.matrix[,"pi[109,1,2]"],
+  Alt_C = fit.alt_c_alt_c$BUGSoutput$sims.matrix[,"pi[109,1,2]"]
+)
+
+plot.post.base <- prior_lambda_base %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Tune",
+    values_to="pi"
+  ) %>%
+  mutate(
+    Tune = factor(Tune, levels=c("Base", "Alt_A", "Alt_B", "Alt_C")),
+    Lambda = "Base"
+  )
+plot.post.a <- prior_lambda_alt_a %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Tune",
+    values_to="pi"
+  ) %>%
+  mutate(
+    Tune = factor(Tune, levels=c("Base", "Alt_A", "Alt_B", "Alt_C")),
+    Lambda = "Alt_A"
+  )
+plot.post.b <- prior_lambda_alt_b %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Tune",
+    values_to="pi"
+  ) %>%
+  mutate(
+    Tune = factor(Tune, levels=c("Base", "Alt_A", "Alt_B", "Alt_C")),
+    Lambda = "Alt_B"
+  )
+plot.post.c <- prior_lambda_alt_c %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Tune",
+    values_to="pi"
+  ) %>%
+  mutate(
+    Tune = factor(Tune, levels=c("Base", "Alt_A", "Alt_B", "Alt_C")),
+    Lambda = "Alt_C"
+  )
+cols=c("Base"="black", "Alt_A"="#009e73", "Alt_B"="#E69F00", "Alt_C"="#CC79A7")#,"Alt_D"="#56B4E9","Alt_E"="#d55e00","Alt_F"="#f0e442") #"#56B4E9", "#E69F00" "#CC79A7", "#d55e00", "#f0e442, "	#0072b2"
+
+# joint prior and post samples
+#plot.prior$type="Prior"
+#plot.post$type="Post"
+plot.dat <- full_join(plot.post.base, plot.post.a) %>%
+  full_join(plot.post.b) %>%
+  full_join(plot.post.c) %>%
+  mutate(
+    Lambda = factor(Lambda,
+                    levels=c("Base", "Alt_A", "Alt_B", "Alt_C"),
+                    labels=c("lambda%~%N(list(0, 0.44))>0", "lambda%~%N(list(0, 0.01))>0", "lambda%~%N(list(0, 5))>0", "lambda%~%N(list(0, 5))"))
+  )
+
+p <- ggplot(plot.dat, aes(x=pi, color=Tune, fill=Tune))+
+  geom_density(adjust=2, alpha=0.1)+
+  scale_color_manual(values=cols, name="Tune")+
+  scale_fill_manual(values=cols, name="Tune")+
+  labs(x="Pr(nu=1|id=109) {obs y = 0}")+
+  facet_wrap(.~Lambda, scales="free_y",
+             labeller = label_parsed)+
+  theme_bw()+
+  theme(
+    panel.grid = element_blank(),
+    legend.position = "bottom"
+  )
+p
+ggsave(filename = "fig/study4_prior_interactions_latent_response_prob_id109.pdf",plot=p,width = 7, height=4,units="in")
+ggsave(filename = "fig/study4_prior_interactions_latent_response_prob_id109.png",plot=p,width = 7, height=4,units="in")
+
+```

@@ -1,0 +1,50 @@
+model {
+### Model
+  for(p in 1:N){
+    for(i in 1:nit){
+      # data model
+      y[p,i] ~ dcat(pi[p,i, ])
+
+      # LRV
+      ystar[p,i] ~ dnorm(lambda[i]*eta[p], 1)
+
+      # Pr(nu = 3)
+      pi[p,i,5] = phi(ystar[p,i] - tau[i,4])
+      # Pr(nu = 4)
+      pi[p,i,4] = phi(ystar[p,i] - tau[i,3]) - phi(ystar[p,i] - tau[i,4])
+      # Pr(nu = 3)
+      pi[p,i,3] = phi(ystar[p,i] - tau[i,2]) - phi(ystar[p,i] - tau[i,3])
+      # Pr(nu = 2)
+      pi[p,i,2] = phi(ystar[p,i] - tau[i,1]) - phi(ystar[p,i] - tau[i,2])
+      # Pr(nu = 1)
+      pi[p,i,1] = 1 - phi(ystar[p,i] - tau[i,1])
+
+    }
+  }
+  ### Priors
+  # person parameters
+  for(p in 1:N){
+    eta[p] ~ dnorm(0, 1) # latent ability
+  }
+  lambda[1] = 1
+  theta[1] = 1 + pow(lambda[1],2)
+  tau[1, 1] = 0
+  tau[1, 2] ~ dnorm(0, 0.1)T(tau[1, 1],)
+  tau[1, 3] ~ dnorm(0, 0.1)T(tau[1, 2],)
+  tau[1, 4] ~ dnorm(0, 0.1)T(tau[1, 3],)
+  for(i in 2:nit){
+    # Thresholds
+    tau[i, 1] = 0
+    tau[i, 2] ~ dnorm(0, 0.1)T(tau[i, 1],)
+    tau[i, 3] ~ dnorm(0, 0.1)T(tau[i, 2],)
+    tau[i, 4] ~ dnorm(0, 0.1)T(tau[i, 3],)
+    # loadings
+    lambda[i] ~ dnorm(0, .44)T(0,)
+    # LRV total variance
+    # total variance = residual variance + fact. Var.
+    theta[i] = 1 + pow(lambda[i],2)
+  }
+  # omega
+  l2 = (lambda[1]+lambda[2]+lambda[3]+lambda[4]+lambda[5])
+  reli.omega = (pow(l2,2))/(pow(l2,2)+ nit)
+} 

@@ -1,0 +1,80 @@
+---
+title: "Home"
+site: workflowr::wflow_site
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+Welcome to my research website.
+
+This website contains the results from my dissertation.
+This project has four studies.
+
+## Study 1: Simulated Data Analysis
+
+### Methods and Additional Setup Details
+
+* [Methods for Generating Data](study1_data_generation.html)
+
+### Results 
+
+* [Model 1 Results](study1_model1_results.html)
+* [Model 2 Results](study1_model2_results.html)
+* [Model 3 Results](study1_model3_results.html)
+* [Model 4 Results](study1_model4_results.html)
+* [Posterior Reliability Comparison](study1_model_comparison.html)
+
+## Study 2: Monte Carlo Simulation Study
+
+This Monte Carlo simulation study focused on parameter recovery under a correctly specified model.
+
+### Simulation Set-Up and Condition Information
+
+* [Extracted data from applied studies](applied_study_conditions.html)
+
+* [Conditions of simulation study](applied_study_conditions.html)
+
+### Extracting Results from Fitted Models
+
+* [Result extraction from fitted models.](study2_results_extraction.html)
+
+### Results
+
+* [Posterior Convergence](study2_results_convergence.html)
+* [Parameter Bias](study2_results_parameter_bias.html)
+* [Credible Interval Coverage](study2_results_credible_interval_coverage.html)
+
+## Study 3: NAEP Math Identity and Process Data Study
+
+(not included here due to use of restricted data)
+
+## Study 4: Extroversion and Response Time
+
+### Model Results
+
+* [Model 1 Results](study4_model1_results.html)
+* [Model 2 Results](study4_model2_results.html)
+* [Model 3 Results](study4_model3_results.html)
+* [Model 4 Results](study4_model4_results.html)
+* [Posterior Reliability Comparison](study4_model_comparison.html)
+
+### Full Model Posterior Sensitivity Analyses
+* [Part 1: varying lambda prior](study4_posterior_sensitivity_analysis_part1.html)
+* [Part 2: varying misclassification tuning prior](study4_posterior_sensitivity_analysis_part2.html)
+* [Part 3: varying lambda and tuning parameters](study4_posterior_sensitivity_analysis_part3.html)
+* [Part 4: Full Sensitivity Analysis](study4_posterior_sensitivity_analysis_part4.html)
+
+## POOLS Data Analysis
+
+### SERA 2022 Analyses
+
+* [Model 1 Results](pools_model1_results.html)
+* [Model 2 Results](pools_model2_results.html)
+* [Model 3 Results](pools_model3_results.html)
+* [Model 4 Results](pools_model4_results.html)
+* [Posterior Reliability Comparison](pools_model_comparison.html)
+
+

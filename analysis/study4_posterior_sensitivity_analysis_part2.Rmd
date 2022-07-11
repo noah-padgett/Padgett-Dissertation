@@ -1,0 +1,383 @@
+---
+title: "Study 4: Extroversion Data Analysis"
+subtitle: "Full Model Prior-Posterior Sensitivity Part 2"
+author: "R. Noah Padgett"
+date: "2022-01-17"
+output: html_document
+---
+
+```{r set-up, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages & utility functions
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+library(diffIRT)
+data("extraversion")
+mydata <- na.omit(extraversion)
+
+# model constants
+# Save parameters
+jags.params <- c("tau",
+                 "lambda","lambda.std",
+                 "theta",
+                 "icept",
+                 "prec",
+                 "prec.s",
+                 "sigma.ts",
+                 "rho",
+                 "reli.omega")
+#data
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+```
+
+# Overview
+
+In part 1, the emphasis was on investigating the effect of the factor loading prior on estimates of $\omega$.
+This section aims to incorporate a tuning parameter for misclassification to test how influential the priors are for those parameters.
+
+To help evaluate the tuning parameter's effect, the posterior distribution for one individuals' estimates of misclassification rates ($\gamma$) will be extracted on one item.
+The person selected is based on having the most variability in responses and response time.
+By choosing someone with a highly variable response pattern, I hope to be able to see the most effect on the proposed method.
+
+```{r}
+
+dat.updated <- mydata %>%
+  as.data.frame()
+dat.updated$var.x <- 0
+for(i in 1:nrow(dat.updated)){
+  dat.updated$var.x[i] <- var(unlist(c(dat.updated[i,1:10])))
+}
+
+which(dat.updated$var.x == max(dat.updated$var.x))
+  
+ppdat <- dat.updated[which(dat.updated$var.x == max(dat.updated$var.x)),]
+kable(ppdat, format="html", digits=2) %>%
+  kable_styling(full_width = T)
+# 109
+# item 3
+```
+
+# Analyses
+
+## Misclassification Tuning Alternatives
+
+A tuning parameter was added to the model to control how strong the parameters controlling misclassification are.
+The same five altnerative priors for factor loadings will be investigated in turn as well.
+
+The updated model with the tuning parameter is
+
+```{r model4-code, cache=TRUE, autodep=TRUE}
+
+cat(read_file(paste0(w.d, "/code/study_4/model_4w_xi.txt")))
+
+```
+
+## Fixed tuning parameter
+
+First, the tuning parameter ($\xi$) is assumed a fixed value (0.5, 1, 2, 10, 100).
+These five conditions will be used to see if $\xi$ influences the posterior of $\omega$.
+
+Initially, the base prior for the factor loadings is used.
+
+### Base Model $\xi = 1$
+
+```{r model4-base, cache=TRUE, autodep=TRUE}
+
+# Save parameters
+jags.params <- c("lambda.std",
+                 "reli.omega",
+                 "gamma[109,1,1,1]",
+                 "gamma[109,1,1,2]",
+                 "gamma[109,1,2,1]",
+                 "gamma[109,1,2,2]",
+                 "omega[109,1,2]",
+                 "pi[109,1,2]",
+                 "gamma[98,1,1,1]",
+                 "gamma[98,1,1,2]",
+                 "gamma[98,1,2,1]",
+                 "gamma[98,1,2,2]",
+                 "omega[98,1,2]",
+                 "pi[98,1,2]")
+# initial-values
+jags.inits <- function(){
+    list(
+      "tau"=matrix(c(-0.64, -0.09, -1.05, -1.42, -0.11, -1.29, -1.59, -1.81, -0.93, -1.11), ncol=1, nrow=10),
+      "lambda"=rep(0.7,10),
+      "eta"=rnorm(142),
+      "speed"=rnorm(142),
+      "ystar"=matrix(c(0.7*rep(rnorm(142),10)), ncol=10),
+      "rho"=0.1,
+      "icept"=rep(0, 10),
+      "prec.s"=10,
+      "prec"=rep(4, 10),
+      "sigma.ts"=0.1
+    )
+  }
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 1
+)
+
+# Run model
+fit.base_prior <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4w_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.base_prior, width=1000)
+
+```
+
+
+### Alt Tune A $\xi = 0.1$
+
+```{r model4-alt-a, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 0.1
+)
+
+# Run model
+fit.alt_a <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4w_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.alt_a, width=1000)
+
+```
+
+### Alt Tune B $\xi = 2$
+
+```{r model4-alt-b, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 2
+)
+
+# Run model
+fit.alt_b <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4w_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.alt_b, width=1000)
+
+```
+
+### Alt Tune C $\xi = 10$
+
+```{r model4-alt-c, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 10
+)
+
+# Run model
+fit.alt_c <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4w_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.alt_c, width=1000)
+
+```
+
+### Alt Tune D $\xi = 100$
+
+```{r model4-alt-d, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 100
+)
+
+# Run model
+fit.alt_d <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4w_xi.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.alt_d, width=1000)
+
+```
+
+## Hyper-prior on tuning paramter
+
+Next, the tuning parameter is not assumed a fixed value, but allowed to vary.
+
+### Alt Tune E $\xi \sim Uniform(0.5,1.5$
+
+```{r model4-alt-e, cache=TRUE, autodep=TRUE}
+
+jags.params <- c("lambda.std",
+                 "reli.omega",
+                 "gamma[109,1,1,1]",
+                 "gamma[109,1,1,2]",
+                 "gamma[109,1,2,1]",
+                 "gamma[109,1,2,2]",
+                 "omega[109,1,2]",
+                 "pi[109,1,2]",
+                 "gamma[98,1,1,1]",
+                 "gamma[98,1,1,2]",
+                 "gamma[98,1,2,1]",
+                 "gamma[98,1,2,2]",
+                 "omega[98,1,2]",
+                 "pi[98,1,2]",
+                 "xi")
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+fit.alt_e <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4w_xi_uniform.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.alt_e, width=1000)
+
+```
+
+
+### Alt Tune F $\xi \sim Gamma(1, 1)$
+
+```{r model4-alt-f, cache=TRUE, autodep=TRUE}
+
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+fit.alt_f <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4w_xi_gamma.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.alt_f, width=1000)
+
+```
+
+## Compare Posteriors
+
+```{r model4-post-comp}
+
+post.sims <- data.frame(
+  Base = fit.base_prior$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_A = fit.alt_a$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_B = fit.alt_b$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_C = fit.alt_c$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_D = fit.alt_d$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_E = fit.alt_e$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_F = fit.alt_f$BUGSoutput$sims.matrix[,"reli.omega"]
+)
+
+plot.post <- post.sims %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Prior",
+    values_to="omega"
+  ) %>%
+  mutate(
+    Prior = factor(Prior, levels=c("Base", "Alt_A", "Alt_B", "Alt_C", "Alt_D", "Alt_E", "Alt_F"))
+  )
+cols=c("Base"="black", "Alt_A"="#009e73", "Alt_B"="#E69F00", "Alt_C"="#CC79A7","Alt_D"="#56B4E9","Alt_E"="#d55e00","Alt_F"="#f0e442") #"#56B4E9", "#E69F00" "#CC79A7", "#d55e00", "#f0e442, "	#0072b2"
+
+# joint prior and post samples
+#plot.prior$type="Prior"
+#plot.post$type="Post"
+#$plot.dat <- full_join(plot.prior, plot.post)
+
+p <- ggplot(plot.post, aes(x=omega, color=Prior, fill=Prior))+
+  geom_density(adjust=2, alpha=0.1)+
+  scale_color_manual(values=cols, name=NULL)+
+  scale_fill_manual(values=cols, name=NULL)+
+  #facet_wrap(.~Prior, ncol=3, scales="free_y")+
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+p
+ggsave(filename = "fig/study4_posterior_sensitity_omega_xi.pdf",plot=p,width = 7, height=4,units="in")
+ggsave(filename = "fig/study4_posterior_sensitity_omega_xi.png",plot=p,width = 7, height=4,units="in")
+
+```
+
+

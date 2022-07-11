@@ -1,0 +1,237 @@
+---
+title: "SERA POOLS Study"
+subtitle: "Model 1 Results"
+author: "R. Noah Padgett"
+date: "2022-02-01"
+output: html_document
+---
+
+```{r set-up, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages & utility functions
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+```
+
+# POOLS Data
+
+```{r pools-data}
+
+library(readxl)
+mydata <- read_excel("data/pools/POOLS_data_2020-11-16.xlsx")
+
+use.var <- c(paste0("Q4_",c(3:5,9,11,15,18)), 
+             paste0("Q5_",c(1:3,5:6,12)), 
+             paste0("Q6_",c(2,5:8, 11)), 
+             paste0("Q7_",c(2, 4:5, 7:8, 14))) 
+
+# trichotomize
+f <- function(x){
+  y=numeric(length(x))
+  for(i in 1:length(x)){
+      if(x[i] < 3){
+        y[i] = 1
+      }
+      if(x[i] == 3){
+        y[i] = 2
+      }
+      if(x[i] > 3){
+        y[i] = 3
+      }
+  }
+  return(y)
+}
+
+mydata <- na.omit(mydata[, use.var]) 
+mydata <- apply(mydata, 2, f) %>%
+  as.data.frame()
+
+psych::describe(
+  mydata
+)
+
+```
+
+
+## DWLS
+
+```{r}
+
+mod <- '
+EL =~ 1*Q4_3 + lam44*Q4_4 + lam45*Q4_5 + lam49*Q4_9 + lam411*Q4_11 + lam415*Q4_15 + lam418*Q4_18
+SC =~ 1*Q5_1 + lam52*Q5_2 + lam53*Q5_3 + lam55*Q5_5 + lam56*Q5_6 + lam512*Q5_12
+IN =~ 1*Q6_2 + lam65*Q6_5 + lam66*Q6_6 + lam67*Q6_7 + lam68*Q6_8 + lam611*Q6_11
+EN =~ 1*Q7_2 + lam74*Q7_4 + lam75*Q7_5 + lam77*Q7_7 + lam78*Q7_8 + lam714*Q7_14
+
+# Factor covarainces
+EL ~~ EL + SC + IN + EN
+SC ~~ SC + IN + EN
+IN ~~ IN + EN
+EN ~~ EN
+
+# Factor Reliabilities
+rEL := ((1 + lam44 + lam45 + lam49 + lam411 + lam415 + lam418)**2)/((1 + lam44 + lam45 + lam49 + lam411 + lam415 + lam418)**2 + 7)
+rSC := ((1 + lam52 + lam53 + lam55 + lam56 + lam512)**2)/((1 + lam52 + lam53 + lam55 + lam56 + lam512)**2 + 6)
+rIN := ((1 + lam65 + lam66 + lam67 + lam68 + lam611)**2)/((1 + lam65 + lam66 + lam67 + lam68 + lam611)**2 + 6)
+rEN := ((1 + lam74 + lam75 + lam77 + lam78 + lam714)**2)/((1 + lam74 + lam75 + lam77 + lam78 + lam714)**2 + 6)
+'
+fit.dwls <- lavaan::cfa(mod, data=mydata, ordered=T, parameterization="theta")
+summary(fit.dwls, standardized=T, fit.measures=T)
+
+```
+
+
+# Model 1: Traditional IFA
+
+## Model details
+
+```{r model1-code}
+
+cat(read_file(paste0(w.d, "/code/pools_study/model_ifa.txt")))
+
+```
+
+## Model results
+
+```{r model1, cache=TRUE, autodep=TRUE}
+
+# Save parameters
+jags.params <- c("tau", "lambda", "theta", "reli.omega", "lambda.std",
+                 "phi.cor", "inv.phi", "phi")
+# initial-values
+jags.inits <- function(){
+    list(
+      "inv.phi"=solve(matrix(
+    c(1.52, 0.92, 0.97, 1.19,
+      0.92, 1.17, 0.74, 1.08,
+      0.97, 0.74, 1.11, 0.98,
+      1.19, 1.08, 0.98, 1.55), ncol=4, nrow=4, byrow=T
+    ))
+  )
+}
+
+# data
+jags.data <- list(
+  y = mydata,
+  N = nrow(mydata),
+  nit = ncol(mydata),
+  map = c(rep(1,7), rep(2,6), rep(3,6), rep(4,6)),
+  d = 8,
+  M = 4,
+  phi.0 = matrix(
+    c(1, 0.69, 0.75, 0.78,
+      0.69, 1, 0.65, 0.80,
+      0.75, 0.65, 1, 0.75,
+      0.78, 0.80, 0.75, 1), ncol=4, nrow=4, byrow=T
+    )
+)
+
+model.fit <-  R2jags::jags(
+  model = paste0(w.d, "/code/pools_study/model_ifa.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(model.fit, width=1000)
+
+kable(model.fit$BUGSoutput$summary, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%", height="500px")
+```
+
+## Posterior Distribution Summary
+
+```{r}
+# extract for plotting
+jags.mcmc <- as.mcmc(model.fit)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+fit.mcmc <- data.frame(as.matrix(jags.mcmc, chains = T, iters = T))
+colnames(fit.mcmc) <- c("chain", "iter", a)
+fit.mcmc.ggs <- ggmcmc::ggs(jags.mcmc) # for GRB plot
+
+```
+
+### Factor Loadings ($\lambda$)
+
+
+```{r post-summary-lambda-std}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "lambda.std", prob = 0.8); ggsave("fig/pools_model1_lambda_dens.pdf")
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "lambda.std"); ggsave("fig/pools_model1_lambda_acf.pdf")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "lambda.std"); ggsave("fig/pools_model1_lambda_trace.pdf")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "lambda.std"); ggsave("fig/pools_model1_lambda_grb.pdf")
+```
+
+### Factor Correlations
+
+```{r post-summary-tau}
+bayesplot::mcmc_areas(
+  fit.mcmc,
+  pars = c('phi.cor[1,2]', 'phi.cor[1,3]', 'phi.cor[1,4]',
+           'phi.cor[2,3]', 'phi.cor[2,4]', 'phi.cor[3,4]'), prob = 0.8)
+bayesplot::mcmc_acf(
+  fit.mcmc,
+  pars = c('phi.cor[1,2]', 'phi.cor[1,3]', 'phi.cor[1,4]',
+           'phi.cor[2,3]', 'phi.cor[2,4]', 'phi.cor[3,4]'))
+bayesplot::mcmc_trace(
+  fit.mcmc,
+  pars = c('phi.cor[1,2]', 'phi.cor[1,3]', 'phi.cor[1,4]',
+           'phi.cor[2,3]', 'phi.cor[2,4]', 'phi.cor[3,4]'))
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "phi.cor")
+
+
+# save factor correlations
+use.vars <- c('phi.cor[1,2]', 'phi.cor[1,3]', 'phi.cor[1,4]',
+           'phi.cor[2,3]', 'phi.cor[2,4]', 'phi.cor[3,4]')
+extracted_cor <- fit.mcmc[,use.vars]
+write.csv(x=extracted_cor, file=paste0(getwd(),"/data/pools/extracted_cor_m1.csv"))
+
+```
+
+### Factor Reliability Omega ($\omega$)
+
+```{r post-summary-omega}
+
+bayesplot::mcmc_areas(fit.mcmc, regex_pars = "reli.omega", prob = 0.8); ggsave("fig/pools_model1_omega_dens.pdf")
+bayesplot::mcmc_acf(fit.mcmc, regex_pars = "reli.omega"); ggsave("fig/pools_model1_omega_acf.pdf")
+bayesplot::mcmc_trace(fit.mcmc, regex_pars = "reli.omega"); ggsave("fig/pools_model1_omega_trace.pdf")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family = "reli.omega"); ggsave("fig/pools_model1_omega_grb.pdf")
+
+
+# extract omega posterior for results comparison
+extracted_omega <- data.frame(model_1_f1 = fit.mcmc$`reli.omega[1]`,
+                              model_1_f2 = fit.mcmc$`reli.omega[2]`,
+                              model_1_f3 = fit.mcmc$`reli.omega[3]`,
+                              model_1_f4 = fit.mcmc$`reli.omega[4]`)
+write.csv(x=extracted_omega, file=paste0(getwd(),"/data/pools/extracted_omega_m1.csv"))
+
+```
+
+
+# Manuscript Table  and Figures
+
+## Table
+
+```{r man-tables}
+
+# print to xtable
+print(
+  xtable(
+    model.fit$BUGSoutput$summary,
+    caption = c("pools Model 1 posterior distribution summary")
+    ,align = "lrrrrrrrrr"
+  ),
+  include.rownames=T,
+  booktabs=T
+)
+
+```
+
+

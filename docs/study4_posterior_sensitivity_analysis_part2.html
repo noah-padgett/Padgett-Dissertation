@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="R. Noah Padgett" />
+
+<meta name="date" content="2022-01-17" />
+
+<title>Study 4: Extroversion Data Analysis</title>
+
+<script src="site_libs/header-attrs-2.7/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-sm-12 col-md-4 col-lg-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-sm-12 col-md-8 col-lg-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Padgett-PhD-Dissertation</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Study 4: Extroversion Data Analysis</h1>
+<h3 class="subtitle">Full Model Prior-Posterior Sensitivity Part 2</h3>
+<h4 class="author">R. Noah Padgett</h4>
+<h4 class="date">2022-01-17</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2022-01-18
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 5 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>Padgett-Dissertation/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210401code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210401)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210401code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20210401)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongnoversioncontrol"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>Repository version:</strong> no version control </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongnoversioncontrol" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Tracking code development and connecting the code version to the results is critical for reproducibility. To start using Git, open the Terminal and type <code>git init</code> in your project directory.</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+This project is not being versioned with Git. To obtain the full reproducibility benefits of using workflowr, please see <code>?wflow_start</code>.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<pre class="r"><code># Load packages &amp; utility functions
+source(&quot;code/load_packages.R&quot;)
+source(&quot;code/load_utility_functions.R&quot;)
+# environment options
+options(scipen = 999, digits=3)
+
+library(diffIRT)
+data(&quot;extraversion&quot;)
+mydata &lt;- na.omit(extraversion)
+
+# model constants
+# Save parameters
+jags.params &lt;- c(&quot;tau&quot;,
+                 &quot;lambda&quot;,&quot;lambda.std&quot;,
+                 &quot;theta&quot;,
+                 &quot;icept&quot;,
+                 &quot;prec&quot;,
+                 &quot;prec.s&quot;,
+                 &quot;sigma.ts&quot;,
+                 &quot;rho&quot;,
+                 &quot;reli.omega&quot;)
+#data
+jags.data &lt;- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)</code></pre>
+<div id="overview" class="section level1">
+<h1>Overview</h1>
+<p>In part 1, the emphasis was on investigating the effect of the factor loading prior on estimates of <span class="math inline">\(\omega\)</span>. This section aims to incorporate a tuning parameter for misclassification to test how influential the priors are for those parameters.</p>
+<p>To help evaluate the tuning parameter’s effect, the posterior distribution for one individuals’ estimates of misclassification rates (<span class="math inline">\(\gamma\)</span>) will be extracted on one item. The person selected is based on having the most variability in responses and response time. By choosing someone with a highly variable response pattern, I hope to be able to see the most effect on the proposed method.</p>
+<pre class="r"><code>dat.updated &lt;- mydata %&gt;%
+  as.data.frame()
+dat.updated$var.x &lt;- 0
+for(i in 1:nrow(dat.updated)){
+  dat.updated$var.x[i] &lt;- var(unlist(c(dat.updated[i,1:10])))
+}
+
+which(dat.updated$var.x == max(dat.updated$var.x))</code></pre>
+<pre><code>[1]  98 109 120</code></pre>
+<pre class="r"><code>ppdat &lt;- dat.updated[which(dat.updated$var.x == max(dat.updated$var.x)),]
+kable(ppdat, format=&quot;html&quot;, digits=2) %&gt;%
+  kable_styling(full_width = T)</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+X[1]
+</th>
+<th style="text-align:right;">
+X[2]
+</th>
+<th style="text-align:right;">
+X[3]
+</th>
+<th style="text-align:right;">
+X[4]
+</th>
+<th style="text-align:right;">
+X[5]
+</th>
+<th style="text-align:right;">
+X[6]
+</th>
+<th style="text-align:right;">
+X[7]
+</th>
+<th style="text-align:right;">
+X[8]
+</th>
+<th style="text-align:right;">
+X[9]
+</th>
+<th style="text-align:right;">
+X[10]
+</th>
+<th style="text-align:right;">
+T[1]
+</th>
+<th style="text-align:right;">
+T[2]
+</th>
+<th style="text-align:right;">
+T[3]
+</th>
+<th style="text-align:right;">
+T[4]
+</th>
+<th style="text-align:right;">
+T[5]
+</th>
+<th style="text-align:right;">
+T[6]
+</th>
+<th style="text-align:right;">
+T[7]
+</th>
+<th style="text-align:right;">
+T[8]
+</th>
+<th style="text-align:right;">
+T[9]
+</th>
+<th style="text-align:right;">
+T[10]
+</th>
+<th style="text-align:right;">
+var.x
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+98
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.70
+</td>
+<td style="text-align:right;">
+1.24
+</td>
+<td style="text-align:right;">
+1.81
+</td>
+<td style="text-align:right;">
+1.46
+</td>
+<td style="text-align:right;">
+1.11
+</td>
+<td style="text-align:right;">
+1.23
+</td>
+<td style="text-align:right;">
+1.25
+</td>
+<td style="text-align:right;">
+1.09
+</td>
+<td style="text-align:right;">
+2.75
+</td>
+<td style="text-align:right;">
+2.73
+</td>
+<td style="text-align:right;">
+0.28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+109
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.74
+</td>
+<td style="text-align:right;">
+1.35
+</td>
+<td style="text-align:right;">
+3.27
+</td>
+<td style="text-align:right;">
+0.96
+</td>
+<td style="text-align:right;">
+2.68
+</td>
+<td style="text-align:right;">
+1.60
+</td>
+<td style="text-align:right;">
+1.04
+</td>
+<td style="text-align:right;">
+1.15
+</td>
+<td style="text-align:right;">
+1.11
+</td>
+<td style="text-align:right;">
+1.98
+</td>
+<td style="text-align:right;">
+0.28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+120
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.74
+</td>
+<td style="text-align:right;">
+1.15
+</td>
+<td style="text-align:right;">
+1.19
+</td>
+<td style="text-align:right;">
+3.44
+</td>
+<td style="text-align:right;">
+1.33
+</td>
+<td style="text-align:right;">
+2.08
+</td>
+<td style="text-align:right;">
+1.58
+</td>
+<td style="text-align:right;">
+2.33
+</td>
+<td style="text-align:right;">
+1.88
+</td>
+<td style="text-align:right;">
+0.84
+</td>
+<td style="text-align:right;">
+0.28
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># 109
+# item 3</code></pre>
+</div>
+<div id="analyses" class="section level1">
+<h1>Analyses</h1>
+<div id="misclassification-tuning-alternatives" class="section level2">
+<h2>Misclassification Tuning Alternatives</h2>
+<p>A tuning parameter was added to the model to control how strong the parameters controlling misclassification are. The same five altnerative priors for factor loadings will be investigated in turn as well.</p>
+<p>The updated model with the tuning parameter is</p>
+<pre class="r"><code>cat(read_file(paste0(w.d, &quot;/code/study_4/model_4w_xi.txt&quot;)))</code></pre>
+<pre><code>model {
+### Model
+  for(p in 1:N){
+    for(i in 1:nit){
+      # data model
+      y[p,i] ~ dbern(omega[p,i,2])
+
+      # LRV
+      ystar[p,i] ~ dnorm(lambda[i]*eta[p], 1)
+
+      # Pr(nu = 2)
+      pi[p,i,2] = phi(ystar[p,i] - tau[i,1])
+      # Pr(nu = 1)
+      pi[p,i,1] = 1 - phi(ystar[p,i] - tau[i,1])
+
+      # log-RT model
+      dev[p,i]&lt;-lambda[i]*(eta[p] - tau[i,1])
+      mu.lrt[p,i] &lt;- icept[i] - speed[p] - rho * abs(dev[p,i])
+      lrt[p,i] ~ dnorm(mu.lrt[p,i], prec[i])
+
+      # MISCLASSIFICATION MODEL
+      for(c in 1:ncat){
+        # generate informative prior for misclassificaiton
+        #   parameters based on RT
+        for(ct in 1:ncat){
+          alpha[p,i,ct,c] &lt;- ifelse(c == ct,
+                                    ilogit(lrt[p,i]),
+                                    (1/(ncat-1))*(1-ilogit(lrt[p,i]))
+          )
+        }
+        # sample misclassification parameters using the informative priors
+        gamma[p,i,c,1:ncat] ~ ddirch(xi*alpha[p,i,c,1:ncat])
+        # observed category prob (Pr(y=c))
+        omega[p,i, c] = gamma[p,i,c,1]*pi[p,i,1] +
+          gamma[p,i,c,2]*pi[p,i,2]
+      }
+
+    }
+  }
+  ### Priors
+  # person parameters
+  for(p in 1:N){
+    eta[p] ~ dnorm(0, 1) # latent ability
+    speed[p]~dnorm(sigma.ts*eta[p],prec.s)  # latent speed
+  }
+  sigma.ts ~ dnorm(0, 0.1)
+  prec.s ~ dgamma(.1,.1)
+  # transformations
+  sigma.t = pow(prec.s, -1) + pow(sigma.ts, 2) # speed variance
+  cor.ts = sigma.ts/(pow(sigma.t,0.5)) # LV correlation
+
+  for(i in 1:nit){
+    # lrt parameters
+    icept[i]~dnorm(0,.1)
+    prec[i]~dgamma(.1,.1)
+    # Thresholds
+    tau[i, 1] ~ dnorm(0.0,0.1)
+    # loadings
+    lambda[i] ~ dnorm(0, .44)T(0,)
+    # LRV total variance
+    # total variance = residual variance + fact. Var.
+    theta[i] = 1 + pow(lambda[i],2)
+    # standardized loading
+    lambda.std[i] = lambda[i]/pow(theta[i],0.5)
+  }
+  rho~dnorm(0,.1)I(0,)
+
+  # compute omega
+  lambda_sum[1] = lambda[1]
+  for(i in 2:nit){
+    #lambda_sum (sum factor loadings)
+    lambda_sum[i] = lambda_sum[i-1]+lambda[i]
+  }
+  reli.omega = (pow(lambda_sum[nit],2))/(pow(lambda_sum[nit],2)+nit)
+}</code></pre>
+</div>
+<div id="fixed-tuning-parameter" class="section level2">
+<h2>Fixed tuning parameter</h2>
+<p>First, the tuning parameter (<span class="math inline">\(\xi\)</span>) is assumed a fixed value (0.5, 1, 2, 10, 100). These five conditions will be used to see if <span class="math inline">\(\xi\)</span> influences the posterior of <span class="math inline">\(\omega\)</span>.</p>
+<p>Initially, the base prior for the factor loadings is used.</p>
+<div id="base-model-xi-1" class="section level3">
+<h3>Base Model <span class="math inline">\(\xi = 1\)</span></h3>
+<pre class="r"><code># Save parameters
+jags.params &lt;- c(&quot;lambda.std&quot;,
+                 &quot;reli.omega&quot;,
+                 &quot;gamma[109,1,1,1]&quot;,
+                 &quot;gamma[109,1,1,2]&quot;,
+                 &quot;gamma[109,1,2,1]&quot;,
+                 &quot;gamma[109,1,2,2]&quot;,
+                 &quot;omega[109,1,2]&quot;,
+                 &quot;pi[109,1,2]&quot;,
+                 &quot;gamma[98,1,1,1]&quot;,
+                 &quot;gamma[98,1,1,2]&quot;,
+                 &quot;gamma[98,1,2,1]&quot;,
+                 &quot;gamma[98,1,2,2]&quot;,
+                 &quot;omega[98,1,2]&quot;,
+                 &quot;pi[98,1,2]&quot;)
+# initial-values
+jags.inits &lt;- function(){
+    list(
+      &quot;tau&quot;=matrix(c(-0.64, -0.09, -1.05, -1.42, -0.11, -1.29, -1.59, -1.81, -0.93, -1.11), ncol=1, nrow=10),
+      &quot;lambda&quot;=rep(0.7,10),
+      &quot;eta&quot;=rnorm(142),
+      &quot;speed&quot;=rnorm(142),
+      &quot;ystar&quot;=matrix(c(0.7*rep(rnorm(142),10)), ncol=10),
+      &quot;rho&quot;=0.1,
+      &quot;icept&quot;=rep(0, 10),
+      &quot;prec.s&quot;=10,
+      &quot;prec&quot;=rep(4, 10),
+      &quot;sigma.ts&quot;=0.1
+    )
+  }
+jags.data &lt;- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 1
+)
+
+# Run model
+fit.base_prior &lt;-  R2jags::jags(
+  model = paste0(w.d, &quot;/code/study_4/model_4w_xi.txt&quot;),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)</code></pre>
+<pre><code>module glm loaded</code></pre>
+<pre><code>Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+Graph information:
+   Observed stochastic nodes: 2840
+   Unobserved stochastic nodes: 4587
+   Total graph size: 45400
+
+Initializing model</code></pre>
+<pre class="r"><code>print(fit.base_prior, width=1000)</code></pre>
+<pre><code>Inference for Bugs model at &quot;C:/Users/noahp/Documents/GitHub/Padgett-Dissertation/code/study_4/model_4w_xi.txt&quot;, fit using jags,
+ 4 chains, each with 10000 iterations (first 5000 discarded), n.thin = 5
+ n.sims = 4000 iterations saved
+                  mu.vect sd.vect     2.5%      25%      50%      75%    97.5% Rhat n.eff
+gamma[109,1,1,1]    0.851   0.250    0.109    0.816    0.987    1.000    1.000 1.00  3700
+gamma[109,1,1,2]    0.149   0.250    0.000    0.000    0.013    0.184    0.891 1.00  4000
+gamma[109,1,2,1]    0.119   0.220    0.000    0.000    0.006    0.125    0.811 1.02   180
+gamma[109,1,2,2]    0.881   0.220    0.189    0.875    0.994    1.000    1.000 1.01  4000
+gamma[98,1,1,1]     0.666   0.334    0.015    0.389    0.787    0.974    1.000 1.00  4000
+gamma[98,1,1,2]     0.334   0.334    0.000    0.026    0.213    0.611    0.985 1.00  4000
+gamma[98,1,2,1]     0.484   0.353    0.000    0.122    0.494    0.823    0.993 1.01   470
+gamma[98,1,2,2]     0.516   0.353    0.007    0.177    0.506    0.878    1.000 1.01   330
+lambda.std[1]       0.814   0.111    0.523    0.772    0.845    0.892    0.944 1.03   900
+lambda.std[2]       0.820   0.134    0.466    0.764    0.857    0.919    0.964 1.08    57
+lambda.std[3]       0.890   0.082    0.685    0.868    0.911    0.939    0.964 1.22    85
+lambda.std[4]       0.690   0.240    0.090    0.560    0.773    0.878    0.948 1.14    38
+lambda.std[5]       0.643   0.219    0.141    0.503    0.684    0.820    0.934 1.11    37
+lambda.std[6]       0.496   0.241    0.032    0.313    0.532    0.688    0.872 1.01   410
+lambda.std[7]       0.447   0.242    0.022    0.248    0.459    0.650    0.856 1.01   330
+lambda.std[8]       0.444   0.249    0.023    0.236    0.447    0.651    0.868 1.06    56
+lambda.std[9]       0.704   0.165    0.265    0.631    0.743    0.822    0.922 1.05   110
+lambda.std[10]      0.856   0.104    0.554    0.835    0.882    0.918    0.951 1.24    56
+omega[109,1,2]      0.226   0.225    0.000    0.029    0.145    0.386    0.756 1.01  1200
+omega[98,1,2]       0.619   0.236    0.137    0.460    0.624    0.818    0.985 1.01   690
+pi[109,1,2]         0.187   0.248    0.000    0.005    0.065    0.291    0.883 1.01   670
+pi[98,1,2]          0.316   0.338    0.000    0.011    0.172    0.584    0.990 1.02   160
+reli.omega          0.939   0.022    0.881    0.930    0.944    0.954    0.967 1.10    36
+deviance         3219.662  44.987 3132.714 3189.379 3219.779 3250.228 3306.331 1.02   130
+
+For each parameter, n.eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor (at convergence, Rhat=1).
+
+DIC info (using the rule, pD = var(deviance)/2)
+pD = 988.7 and DIC = 4208.4
+DIC is an estimate of expected predictive error (lower deviance is better).</code></pre>
+</div>
+<div id="alt-tune-a-xi-0.5" class="section level3">
+<h3>Alt Tune A <span class="math inline">\(\xi = 0.5\)</span></h3>
+<pre class="r"><code>jags.data &lt;- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 0.5
+)
+
+# Run model
+fit.alt_a &lt;-  R2jags::jags(
+  model = paste0(w.d, &quot;/code/study_4/model_4w_xi.txt&quot;),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)</code></pre>
+<pre><code>Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+Graph information:
+   Observed stochastic nodes: 2840
+   Unobserved stochastic nodes: 4587
+   Total graph size: 45400
+
+Initializing model</code></pre>
+<pre class="r"><code>print(fit.alt_a, width=1000)</code></pre>
+<pre><code>Inference for Bugs model at &quot;C:/Users/noahp/Documents/GitHub/Padgett-Dissertation/code/study_4/model_4w_xi.txt&quot;, fit using jags,
+ 4 chains, each with 10000 iterations (first 5000 discarded), n.thin = 5
+ n.sims = 4000 iterations saved
+                  mu.vect sd.vect     2.5%      25%      50%      75%    97.5% Rhat n.eff
+gamma[109,1,1,1]    0.858   0.285    0.015    0.911    1.000    1.000    1.000 1.00  4000
+gamma[109,1,1,2]    0.142   0.285    0.000    0.000    0.000    0.089    0.985 1.00  2700
+gamma[109,1,2,1]    0.126   0.265    0.000    0.000    0.000    0.070    0.981 1.15    47
+gamma[109,1,2,2]    0.874   0.265    0.019    0.930    1.000    1.000    1.000 1.18    72
+gamma[98,1,1,1]     0.669   0.384    0.000    0.280    0.890    0.998    1.000 1.00  3600
+gamma[98,1,1,2]     0.331   0.384    0.000    0.002    0.110    0.720    1.000 1.00  2500
+gamma[98,1,2,1]     0.520   0.403    0.000    0.045    0.582    0.944    1.000 1.11    94
+gamma[98,1,2,2]     0.480   0.403    0.000    0.056    0.418    0.955    1.000 1.03   300
+lambda.std[1]       0.806   0.118    0.498    0.756    0.835    0.886    0.945 1.03   890
+lambda.std[2]       0.847   0.119    0.534    0.803    0.882    0.929    0.969 1.13    41
+lambda.std[3]       0.905   0.066    0.745    0.887    0.921    0.942    0.968 1.26    42
+lambda.std[4]       0.757   0.210    0.136    0.704    0.832    0.903    0.952 1.41    14
+lambda.std[5]       0.654   0.202    0.161    0.537    0.693    0.808    0.956 1.08    54
+lambda.std[6]       0.505   0.252    0.031    0.302    0.533    0.712    0.897 1.02   280
+lambda.std[7]       0.466   0.249    0.031    0.258    0.482    0.684    0.862 1.01   300
+lambda.std[8]       0.432   0.240    0.019    0.227    0.444    0.635    0.834 1.03   140
+lambda.std[9]       0.739   0.156    0.321    0.667    0.779    0.851    0.928 1.06    98
+lambda.std[10]      0.868   0.105    0.558    0.849    0.898    0.926    0.961 1.31    32
+omega[109,1,2]      0.225   0.233    0.000    0.021    0.140    0.381    0.784 1.03   120
+omega[98,1,2]       0.654   0.259    0.107    0.473    0.674    0.888    0.998 1.01  1300
+pi[109,1,2]         0.217   0.267    0.000    0.009    0.097    0.338    0.916 1.08    95
+pi[98,1,2]          0.298   0.323    0.000    0.009    0.161    0.550    0.975 1.01   410
+reli.omega          0.946   0.018    0.903    0.936    0.949    0.959    0.972 1.03   190
+deviance         3052.228  48.380 2958.134 3019.520 3052.120 3084.823 3147.784 1.01   440
+
+For each parameter, n.eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor (at convergence, Rhat=1).
+
+DIC info (using the rule, pD = var(deviance)/2)
+pD = 1163.4 and DIC = 4215.6
+DIC is an estimate of expected predictive error (lower deviance is better).</code></pre>
+</div>
+<div id="alt-tune-b-xi-2" class="section level3">
+<h3>Alt Tune B <span class="math inline">\(\xi = 2\)</span></h3>
+<pre class="r"><code>jags.data &lt;- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 2
+)
+
+# Run model
+fit.alt_b &lt;-  R2jags::jags(
+  model = paste0(w.d, &quot;/code/study_4/model_4w_xi.txt&quot;),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)</code></pre>
+<pre><code>Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+Graph information:
+   Observed stochastic nodes: 2840
+   Unobserved stochastic nodes: 4587
+   Total graph size: 45400
+
+Initializing model</code></pre>
+<pre class="r"><code>print(fit.alt_b, width=1000)</code></pre>
+<pre><code>Inference for Bugs model at &quot;C:/Users/noahp/Documents/GitHub/Padgett-Dissertation/code/study_4/model_4w_xi.txt&quot;, fit using jags,
+ 4 chains, each with 10000 iterations (first 5000 discarded), n.thin = 5
+ n.sims = 4000 iterations saved
+                  mu.vect sd.vect     2.5%      25%      50%      75%    97.5% Rhat n.eff
+gamma[109,1,1,1]    0.846   0.209    0.245    0.772    0.946    0.994    1.000 1.00  4000
+gamma[109,1,1,2]    0.154   0.209    0.000    0.006    0.054    0.228    0.755 1.00  4000
+gamma[109,1,2,1]    0.130   0.189    0.000    0.003    0.040    0.179    0.710 1.14    65
+gamma[109,1,2,2]    0.870   0.189    0.290    0.821    0.960    0.997    1.000 1.01  1000
+gamma[98,1,1,1]     0.671   0.271    0.089    0.470    0.738    0.911    0.997 1.00  4000
+gamma[98,1,1,2]     0.329   0.271    0.003    0.089    0.262    0.530    0.911 1.00  4000
+gamma[98,1,2,1]     0.438   0.279    0.008    0.197    0.423    0.669    0.945 1.01  1600
+gamma[98,1,2,2]     0.562   0.279    0.055    0.331    0.577    0.803    0.992 1.00  4000
+lambda.std[1]       0.802   0.149    0.395    0.754    0.850    0.905    0.951 1.13    44
+lambda.std[2]       0.886   0.089    0.641    0.859    0.916    0.945    0.972 1.08   110
+lambda.std[3]       0.895   0.062    0.732    0.876    0.910    0.934    0.962 1.05   180
+lambda.std[4]       0.756   0.229    0.120    0.675    0.847    0.920    0.966 1.01   820
+lambda.std[5]       0.688   0.229    0.118    0.557    0.748    0.873    0.971 1.02   380
+lambda.std[6]       0.519   0.237    0.041    0.342    0.554    0.717    0.875 1.01   240
+lambda.std[7]       0.443   0.239    0.028    0.247    0.452    0.642    0.847 1.00   610
+lambda.std[8]       0.454   0.250    0.025    0.243    0.467    0.655    0.874 1.01   330
+lambda.std[9]       0.743   0.161    0.313    0.668    0.781    0.863    0.941 1.03   500
+lambda.std[10]      0.890   0.069    0.700    0.869    0.906    0.935    0.967 1.02   320
+omega[109,1,2]      0.252   0.223    0.001    0.053    0.192    0.416    0.747 1.04   140
+omega[98,1,2]       0.544   0.205    0.135    0.413    0.528    0.692    0.935 1.00  4000
+pi[109,1,2]         0.204   0.261    0.000    0.006    0.079    0.323    0.901 1.03   190
+pi[98,1,2]          0.275   0.314    0.000    0.006    0.134    0.497    0.969 1.02   300
+reli.omega          0.952   0.016    0.911    0.945    0.956    0.964    0.974 1.06   100
+deviance         3358.240  41.510 3277.355 3330.244 3358.383 3387.532 3438.953 1.01   300
+
+For each parameter, n.eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor (at convergence, Rhat=1).
+
+DIC info (using the rule, pD = var(deviance)/2)
+pD = 853.5 and DIC = 4211.7
+DIC is an estimate of expected predictive error (lower deviance is better).</code></pre>
+</div>
+<div id="alt-tune-c-xi-10" class="section level3">
+<h3>Alt Tune C <span class="math inline">\(\xi = 10\)</span></h3>
+<pre class="r"><code>jags.data &lt;- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 10
+)
+
+# Run model
+fit.alt_c &lt;-  R2jags::jags(
+  model = paste0(w.d, &quot;/code/study_4/model_4w_xi.txt&quot;),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)</code></pre>
+<pre><code>Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+Graph information:
+   Observed stochastic nodes: 2840
+   Unobserved stochastic nodes: 4587
+   Total graph size: 45400
+
+Initializing model</code></pre>
+<pre class="r"><code>print(fit.alt_c, width=1000)</code></pre>
+<pre><code>Inference for Bugs model at &quot;C:/Users/noahp/Documents/GitHub/Padgett-Dissertation/code/study_4/model_4w_xi.txt&quot;, fit using jags,
+ 4 chains, each with 10000 iterations (first 5000 discarded), n.thin = 5
+ n.sims = 4000 iterations saved
+                  mu.vect sd.vect     2.5%      25%      50%      75%    97.5% Rhat n.eff
+gamma[109,1,1,1]    0.852   0.107    0.597    0.793    0.874    0.933    0.989 1.00  4000
+gamma[109,1,1,2]    0.148   0.107    0.011    0.067    0.126    0.207    0.403 1.00  3800
+gamma[109,1,2,1]    0.143   0.102    0.012    0.063    0.123    0.200    0.390 1.00  4000
+gamma[109,1,2,2]    0.857   0.102    0.610    0.800    0.877    0.937    0.988 1.00  4000
+gamma[98,1,1,1]     0.672   0.141    0.375    0.574    0.684    0.780    0.910 1.00  4000
+gamma[98,1,1,2]     0.328   0.141    0.090    0.220    0.316    0.426    0.625 1.00  4000
+gamma[98,1,2,1]     0.354   0.145    0.104    0.245    0.344    0.452    0.660 1.00  4000
+gamma[98,1,2,2]     0.646   0.145    0.340    0.548    0.656    0.755    0.896 1.00  4000
+lambda.std[1]       0.797   0.128    0.460    0.740    0.832    0.889    0.947 1.06   100
+lambda.std[2]       0.832   0.120    0.513    0.781    0.868    0.918    0.961 1.04   350
+lambda.std[3]       0.905   0.076    0.747    0.889    0.922    0.945    0.970 1.24   260
+lambda.std[4]       0.774   0.199    0.184    0.716    0.844    0.910    0.955 1.14    39
+lambda.std[5]       0.626   0.222    0.112    0.489    0.665    0.800    0.938 1.03   110
+lambda.std[6]       0.476   0.241    0.033    0.284    0.499    0.677    0.859 1.01   280
+lambda.std[7]       0.479   0.244    0.035    0.280    0.499    0.689    0.858 1.02   270
+lambda.std[8]       0.438   0.259    0.021    0.216    0.428    0.660    0.878 1.02   170
+lambda.std[9]       0.695   0.171    0.249    0.615    0.735    0.820    0.917 1.04   100
+lambda.std[10]      0.884   0.071    0.722    0.864    0.901    0.926    0.956 1.10   440
+omega[109,1,2]      0.278   0.193    0.029    0.127    0.232    0.393    0.750 1.01   420
+omega[98,1,2]       0.464   0.143    0.188    0.368    0.470    0.548    0.774 1.00   550
+pi[109,1,2]         0.196   0.251    0.000    0.006    0.077    0.304    0.881 1.03   170
+pi[98,1,2]          0.309   0.325    0.000    0.012    0.181    0.565    0.979 1.02   260
+reli.omega          0.944   0.021    0.890    0.935    0.948    0.958    0.971 1.07    51
+deviance         3574.408  33.995 3509.241 3551.988 3573.156 3596.917 3642.671 1.01   220
+
+For each parameter, n.eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor (at convergence, Rhat=1).
+
+DIC info (using the rule, pD = var(deviance)/2)
+pD = 570.4 and DIC = 4144.8
+DIC is an estimate of expected predictive error (lower deviance is better).</code></pre>
+</div>
+<div id="alt-tune-d-xi-100" class="section level3">
+<h3>Alt Tune D <span class="math inline">\(\xi = 100\)</span></h3>
+<pre class="r"><code>jags.data &lt;- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2,
+  xi = 100
+)
+
+# Run model
+fit.alt_d &lt;-  R2jags::jags(
+  model = paste0(w.d, &quot;/code/study_4/model_4w_xi.txt&quot;),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)</code></pre>
+<pre><code>Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+Graph information:
+   Observed stochastic nodes: 2840
+   Unobserved stochastic nodes: 4587
+   Total graph size: 45400
+
+Initializing model</code></pre>
+<pre class="r"><code>print(fit.alt_d, width=1000)</code></pre>
+<pre><code>Inference for Bugs model at &quot;C:/Users/noahp/Documents/GitHub/Padgett-Dissertation/code/study_4/model_4w_xi.txt&quot;, fit using jags,
+ 4 chains, each with 10000 iterations (first 5000 discarded), n.thin = 5
+ n.sims = 4000 iterations saved
+                  mu.vect sd.vect     2.5%      25%      50%      75%    97.5% Rhat n.eff
+gamma[109,1,1,1]    0.851   0.036    0.773    0.828    0.853    0.876    0.915 1.00  4000
+gamma[109,1,1,2]    0.149   0.036    0.085    0.124    0.147    0.172    0.227 1.00  4000
+gamma[109,1,2,1]    0.149   0.036    0.086    0.123    0.146    0.172    0.223 1.00  3000
+gamma[109,1,2,2]    0.851   0.036    0.777    0.828    0.854    0.877    0.914 1.00  3200
+gamma[98,1,1,1]     0.669   0.047    0.574    0.637    0.671    0.702    0.758 1.00  4000
+gamma[98,1,1,2]     0.331   0.047    0.242    0.298    0.329    0.363    0.426 1.00  4000
+gamma[98,1,2,1]     0.333   0.046    0.250    0.301    0.332    0.364    0.423 1.00  4000
+gamma[98,1,2,2]     0.667   0.046    0.577    0.636    0.668    0.699    0.750 1.00  4000
+lambda.std[1]       0.810   0.124    0.471    0.764    0.843    0.895    0.946 1.11   120
+lambda.std[2]       0.833   0.131    0.470    0.786    0.875    0.923    0.965 1.03   150
+lambda.std[3]       0.903   0.072    0.705    0.887    0.923    0.945    0.969 1.24    38
+lambda.std[4]       0.788   0.182    0.212    0.751    0.854    0.905    0.948 1.04   340
+lambda.std[5]       0.603   0.236    0.085    0.442    0.645    0.791    0.933 1.06    89
+lambda.std[6]       0.472   0.250    0.027    0.258    0.499    0.680    0.871 1.00   510
+lambda.std[7]       0.464   0.246    0.026    0.259    0.480    0.677    0.849 1.03   100
+lambda.std[8]       0.446   0.254    0.028    0.225    0.450    0.666    0.863 1.02   130
+lambda.std[9]       0.698   0.172    0.263    0.611    0.743    0.826    0.917 1.01   230
+lambda.std[10]      0.881   0.084    0.671    0.863    0.905    0.930    0.958 1.19   120
+omega[109,1,2]      0.277   0.172    0.100    0.156    0.210    0.346    0.748 1.01   430
+omega[98,1,2]       0.430   0.113    0.271    0.344    0.400    0.503    0.677 1.00   790
+pi[109,1,2]         0.183   0.242    0.000    0.006    0.069    0.278    0.866 1.01   840
+pi[98,1,2]          0.284   0.320    0.000    0.007    0.140    0.511    0.976 1.02   330
+reli.omega          0.945   0.019    0.898    0.935    0.950    0.959    0.970 1.04    93
+deviance         3640.398  29.818 3583.792 3620.407 3639.461 3660.089 3700.276 1.00   560
+
+For each parameter, n.eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor (at convergence, Rhat=1).
+
+DIC info (using the rule, pD = var(deviance)/2)
+pD = 442.5 and DIC = 4082.9
+DIC is an estimate of expected predictive error (lower deviance is better).</code></pre>
+</div>
+</div>
+<div id="hyper-prior-on-tuning-paramter" class="section level2">
+<h2>Hyper-prior on tuning paramter</h2>
+<p>Next, the tuning parameter is not assumed a fixed value, but allowed to vary.</p>
+<div id="alt-tune-e-xi-sim-uniform0.51.5" class="section level3">
+<h3>Alt Tune E <span class="math inline">\(\xi \sim Uniform(0.5,1.5\)</span></h3>
+<pre class="r"><code>jags.params &lt;- c(&quot;lambda.std&quot;,
+                 &quot;reli.omega&quot;,
+                 &quot;gamma[109,1,1,1]&quot;,
+                 &quot;gamma[109,1,1,2]&quot;,
+                 &quot;gamma[109,1,2,1]&quot;,
+                 &quot;gamma[109,1,2,2]&quot;,
+                 &quot;omega[109,1,2]&quot;,
+                 &quot;pi[109,1,2]&quot;,
+                 &quot;gamma[98,1,1,1]&quot;,
+                 &quot;gamma[98,1,1,2]&quot;,
+                 &quot;gamma[98,1,2,1]&quot;,
+                 &quot;gamma[98,1,2,2]&quot;,
+                 &quot;omega[98,1,2]&quot;,
+                 &quot;pi[98,1,2]&quot;,
+                 &quot;xi&quot;)
+
+jags.data &lt;- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+fit.alt_e &lt;-  R2jags::jags(
+  model = paste0(w.d, &quot;/code/study_4/model_4w_xi_uniform.txt&quot;),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)</code></pre>
+<pre><code>Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+Graph information:
+   Observed stochastic nodes: 2840
+   Unobserved stochastic nodes: 4588
+   Total graph size: 45401
+
+Initializing model</code></pre>
+<pre class="r"><code>print(fit.alt_e, width=1000)</code></pre>
+<pre><code>Inference for Bugs model at &quot;C:/Users/noahp/Documents/GitHub/Padgett-Dissertation/code/study_4/model_4w_xi_uniform.txt&quot;, fit using jags,
+ 4 chains, each with 10000 iterations (first 5000 discarded), n.thin = 5
+ n.sims = 4000 iterations saved
+                  mu.vect sd.vect     2.5%      25%      50%      75%    97.5% Rhat n.eff
+gamma[109,1,1,1]    0.848   0.234    0.161    0.786    0.972    0.999    1.000 1.01  4000
+gamma[109,1,1,2]    0.152   0.234    0.000    0.001    0.028    0.214    0.839 1.00  1300
+gamma[109,1,2,1]    0.116   0.192    0.000    0.000    0.018    0.145    0.711 1.12    39
+gamma[109,1,2,2]    0.884   0.192    0.289    0.855    0.982    1.000    1.000 1.01   470
+gamma[98,1,1,1]     0.666   0.310    0.037    0.418    0.758    0.951    1.000 1.00  4000
+gamma[98,1,1,2]     0.334   0.310    0.000    0.049    0.242    0.582    0.963 1.01  1000
+gamma[98,1,2,1]     0.482   0.326    0.001    0.181    0.483    0.791    0.987 1.00  1600
+gamma[98,1,2,2]     0.518   0.326    0.013    0.209    0.517    0.819    0.999 1.01   370
+lambda.std[1]       0.814   0.120    0.499    0.766    0.847    0.896    0.948 1.04   340
+lambda.std[2]       0.838   0.124    0.512    0.795    0.876    0.924    0.966 1.04   380
+lambda.std[3]       0.902   0.057    0.751    0.881    0.918    0.939    0.965 1.11    43
+lambda.std[4]       0.717   0.228    0.085    0.633    0.797    0.884    0.947 1.00  2400
+lambda.std[5]       0.582   0.238    0.067    0.415    0.626    0.777    0.914 1.11    46
+lambda.std[6]       0.482   0.236    0.034    0.300    0.512    0.678    0.851 1.01   440
+lambda.std[7]       0.451   0.245    0.024    0.245    0.464    0.661    0.847 1.02   140
+lambda.std[8]       0.406   0.250    0.017    0.192    0.386    0.621    0.847 1.01   320
+lambda.std[9]       0.693   0.166    0.273    0.604    0.727    0.815    0.916 1.09    90
+lambda.std[10]      0.875   0.075    0.701    0.850    0.895    0.923    0.952 1.07   110
+omega[109,1,2]      0.225   0.218    0.000    0.036    0.156    0.381    0.730 1.01   490
+omega[98,1,2]       0.587   0.234    0.117    0.429    0.586    0.781    0.973 1.00  4000
+pi[109,1,2]         0.168   0.235    0.000    0.003    0.051    0.249    0.839 1.05   240
+pi[98,1,2]          0.270   0.320    0.000    0.003    0.107    0.495    0.965 1.06   100
+reli.omega          0.940   0.019    0.896    0.929    0.944    0.954    0.968 1.04    80
+xi                  1.353   0.113    1.073    1.280    1.377    1.448    1.496 1.17    21
+deviance         3287.547  46.837 3191.437 3257.334 3288.810 3318.370 3377.055 1.05    66
+
+For each parameter, n.eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor (at convergence, Rhat=1).
+
+DIC info (using the rule, pD = var(deviance)/2)
+pD = 1047.6 and DIC = 4335.1
+DIC is an estimate of expected predictive error (lower deviance is better).</code></pre>
+</div>
+<div id="alt-tune-f-xi-sim-gamma1-1" class="section level3">
+<h3>Alt Tune F <span class="math inline">\(\xi \sim Gamma(1, 1)\)</span></h3>
+<pre class="r"><code>jags.data &lt;- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+fit.alt_f &lt;-  R2jags::jags(
+  model = paste0(w.d, &quot;/code/study_4/model_4w_xi_gamma.txt&quot;),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)</code></pre>
+<pre><code>Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+Graph information:
+   Observed stochastic nodes: 2840
+   Unobserved stochastic nodes: 4588
+   Total graph size: 45400
+
+Initializing model</code></pre>
+<pre class="r"><code>print(fit.alt_f, width=1000)</code></pre>
+<pre><code>Inference for Bugs model at &quot;C:/Users/noahp/Documents/GitHub/Padgett-Dissertation/code/study_4/model_4w_xi_gamma.txt&quot;, fit using jags,
+ 4 chains, each with 10000 iterations (first 5000 discarded), n.thin = 5
+ n.sims = 4000 iterations saved
+                  mu.vect sd.vect     2.5%      25%      50%      75%    97.5% Rhat n.eff
+gamma[109,1,1,1]    0.844   0.177    0.361    0.767    0.910    0.980    1.000 1.03  2500
+gamma[109,1,1,2]    0.156   0.177    0.000    0.020    0.090    0.233    0.639 1.09    68
+gamma[109,1,2,1]    0.137   0.161    0.000    0.018    0.078    0.195    0.580 1.06    90
+gamma[109,1,2,2]    0.863   0.161    0.420    0.805    0.922    0.982    1.000 1.03   840
+gamma[98,1,1,1]     0.663   0.227    0.164    0.506    0.697    0.847    0.988 1.03   430
+gamma[98,1,1,2]     0.337   0.227    0.012    0.153    0.303    0.494    0.836 1.05   280
+gamma[98,1,2,1]     0.393   0.234    0.017    0.206    0.379    0.558    0.879 1.05   200
+gamma[98,1,2,2]     0.607   0.234    0.121    0.442    0.621    0.794    0.983 1.05   240
+lambda.std[1]       0.795   0.135    0.419    0.741    0.833    0.888    0.947 1.06    67
+lambda.std[2]       0.842   0.128    0.490    0.800    0.884    0.928    0.965 1.09    47
+lambda.std[3]       0.894   0.064    0.722    0.871    0.910    0.934    0.972 1.11    60
+lambda.std[4]       0.777   0.195    0.195    0.717    0.847    0.910    0.959 1.05   140
+lambda.std[5]       0.602   0.224    0.090    0.458    0.648    0.779    0.908 1.02   140
+lambda.std[6]       0.488   0.256    0.027    0.278    0.517    0.705    0.896 1.01   370
+lambda.std[7]       0.452   0.244    0.022    0.246    0.469    0.657    0.851 1.02   220
+lambda.std[8]       0.401   0.240    0.020    0.191    0.392    0.596    0.838 1.01   370
+lambda.std[9]       0.735   0.149    0.348    0.666    0.770    0.841    0.918 1.06   110
+lambda.std[10]      0.862   0.100    0.611    0.839    0.893    0.921    0.952 1.10   100
+omega[109,1,2]      0.270   0.210    0.003    0.086    0.226    0.431    0.725 1.01   470
+omega[98,1,2]       0.509   0.185    0.149    0.391    0.502    0.620    0.896 1.01   410
+pi[109,1,2]         0.205   0.253    0.000    0.008    0.088    0.334    0.884 1.04   110
+pi[98,1,2]          0.306   0.327    0.000    0.011    0.175    0.553    0.983 1.03   150
+reli.omega          0.942   0.022    0.892    0.934    0.947    0.956    0.969 1.16    43
+xi                  3.787   1.654    1.787    2.555    3.459    4.628    8.238 2.46     5
+deviance         3457.293  67.243 3322.064 3412.078 3460.349 3506.065 3580.213 1.68     8
+
+For each parameter, n.eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor (at convergence, Rhat=1).
+
+DIC info (using the rule, pD = var(deviance)/2)
+pD = 1247.2 and DIC = 4704.5
+DIC is an estimate of expected predictive error (lower deviance is better).</code></pre>
+</div>
+</div>
+<div id="compare-posteriors" class="section level2">
+<h2>Compare Posteriors</h2>
+<pre class="r"><code>post.sims &lt;- data.frame(
+  Base = fit.base_prior$BUGSoutput$sims.matrix[,&quot;reli.omega&quot;],
+  Alt_A = fit.alt_a$BUGSoutput$sims.matrix[,&quot;reli.omega&quot;],
+  Alt_B = fit.alt_b$BUGSoutput$sims.matrix[,&quot;reli.omega&quot;],
+  Alt_C = fit.alt_c$BUGSoutput$sims.matrix[,&quot;reli.omega&quot;],
+  Alt_D = fit.alt_d$BUGSoutput$sims.matrix[,&quot;reli.omega&quot;],
+  Alt_E = fit.alt_e$BUGSoutput$sims.matrix[,&quot;reli.omega&quot;],
+  Alt_F = fit.alt_f$BUGSoutput$sims.matrix[,&quot;reli.omega&quot;]
+)
+
+plot.post &lt;- post.sims %&gt;%
+  pivot_longer(
+    cols=everything(),
+    names_to=&quot;Prior&quot;,
+    values_to=&quot;omega&quot;
+  ) %&gt;%
+  mutate(
+    Prior = factor(Prior, levels=c(&quot;Base&quot;, &quot;Alt_A&quot;, &quot;Alt_B&quot;, &quot;Alt_C&quot;, &quot;Alt_D&quot;, &quot;Alt_E&quot;, &quot;Alt_F&quot;))
+  )
+cols=c(&quot;Base&quot;=&quot;black&quot;, &quot;Alt_A&quot;=&quot;#009e73&quot;, &quot;Alt_B&quot;=&quot;#E69F00&quot;, &quot;Alt_C&quot;=&quot;#CC79A7&quot;,&quot;Alt_D&quot;=&quot;#56B4E9&quot;,&quot;Alt_E&quot;=&quot;#d55e00&quot;,&quot;Alt_F&quot;=&quot;#f0e442&quot;) #&quot;#56B4E9&quot;, &quot;#E69F00&quot; &quot;#CC79A7&quot;, &quot;#d55e00&quot;, &quot;#f0e442, &quot;   #0072b2&quot;
+
+# joint prior and post samples
+#plot.prior$type=&quot;Prior&quot;
+#plot.post$type=&quot;Post&quot;
+#$plot.dat &lt;- full_join(plot.prior, plot.post)
+
+p &lt;- ggplot(plot.post, aes(x=omega, color=Prior, fill=Prior))+
+  geom_density(adjust=2, alpha=0.1)+
+  scale_color_manual(values=cols, name=NULL)+
+  scale_fill_manual(values=cols, name=NULL)+
+  #facet_wrap(.~Prior, ncol=3, scales=&quot;free_y&quot;)+
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+p</code></pre>
+<p><img src="figure/study4_posterior_sensitivity_analysis_part2.Rmd/model4-post-comp-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggsave(filename = &quot;fig/study4_posterior_sensitity_omega_xi.pdf&quot;,plot=p,width = 7, height=4,units=&quot;in&quot;)
+ggsave(filename = &quot;fig/study4_posterior_sensitity_omega_xi.png&quot;,plot=p,width = 7, height=4,units=&quot;in&quot;)</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.0.5 (2021-03-31)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 22000)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=English_United States.1252 
+[2] LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] car_3.0-10           carData_3.0-4        mvtnorm_1.1-1       
+ [4] LaplacesDemon_16.1.4 runjags_2.2.0-2      lme4_1.1-26         
+ [7] Matrix_1.3-2         sirt_3.9-4           R2jags_0.6-1        
+[10] rjags_4-12           eRm_1.0-2            diffIRT_1.5         
+[13] statmod_1.4.35       xtable_1.8-4         kableExtra_1.3.4    
+[16] lavaan_0.6-7         polycor_0.7-10       bayesplot_1.8.0     
+[19] ggmcmc_1.5.1.1       coda_0.19-4          data.table_1.14.0   
+[22] patchwork_1.1.1      forcats_0.5.1        stringr_1.4.0       
+[25] dplyr_1.0.5          purrr_0.3.4          readr_1.4.0         
+[28] tidyr_1.1.3          tibble_3.1.0         ggplot2_3.3.5       
+[31] tidyverse_1.3.0      workflowr_1.6.2     
+
+loaded via a namespace (and not attached):
+ [1] minqa_1.2.4        TAM_3.5-19         colorspace_2.0-0   rio_0.5.26        
+ [5] ellipsis_0.3.1     ggridges_0.5.3     rprojroot_2.0.2    fs_1.5.0          
+ [9] rstudioapi_0.13    farver_2.1.0       fansi_0.4.2        lubridate_1.7.10  
+[13] xml2_1.3.2         codetools_0.2-18   splines_4.0.5      mnormt_2.0.2      
+[17] knitr_1.31         jsonlite_1.7.2     nloptr_1.2.2.2     broom_0.7.5       
+[21] dbplyr_2.1.0       compiler_4.0.5     httr_1.4.2         backports_1.2.1   
+[25] assertthat_0.2.1   cli_2.3.1          later_1.1.0.1      htmltools_0.5.1.1 
+[29] tools_4.0.5        gtable_0.3.0       glue_1.4.2         Rcpp_1.0.7        
+[33] cellranger_1.1.0   jquerylib_0.1.3    vctrs_0.3.6        svglite_2.0.0     
+[37] nlme_3.1-152       psych_2.0.12       xfun_0.21          ps_1.6.0          
+[41] openxlsx_4.2.3     rvest_1.0.0        lifecycle_1.0.0    MASS_7.3-53.1     
+[45] scales_1.1.1       ragg_1.1.1         hms_1.0.0          promises_1.2.0.1  
+[49] parallel_4.0.5     RColorBrewer_1.1-2 curl_4.3           yaml_2.2.1        
+[53] sass_0.3.1         reshape_0.8.8      stringi_1.5.3      highr_0.8         
+[57] zip_2.1.1          boot_1.3-27        rlang_0.4.10       pkgconfig_2.0.3   
+[61] systemfonts_1.0.1  evaluate_0.14      lattice_0.20-41    labeling_0.4.2    
+[65] tidyselect_1.1.0   GGally_2.1.1       plyr_1.8.6         magrittr_2.0.1    
+[69] R6_2.5.0           generics_0.1.0     DBI_1.1.1          foreign_0.8-81    
+[73] pillar_1.5.1       haven_2.3.1        withr_2.4.1        abind_1.4-5       
+[77] modelr_0.1.8       crayon_1.4.1       utf8_1.1.4         tmvnsim_1.0-2     
+[81] rmarkdown_2.7      grid_4.0.5         readxl_1.3.1       CDM_7.5-15        
+[85] pbivnorm_0.6.0     git2r_0.28.0       reprex_1.0.0       digest_0.6.27     
+[89] webshot_0.5.2      httpuv_1.5.5       textshaping_0.3.1  stats4_4.0.5      
+[93] munsell_0.5.0      viridisLite_0.3.0  bslib_0.2.4        R2WinBUGS_2.1-21  </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

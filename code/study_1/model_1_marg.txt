@@ -1,0 +1,47 @@
+model {
+### Model
+  for(p in 1:N){
+    for(i in 1:nit){
+      # data model
+      y[p,i] ~ dcat(pi[p,i, ])
+
+      # LRV
+      ystar[p,i] ~ dnorm(lambda[i]*eta[p], theta.prec[i])
+
+     # Pr(nu = 3)
+      pi[p,i,3] = phi((ystar[p,i] - tau[i,2])*theta.prec[i])
+      # Pr(nu = 2)
+      pi[p,i,2] = phi((ystar[p,i] - tau[i,1])*theta.prec[i]) - phi((ystar[p,i] - tau[i,2])*theta.prec[i])
+      # Pr(nu = 1)
+      pi[p,i,1] = 1 - phi((ystar[p,i] - tau[i,1])*theta.prec[i])
+    }
+  }
+  ### Priors
+  # person parameters
+  for(p in 1:N){
+    eta[p] ~ dnorm(0, 1) # latent ability
+  }
+
+  for(i in 1:nit){
+    # Thresholds
+    tau[i, 1] ~ dnorm(0.0,0.1)
+    tau[i, 2] ~ dnorm(0, 0.1)T(tau[i, 1],)
+    # loadings
+    lambda[i] ~ dbeta(1,1)
+    # LRV total variance
+    # LRV residual variance
+    theta[i] = 1 - pow(lambda[i],2)
+    theta.prec[i] = pow(theta[i], -1)
+  }
+
+  # compute omega
+  lambda_sum[1] = lambda[1]
+  theta_sum[1] = theta[1]
+  for(i in 2:nit){
+    #lambda_sum (sum factor loadings)
+    lambda_sum[i] = lambda_sum[i-1]+lambda[i]
+    theta_sum[i] = theta_sum[i-1]+theta[i]
+
+  }
+  reli.omega = pow(lambda_sum[nit],2)/(pow(lambda_sum[nit], 2)+ theta_sum[nit])
+}

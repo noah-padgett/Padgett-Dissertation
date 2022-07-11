@@ -1,0 +1,3063 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="R. Noah Padgett" />
+
+<meta name="date" content="2022-02-01" />
+
+<title>SERA POOLS Study</title>
+
+<script src="site_libs/header-attrs-2.7/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-sm-12 col-md-4 col-lg-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-sm-12 col-md-8 col-lg-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Padgett-PhD-Dissertation</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">SERA POOLS Study</h1>
+<h3 class="subtitle">Comparison of Reliability Posterior Distribution</h3>
+<h4 class="author">R. Noah Padgett</h4>
+<h4 class="date">2022-02-01</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2022-02-02
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 5 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>Padgett-Dissertation/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210401code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210401)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210401code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20210401)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongnoversioncontrol"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>Repository version:</strong> no version control </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongnoversioncontrol" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Tracking code development and connecting the code version to the results is critical for reproducibility. To start using Git, open the Terminal and type <code>git init</code> in your project directory.</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+This project is not being versioned with Git. To obtain the full reproducibility benefits of using workflowr, please see <code>?wflow_start</code>.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<pre class="r"><code># Load packages &amp; utility functions
+source(&quot;code/load_packages.R&quot;)
+source(&quot;code/load_utility_functions.R&quot;)
+# environment options
+options(scipen = 999, digits=3)</code></pre>
+<div id="model-comparison" class="section level1">
+<h1>Model Comparison</h1>
+<div id="dwls" class="section level2">
+<h2>DWLS</h2>
+<pre class="r"><code>library(readxl)
+mydata &lt;- read_excel(&quot;data/pools/POOLS_data_2020-11-16.xlsx&quot;)
+
+use.var &lt;- c(paste0(&quot;Q4_&quot;,c(3:5,9,11,15,18)), 
+             paste0(&quot;Q5_&quot;,c(1:3,5:6,12)), 
+             paste0(&quot;Q6_&quot;,c(2,5:8, 11)), 
+             paste0(&quot;Q7_&quot;,c(2, 4:5, 7:8, 14))) 
+
+# trichotomize
+f &lt;- function(x){
+  y=numeric(length(x))
+  for(i in 1:length(x)){
+      if(x[i] &lt; 3){
+        y[i] = 1
+      }
+      if(x[i] == 3){
+        y[i] = 2
+      }
+      if(x[i] &gt; 3){
+        y[i] = 3
+      }
+  }
+  return(y)
+}
+
+mydata &lt;- na.omit(mydata[, use.var]) 
+mydata &lt;- apply(mydata, 2, f) %&gt;%
+  as.data.frame()
+
+psych::describe(
+  mydata
+)</code></pre>
+<pre><code>      vars   n mean   sd median trimmed  mad min max range  skew kurtosis   se
+Q4_3     1 490 1.62 0.65      2    1.53 1.48   1   3     2  0.57    -0.68 0.03
+Q4_4     2 490 1.64 0.65      2    1.56 1.48   1   3     2  0.51    -0.71 0.03
+Q4_5     3 490 1.52 0.68      1    1.40 0.00   1   3     2  0.92    -0.36 0.03
+Q4_9     4 490 1.65 0.76      1    1.56 0.00   1   3     2  0.69    -0.96 0.03
+Q4_11    5 490 1.64 0.72      1    1.55 0.00   1   3     2  0.66    -0.85 0.03
+Q4_15    6 490 1.58 0.68      1    1.47 0.00   1   3     2  0.74    -0.59 0.03
+Q4_18    7 490 1.52 0.63      1    1.43 0.00   1   3     2  0.81    -0.38 0.03
+Q5_1     8 490 1.73 0.77      2    1.66 1.48   1   3     2  0.50    -1.16 0.03
+Q5_2     9 490 2.00 0.86      2    2.00 1.48   1   3     2  0.00    -1.64 0.04
+Q5_3    10 490 1.79 0.81      2    1.73 1.48   1   3     2  0.41    -1.37 0.04
+Q5_5    11 490 2.33 0.81      3    2.41 0.00   1   3     2 -0.67    -1.18 0.04
+Q5_6    12 490 1.94 0.77      2    1.93 1.48   1   3     2  0.09    -1.33 0.03
+Q5_12   13 490 1.92 0.78      2    1.90 1.48   1   3     2  0.14    -1.36 0.04
+Q6_2    14 490 1.40 0.67      1    1.24 0.00   1   3     2  1.42     0.64 0.03
+Q6_5    15 490 1.66 0.80      1    1.58 0.00   1   3     2  0.68    -1.11 0.04
+Q6_6    16 490 1.22 0.52      1    1.09 0.00   1   3     2  2.29     4.28 0.02
+Q6_7    17 490 1.45 0.66      1    1.32 0.00   1   3     2  1.17     0.14 0.03
+Q6_8    18 490 1.43 0.65      1    1.31 0.00   1   3     2  1.21     0.27 0.03
+Q6_11   19 490 1.85 0.76      2    1.81 1.48   1   3     2  0.26    -1.22 0.03
+Q7_2    20 490 1.74 0.69      2    1.67 1.48   1   3     2  0.39    -0.89 0.03
+Q7_4    21 490 1.89 0.79      2    1.86 1.48   1   3     2  0.20    -1.37 0.04
+Q7_5    22 490 1.89 0.76      2    1.86 1.48   1   3     2  0.19    -1.24 0.03
+Q7_7    23 490 2.43 0.78      3    2.54 0.00   1   3     2 -0.91    -0.76 0.04
+Q7_8    24 490 1.87 0.75      2    1.84 1.48   1   3     2  0.21    -1.21 0.03
+Q7_14   25 490 2.39 0.76      3    2.49 0.00   1   3     2 -0.78    -0.85 0.03</code></pre>
+<pre class="r"><code>t(apply(mydata,2, table))</code></pre>
+<pre><code>        1   2   3
+Q4_3  232 211  47
+Q4_4  222 220  48
+Q4_5  285 154  51
+Q4_9  258 147  85
+Q4_11 247 171  72
+Q4_15 258 180  52
+Q4_18 272 181  37
+Q5_1  229 164  97
+Q5_2  180 131 179
+Q5_3  225 145 120
+Q5_5  108 113 269
+Q5_6  161 195 134
+Q5_12 170 188 132
+Q6_2  346  94  50
+Q6_5  266 123 101
+Q6_6  405  61  24
+Q6_7  316 129  45
+Q6_8  321 127  42
+Q6_11 183 199 108
+Q7_2  197 224  69
+Q7_4  183 180 127
+Q7_5  171 203 116
+Q7_7   89 101 300
+Q7_8  174 205 111
+Q7_14  82 135 273</code></pre>
+<pre class="r"><code>mod &lt;- &#39;
+EL =~ 1*Q4_3 + lam44*Q4_4 + lam45*Q4_5 + lam49*Q4_9 + lam411*Q4_11 + lam415*Q4_15 + lam418*Q4_18
+SC =~ 1*Q5_1 + lam52*Q5_2 + lam53*Q5_3 + lam55*Q5_5 + lam56*Q5_6 + lam512*Q5_12
+IN =~ 1*Q6_2 + lam65*Q6_5 + lam66*Q6_6 + lam67*Q6_7 + lam68*Q6_8 + lam611*Q6_11
+EN =~ 1*Q7_2 + lam74*Q7_4 + lam75*Q7_5 + lam77*Q7_7 + lam78*Q7_8 + lam714*Q7_14
+
+# Factor covarainces
+EL ~~ EL + SC + IN + EN
+SC ~~ SC + IN + EN
+IN ~~ IN + EN
+EN ~~ EN
+
+# Factor Reliabilities
+rEL := ((1 + lam44 + lam45 + lam49 + lam411 + lam415 + lam418)**2)/((1 + lam44 + lam45 + lam49 + lam411 + lam415 + lam418)**2 + 7)
+rSC := ((1 + lam52 + lam53 + lam55 + lam56 + lam512)**2)/((1 + lam52 + lam53 + lam55 + lam56 + lam512)**2 + 6)
+rIN := ((1 + lam65 + lam66 + lam67 + lam68 + lam611)**2)/((1 + lam65 + lam66 + lam67 + lam68 + lam611)**2 + 6)
+rEN := ((1 + lam74 + lam75 + lam77 + lam78 + lam714)**2)/((1 + lam74 + lam75 + lam77 + lam78 + lam714)**2 + 6)
+&#39;
+
+fit.dwls &lt;- lavaan::cfa(mod, data=mydata, ordered=T)
+summary(fit.dwls, standardized=T, fit.measures=T)</code></pre>
+<pre><code>lavaan 0.6-7 ended normally after 49 iterations
+
+  Estimator                                       DWLS
+  Optimization method                           NLMINB
+  Number of free parameters                         81
+                                                      
+  Number of observations                           490
+                                                      
+Model Test User Model:
+                                              Standard      Robust
+  Test Statistic                               593.869     765.951
+  Degrees of freedom                               269         269
+  P-value (Chi-square)                           0.000       0.000
+  Scaling correction factor                                  0.883
+  Shift parameter                                           93.760
+       simple second-order correction                             
+
+Model Test Baseline Model:
+
+  Test statistic                             32729.962   10489.239
+  Degrees of freedom                               300         300
+  P-value                                        0.000       0.000
+  Scaling correction factor                                  3.183
+
+User Model versus Baseline Model:
+
+  Comparative Fit Index (CFI)                    0.990       0.951
+  Tucker-Lewis Index (TLI)                       0.989       0.946
+                                                                  
+  Robust Comparative Fit Index (CFI)                            NA
+  Robust Tucker-Lewis Index (TLI)                               NA
+
+Root Mean Square Error of Approximation:
+
+  RMSEA                                          0.050       0.061
+  90 Percent confidence interval - lower         0.044       0.056
+  90 Percent confidence interval - upper         0.055       0.067
+  P-value RMSEA &lt;= 0.05                          0.529       0.000
+                                                                  
+  Robust RMSEA                                                  NA
+  90 Percent confidence interval - lower                        NA
+  90 Percent confidence interval - upper                        NA
+
+Standardized Root Mean Square Residual:
+
+  SRMR                                           0.065       0.065
+
+Parameter Estimates:
+
+  Standard errors                           Robust.sem
+  Information                                 Expected
+  Information saturated (h1) model        Unstructured
+
+Latent Variables:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+  EL =~                                                                 
+    Q4_3              1.000                               0.777    0.777
+    Q4_4    (lm44)    1.123    0.037   30.348    0.000    0.872    0.872
+    Q4_5    (lm45)    0.979    0.043   22.805    0.000    0.760    0.760
+    Q4_9    (lm49)    0.883    0.047   18.643    0.000    0.686    0.686
+    Q4_11   (l411)    1.018    0.041   24.844    0.000    0.791    0.791
+    Q4_15   (l415)    0.998    0.043   23.381    0.000    0.775    0.775
+    Q4_18   (l418)    1.086    0.040   27.368    0.000    0.843    0.843
+  SC =~                                                                 
+    Q5_1              1.000                               0.734    0.734
+    Q5_2    (lm52)    0.989    0.056   17.522    0.000    0.726    0.726
+    Q5_3    (lm53)    0.973    0.061   15.972    0.000    0.714    0.714
+    Q5_5    (lm55)    0.893    0.066   13.477    0.000    0.656    0.656
+    Q5_6    (lm56)    1.087    0.060   18.085    0.000    0.798    0.798
+    Q5_12   (l512)    1.075    0.061   17.704    0.000    0.789    0.789
+  IN =~                                                                 
+    Q6_2              1.000                               0.725    0.725
+    Q6_5    (lm65)    0.752    0.071   10.620    0.000    0.546    0.546
+    Q6_6    (lm66)    1.204    0.068   17.697    0.000    0.874    0.874
+    Q6_7    (lm67)    1.169    0.066   17.758    0.000    0.848    0.848
+    Q6_8    (lm68)    1.093    0.060   18.255    0.000    0.793    0.793
+    Q6_11   (l611)    1.186    0.070   16.932    0.000    0.860    0.860
+  EN =~                                                                 
+    Q7_2              1.000                               0.779    0.779
+    Q7_4    (lm74)    0.905    0.045   20.233    0.000    0.705    0.705
+    Q7_5    (lm75)    1.039    0.046   22.632    0.000    0.809    0.809
+    Q7_7    (lm77)    0.945    0.059   16.113    0.000    0.736    0.736
+    Q7_8    (lm78)    0.941    0.044   21.465    0.000    0.733    0.733
+    Q7_14   (l714)    0.823    0.056   14.725    0.000    0.641    0.641
+
+Covariances:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+  EL ~~                                                                 
+    SC                0.391    0.032   12.101    0.000    0.685    0.685
+    IN                0.422    0.035   12.131    0.000    0.748    0.748
+    EN                0.471    0.030   15.840    0.000    0.778    0.778
+  SC ~~                                                                 
+    IN                0.346    0.035    9.904    0.000    0.649    0.649
+    EN                0.460    0.033   13.989    0.000    0.803    0.803
+  IN ~~                                                                 
+    EN                0.422    0.036   11.883    0.000    0.747    0.747
+
+Intercepts:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+   .Q4_3              0.000                               0.000    0.000
+   .Q4_4              0.000                               0.000    0.000
+   .Q4_5              0.000                               0.000    0.000
+   .Q4_9              0.000                               0.000    0.000
+   .Q4_11             0.000                               0.000    0.000
+   .Q4_15             0.000                               0.000    0.000
+   .Q4_18             0.000                               0.000    0.000
+   .Q5_1              0.000                               0.000    0.000
+   .Q5_2              0.000                               0.000    0.000
+   .Q5_3              0.000                               0.000    0.000
+   .Q5_5              0.000                               0.000    0.000
+   .Q5_6              0.000                               0.000    0.000
+   .Q5_12             0.000                               0.000    0.000
+   .Q6_2              0.000                               0.000    0.000
+   .Q6_5              0.000                               0.000    0.000
+   .Q6_6              0.000                               0.000    0.000
+   .Q6_7              0.000                               0.000    0.000
+   .Q6_8              0.000                               0.000    0.000
+   .Q6_11             0.000                               0.000    0.000
+   .Q7_2              0.000                               0.000    0.000
+   .Q7_4              0.000                               0.000    0.000
+   .Q7_5              0.000                               0.000    0.000
+   .Q7_7              0.000                               0.000    0.000
+   .Q7_8              0.000                               0.000    0.000
+   .Q7_14             0.000                               0.000    0.000
+    EL                0.000                               0.000    0.000
+    SC                0.000                               0.000    0.000
+    IN                0.000                               0.000    0.000
+    EN                0.000                               0.000    0.000
+
+Thresholds:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+    Q4_3|t1          -0.067    0.057   -1.173    0.241   -0.067   -0.067
+    Q4_3|t2           1.305    0.078   16.683    0.000    1.305    1.305
+    Q4_4|t1          -0.118    0.057   -2.076    0.038   -0.118   -0.118
+    Q4_4|t2           1.293    0.078   16.631    0.000    1.293    1.293
+    Q4_5|t1           0.206    0.057    3.608    0.000    0.206    0.206
+    Q4_5|t2           1.259    0.076   16.468    0.000    1.259    1.259
+    Q4_9|t1           0.067    0.057    1.173    0.241    0.067    0.067
+    Q4_9|t2           0.941    0.067   14.080    0.000    0.941    0.941
+    Q4_11|t1          0.010    0.057    0.181    0.857    0.010    0.010
+    Q4_11|t2          1.050    0.070   15.077    0.000    1.050    1.050
+    Q4_15|t1          0.067    0.057    1.173    0.241    0.067    0.067
+    Q4_15|t2          1.247    0.076   16.411    0.000    1.247    1.247
+    Q4_18|t1          0.139    0.057    2.436    0.015    0.139    0.139
+    Q4_18|t2          1.436    0.084   17.100    0.000    1.436    1.436
+    Q5_1|t1          -0.082    0.057   -1.444    0.149   -0.082   -0.082
+    Q5_1|t2           0.849    0.065   13.109    0.000    0.849    0.849
+    Q5_2|t1          -0.339    0.058   -5.855    0.000   -0.339   -0.339
+    Q5_2|t2           0.344    0.058    5.945    0.000    0.344    0.344
+    Q5_3|t1          -0.102    0.057   -1.805    0.071   -0.102   -0.102
+    Q5_3|t2           0.691    0.062   11.162    0.000    0.691    0.691
+    Q5_5|t1          -0.771    0.063  -12.188    0.000   -0.771   -0.771
+    Q5_5|t2          -0.123    0.057   -2.166    0.030   -0.123   -0.123
+    Q5_6|t1          -0.444    0.059   -7.555    0.000   -0.444   -0.444
+    Q5_6|t2           0.602    0.061    9.944    0.000    0.602    0.602
+    Q5_12|t1         -0.394    0.058   -6.751    0.000   -0.394   -0.394
+    Q5_12|t2          0.615    0.061   10.119    0.000    0.615    0.615
+    Q6_2|t1           0.542    0.060    9.064    0.000    0.542    0.542
+    Q6_2|t2           1.270    0.077   16.524    0.000    1.270    1.270
+    Q6_5|t1           0.108    0.057    1.895    0.058    0.108    0.108
+    Q6_5|t2           0.820    0.064   12.777    0.000    0.820    0.820
+    Q6_6|t1           0.941    0.067   14.080    0.000    0.941    0.941
+    Q6_6|t2           1.655    0.096   17.201    0.000    1.655    1.655
+    Q6_7|t1           0.372    0.058    6.393    0.000    0.372    0.372
+    Q6_7|t2           1.330    0.079   16.782    0.000    1.330    1.330
+    Q6_8|t1           0.399    0.058    6.841    0.000    0.399    0.399
+    Q6_8|t2           1.368    0.081   16.917    0.000    1.368    1.368
+    Q6_11|t1         -0.323    0.058   -5.586    0.000   -0.323   -0.323
+    Q6_11|t2          0.771    0.063   12.188    0.000    0.771    0.771
+    Q7_2|t1          -0.248    0.057   -4.328    0.000   -0.248   -0.248
+    Q7_2|t2           1.077    0.070   15.295    0.000    1.077    1.077
+    Q7_4|t1          -0.323    0.058   -5.586    0.000   -0.323   -0.323
+    Q7_4|t2           0.646    0.061   10.555    0.000    0.646    0.646
+    Q7_5|t1          -0.388    0.058   -6.662    0.000   -0.388   -0.388
+    Q7_5|t2           0.717    0.062   11.506    0.000    0.717    0.717
+    Q7_7|t1          -0.909    0.066  -13.761    0.000   -0.909   -0.909
+    Q7_7|t2          -0.285    0.058   -4.958    0.000   -0.285   -0.285
+    Q7_8|t1          -0.372    0.058   -6.393    0.000   -0.372   -0.372
+    Q7_8|t2           0.750    0.063   11.934    0.000    0.750    0.750
+    Q7_14|t1         -0.965    0.067  -14.316    0.000   -0.965   -0.965
+    Q7_14|t2         -0.144    0.057   -2.526    0.012   -0.144   -0.144
+
+Variances:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+    EL                0.604    0.037   16.186    0.000    1.000    1.000
+    SC                0.539    0.049   11.113    0.000    1.000    1.000
+    IN                0.526    0.052   10.033    0.000    1.000    1.000
+    EN                0.607    0.042   14.304    0.000    1.000    1.000
+   .Q4_3              0.396                               0.396    0.396
+   .Q4_4              0.239                               0.239    0.239
+   .Q4_5              0.422                               0.422    0.422
+   .Q4_9              0.530                               0.530    0.530
+   .Q4_11             0.374                               0.374    0.374
+   .Q4_15             0.399                               0.399    0.399
+   .Q4_18             0.289                               0.289    0.289
+   .Q5_1              0.461                               0.461    0.461
+   .Q5_2              0.473                               0.473    0.473
+   .Q5_3              0.490                               0.490    0.490
+   .Q5_5              0.570                               0.570    0.570
+   .Q5_6              0.363                               0.363    0.363
+   .Q5_12             0.377                               0.377    0.377
+   .Q6_2              0.474                               0.474    0.474
+   .Q6_5              0.702                               0.702    0.702
+   .Q6_6              0.237                               0.237    0.237
+   .Q6_7              0.281                               0.281    0.281
+   .Q6_8              0.371                               0.371    0.371
+   .Q6_11             0.260                               0.260    0.260
+   .Q7_2              0.393                               0.393    0.393
+   .Q7_4              0.503                               0.503    0.503
+   .Q7_5              0.345                               0.345    0.345
+   .Q7_7              0.458                               0.458    0.458
+   .Q7_8              0.463                               0.463    0.463
+   .Q7_14             0.589                               0.589    0.589
+
+Scales y*:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+    Q4_3              1.000                               1.000    1.000
+    Q4_4              1.000                               1.000    1.000
+    Q4_5              1.000                               1.000    1.000
+    Q4_9              1.000                               1.000    1.000
+    Q4_11             1.000                               1.000    1.000
+    Q4_15             1.000                               1.000    1.000
+    Q4_18             1.000                               1.000    1.000
+    Q5_1              1.000                               1.000    1.000
+    Q5_2              1.000                               1.000    1.000
+    Q5_3              1.000                               1.000    1.000
+    Q5_5              1.000                               1.000    1.000
+    Q5_6              1.000                               1.000    1.000
+    Q5_12             1.000                               1.000    1.000
+    Q6_2              1.000                               1.000    1.000
+    Q6_5              1.000                               1.000    1.000
+    Q6_6              1.000                               1.000    1.000
+    Q6_7              1.000                               1.000    1.000
+    Q6_8              1.000                               1.000    1.000
+    Q6_11             1.000                               1.000    1.000
+    Q7_2              1.000                               1.000    1.000
+    Q7_4              1.000                               1.000    1.000
+    Q7_5              1.000                               1.000    1.000
+    Q7_7              1.000                               1.000    1.000
+    Q7_8              1.000                               1.000    1.000
+    Q7_14             1.000                               1.000    1.000
+
+Defined Parameters:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+    rEL               0.878    0.005  160.558    0.000    0.824    0.824
+    rSC               0.858    0.010   89.363    0.000    0.785    0.785
+    rIN               0.872    0.009   93.290    0.000    0.801    0.801
+    rEN               0.842    0.008  101.139    0.000    0.781    0.781</code></pre>
+</div>
+<div id="comparing-reliability" class="section level2">
+<h2>Comparing Reliability</h2>
+<pre class="r"><code># simulated induced prior on omega
+prior_lambda &lt;- function(){
+  y &lt;- -1
+  while(y &lt; 0){
+    y &lt;- rnorm(1, 0, 1)
+  }
+  return(y)
+}
+
+prior_omega &lt;- function(lambda, theta){
+  (sum(lambda)**2)/(sum(lambda)**2 + sum(theta))
+}
+nsim=4000
+sim_omega1 &lt;- sim_omega2 &lt;- numeric(nsim)
+for(i in 1:nsim){
+  lam_vec &lt;- c(
+    1, prior_lambda(), prior_lambda(), prior_lambda(),prior_lambda(), prior_lambda(), prior_lambda()
+  )
+  tht_vec &lt;- rep(1, 7)
+  sim_omega1[i] &lt;- prior_omega(lam_vec, tht_vec)
+  sim_omega2[i] &lt;- prior_omega(lam_vec[1:6], tht_vec[1:6])
+}
+prior_data &lt;- data.frame(prior_s_f1=sim_omega1,prior_s_f2=sim_omega2,prior_s_f3=sim_omega2,prior_s_f4=sim_omega2)
+ggplot(prior_data, aes(x=prior_s_f1))+
+  geom_density(adjust=2)+
+  labs(title=&quot;Induced prior on omega&quot;)+
+  theme_classic()</code></pre>
+<p><img src="figure/pools_model_comparison.Rmd/reli-post-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># read in data
+o1 &lt;- readr::read_csv(paste0(getwd(),&quot;/data/pools/extracted_omega_m1.csv&quot;))</code></pre>
+<pre><code>Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>
+-- Column specification --------------------------------------------------------
+cols(
+  X1 = col_double(),
+  model_1_f1 = col_double(),
+  model_1_f2 = col_double(),
+  model_1_f3 = col_double(),
+  model_1_f4 = col_double()
+)</code></pre>
+<pre class="r"><code>o2 &lt;- readr::read_csv(paste0(getwd(),&quot;/data/pools/extracted_omega_m2.csv&quot;))</code></pre>
+<pre><code>Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>
+-- Column specification --------------------------------------------------------
+cols(
+  X1 = col_double(),
+  model_2_f1 = col_double(),
+  model_2_f2 = col_double(),
+  model_2_f3 = col_double(),
+  model_2_f4 = col_double()
+)</code></pre>
+<pre class="r"><code>o3 &lt;- readr::read_csv(paste0(getwd(),&quot;/data/pools/extracted_omega_m3.csv&quot;))</code></pre>
+<pre><code>Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>
+-- Column specification --------------------------------------------------------
+cols(
+  X1 = col_double(),
+  model_3_f1 = col_double(),
+  model_3_f2 = col_double(),
+  model_3_f3 = col_double(),
+  model_3_f4 = col_double()
+)</code></pre>
+<pre class="r"><code>o4 &lt;- readr::read_csv(paste0(getwd(),&quot;/data/pools/extracted_omega_m4.csv&quot;))</code></pre>
+<pre><code>Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>
+-- Column specification --------------------------------------------------------
+cols(
+  X1 = col_double(),
+  model_4_f1 = col_double(),
+  model_4_f2 = col_double(),
+  model_4_f3 = col_double(),
+  model_4_f4 = col_double()
+)</code></pre>
+<pre class="r"><code>dat_omega &lt;- cbind(o1[,2:5], o2[,2:5], o3[,2:5], o4[,2:5], prior_data[,1:4])
+
+
+plot.dat &lt;- dat_omega %&gt;%
+  pivot_longer(
+    cols=everything(),
+    names_to = &quot;model&quot;,
+    values_to = &quot;est&quot;
+  )%&gt;%
+  mutate(
+    factor = substr(model, 9,10),
+    model = substr(model, 1, 7)
+  )
+sum.dat &lt;- plot.dat %&gt;%
+  group_by(model, factor) %&gt;%
+  summarise(
+    Mean = mean(est),
+    SD = sd(est),
+    Q025 = quantile(est, 0.025),
+    Q1 = quantile(est, 0.25),
+    Median = median(est),
+    Q3 = quantile(est, 0.75),
+    Q975 = quantile(est, 0.975),
+  )</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;model&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>kable(sum.dat,format = &quot;html&quot;, digits=3) %&gt;%
+  kable_styling(full_width = T)</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+model
+</th>
+<th style="text-align:left;">
+factor
+</th>
+<th style="text-align:right;">
+Mean
+</th>
+<th style="text-align:right;">
+SD
+</th>
+<th style="text-align:right;">
+Q025
+</th>
+<th style="text-align:right;">
+Q1
+</th>
+<th style="text-align:right;">
+Median
+</th>
+<th style="text-align:right;">
+Q3
+</th>
+<th style="text-align:right;">
+Q975
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+model_1
+</td>
+<td style="text-align:left;">
+f1
+</td>
+<td style="text-align:right;">
+0.865
+</td>
+<td style="text-align:right;">
+0.011
+</td>
+<td style="text-align:right;">
+0.843
+</td>
+<td style="text-align:right;">
+0.858
+</td>
+<td style="text-align:right;">
+0.866
+</td>
+<td style="text-align:right;">
+0.873
+</td>
+<td style="text-align:right;">
+0.886
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_1
+</td>
+<td style="text-align:left;">
+f2
+</td>
+<td style="text-align:right;">
+0.828
+</td>
+<td style="text-align:right;">
+0.011
+</td>
+<td style="text-align:right;">
+0.807
+</td>
+<td style="text-align:right;">
+0.821
+</td>
+<td style="text-align:right;">
+0.829
+</td>
+<td style="text-align:right;">
+0.836
+</td>
+<td style="text-align:right;">
+0.849
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_1
+</td>
+<td style="text-align:left;">
+f3
+</td>
+<td style="text-align:right;">
+0.655
+</td>
+<td style="text-align:right;">
+0.025
+</td>
+<td style="text-align:right;">
+0.604
+</td>
+<td style="text-align:right;">
+0.638
+</td>
+<td style="text-align:right;">
+0.655
+</td>
+<td style="text-align:right;">
+0.672
+</td>
+<td style="text-align:right;">
+0.703
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_1
+</td>
+<td style="text-align:left;">
+f4
+</td>
+<td style="text-align:right;">
+0.864
+</td>
+<td style="text-align:right;">
+0.011
+</td>
+<td style="text-align:right;">
+0.842
+</td>
+<td style="text-align:right;">
+0.857
+</td>
+<td style="text-align:right;">
+0.864
+</td>
+<td style="text-align:right;">
+0.872
+</td>
+<td style="text-align:right;">
+0.884
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_2
+</td>
+<td style="text-align:left;">
+f1
+</td>
+<td style="text-align:right;">
+0.917
+</td>
+<td style="text-align:right;">
+0.016
+</td>
+<td style="text-align:right;">
+0.882
+</td>
+<td style="text-align:right;">
+0.909
+</td>
+<td style="text-align:right;">
+0.918
+</td>
+<td style="text-align:right;">
+0.927
+</td>
+<td style="text-align:right;">
+0.943
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_2
+</td>
+<td style="text-align:left;">
+f2
+</td>
+<td style="text-align:right;">
+0.796
+</td>
+<td style="text-align:right;">
+0.018
+</td>
+<td style="text-align:right;">
+0.756
+</td>
+<td style="text-align:right;">
+0.784
+</td>
+<td style="text-align:right;">
+0.797
+</td>
+<td style="text-align:right;">
+0.809
+</td>
+<td style="text-align:right;">
+0.826
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_2
+</td>
+<td style="text-align:left;">
+f3
+</td>
+<td style="text-align:right;">
+0.872
+</td>
+<td style="text-align:right;">
+0.021
+</td>
+<td style="text-align:right;">
+0.827
+</td>
+<td style="text-align:right;">
+0.857
+</td>
+<td style="text-align:right;">
+0.873
+</td>
+<td style="text-align:right;">
+0.888
+</td>
+<td style="text-align:right;">
+0.906
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_2
+</td>
+<td style="text-align:left;">
+f4
+</td>
+<td style="text-align:right;">
+0.841
+</td>
+<td style="text-align:right;">
+0.018
+</td>
+<td style="text-align:right;">
+0.799
+</td>
+<td style="text-align:right;">
+0.830
+</td>
+<td style="text-align:right;">
+0.842
+</td>
+<td style="text-align:right;">
+0.853
+</td>
+<td style="text-align:right;">
+0.873
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_3
+</td>
+<td style="text-align:left;">
+f1
+</td>
+<td style="text-align:right;">
+0.910
+</td>
+<td style="text-align:right;">
+0.009
+</td>
+<td style="text-align:right;">
+0.891
+</td>
+<td style="text-align:right;">
+0.904
+</td>
+<td style="text-align:right;">
+0.911
+</td>
+<td style="text-align:right;">
+0.917
+</td>
+<td style="text-align:right;">
+0.927
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_3
+</td>
+<td style="text-align:left;">
+f2
+</td>
+<td style="text-align:right;">
+0.824
+</td>
+<td style="text-align:right;">
+0.012
+</td>
+<td style="text-align:right;">
+0.799
+</td>
+<td style="text-align:right;">
+0.815
+</td>
+<td style="text-align:right;">
+0.824
+</td>
+<td style="text-align:right;">
+0.833
+</td>
+<td style="text-align:right;">
+0.846
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_3
+</td>
+<td style="text-align:left;">
+f3
+</td>
+<td style="text-align:right;">
+0.852
+</td>
+<td style="text-align:right;">
+0.020
+</td>
+<td style="text-align:right;">
+0.812
+</td>
+<td style="text-align:right;">
+0.838
+</td>
+<td style="text-align:right;">
+0.853
+</td>
+<td style="text-align:right;">
+0.866
+</td>
+<td style="text-align:right;">
+0.888
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_3
+</td>
+<td style="text-align:left;">
+f4
+</td>
+<td style="text-align:right;">
+0.861
+</td>
+<td style="text-align:right;">
+0.012
+</td>
+<td style="text-align:right;">
+0.837
+</td>
+<td style="text-align:right;">
+0.853
+</td>
+<td style="text-align:right;">
+0.861
+</td>
+<td style="text-align:right;">
+0.869
+</td>
+<td style="text-align:right;">
+0.884
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_4
+</td>
+<td style="text-align:left;">
+f1
+</td>
+<td style="text-align:right;">
+0.848
+</td>
+<td style="text-align:right;">
+0.015
+</td>
+<td style="text-align:right;">
+0.817
+</td>
+<td style="text-align:right;">
+0.838
+</td>
+<td style="text-align:right;">
+0.848
+</td>
+<td style="text-align:right;">
+0.858
+</td>
+<td style="text-align:right;">
+0.878
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_4
+</td>
+<td style="text-align:left;">
+f2
+</td>
+<td style="text-align:right;">
+0.857
+</td>
+<td style="text-align:right;">
+0.013
+</td>
+<td style="text-align:right;">
+0.832
+</td>
+<td style="text-align:right;">
+0.847
+</td>
+<td style="text-align:right;">
+0.857
+</td>
+<td style="text-align:right;">
+0.866
+</td>
+<td style="text-align:right;">
+0.883
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_4
+</td>
+<td style="text-align:left;">
+f3
+</td>
+<td style="text-align:right;">
+0.680
+</td>
+<td style="text-align:right;">
+0.024
+</td>
+<td style="text-align:right;">
+0.634
+</td>
+<td style="text-align:right;">
+0.663
+</td>
+<td style="text-align:right;">
+0.680
+</td>
+<td style="text-align:right;">
+0.696
+</td>
+<td style="text-align:right;">
+0.727
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_4
+</td>
+<td style="text-align:left;">
+f4
+</td>
+<td style="text-align:right;">
+0.903
+</td>
+<td style="text-align:right;">
+0.011
+</td>
+<td style="text-align:right;">
+0.881
+</td>
+<td style="text-align:right;">
+0.896
+</td>
+<td style="text-align:right;">
+0.904
+</td>
+<td style="text-align:right;">
+0.911
+</td>
+<td style="text-align:right;">
+0.923
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+prior_s
+</td>
+<td style="text-align:left;">
+f1
+</td>
+<td style="text-align:right;">
+0.806
+</td>
+<td style="text-align:right;">
+0.084
+</td>
+<td style="text-align:right;">
+0.596
+</td>
+<td style="text-align:right;">
+0.763
+</td>
+<td style="text-align:right;">
+0.823
+</td>
+<td style="text-align:right;">
+0.866
+</td>
+<td style="text-align:right;">
+0.921
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+prior_s
+</td>
+<td style="text-align:left;">
+f2
+</td>
+<td style="text-align:right;">
+0.781
+</td>
+<td style="text-align:right;">
+0.095
+</td>
+<td style="text-align:right;">
+0.537
+</td>
+<td style="text-align:right;">
+0.732
+</td>
+<td style="text-align:right;">
+0.800
+</td>
+<td style="text-align:right;">
+0.850
+</td>
+<td style="text-align:right;">
+0.910
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+prior_s
+</td>
+<td style="text-align:left;">
+f3
+</td>
+<td style="text-align:right;">
+0.781
+</td>
+<td style="text-align:right;">
+0.095
+</td>
+<td style="text-align:right;">
+0.537
+</td>
+<td style="text-align:right;">
+0.732
+</td>
+<td style="text-align:right;">
+0.800
+</td>
+<td style="text-align:right;">
+0.850
+</td>
+<td style="text-align:right;">
+0.910
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+prior_s
+</td>
+<td style="text-align:left;">
+f4
+</td>
+<td style="text-align:right;">
+0.781
+</td>
+<td style="text-align:right;">
+0.095
+</td>
+<td style="text-align:right;">
+0.537
+</td>
+<td style="text-align:right;">
+0.732
+</td>
+<td style="text-align:right;">
+0.800
+</td>
+<td style="text-align:right;">
+0.850
+</td>
+<td style="text-align:right;">
+0.910
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># reli from DWLS
+reli_est &lt;- data.frame(
+  factor = c(&#39;f1&#39;, &#39;f2&#39;, &#39;f3&#39;, &#39;f4&#39;),
+  est    = c(.82, .79, .80, .78)
+)
+
+plot.dat %&gt;%
+  filter(model != &#39;prior_s&#39;)%&gt;%
+ggplot(aes(x=est, y=model, group=interaction(model, factor)))+
+ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize=&quot;all&quot;, fill=&quot;grey75&quot;
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=reli_est, aes(xintercept=est), linetype=&#39;dashed&#39;)+
+  labs(x=&quot;Reliability Estimates&quot;,
+       y=&quot;Estimating Model&quot;)+
+  lims(x=c(0.5, 1))+
+  facet_wrap(.~factor)+
+  theme_classic()</code></pre>
+<p><img src="figure/pools_model_comparison.Rmd/reli-post-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(plot.dat,aes(x=est, group=interaction(model, factor), color=model, fill=model))+
+  geom_density(alpha=0.25)+
+  facet_wrap(.~factor)+
+  theme_classic()</code></pre>
+<p><img src="figure/pools_model_comparison.Rmd/reli-post-3.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="comparing-factor-correlations" class="section level2">
+<h2>Comparing Factor Correlations</h2>
+<pre class="r"><code>prior_cor &lt;- function(sigma){
+  S &lt;- LaplacesDemon::rinvwishart(4, matrix(
+      sigma, ncol=4, nrow=4, byrow=T
+      ))
+  cor &lt;- matrix(nrow=4,ncol=4)
+  for(i in 1:4){
+    for(j in 1:4){
+      cor[i,j] &lt;- S[i,j]/(sqrt(S[i,i])*sqrt(S[j,j]))
+    }
+  }
+  return(c(cor[1,2],cor[1,3],cor[1,4],cor[2,3],cor[2,4],cor[3,4]))
+}
+
+# simulated induced prior on omega
+
+nsim=4000
+sim_cor1 &lt;- sim_cor2 &lt;- sim_cor3 &lt;- matrix(nrow=nsim, ncol=6)
+for(i in 1:nsim){
+  sim_cor1[i,] &lt;- prior_cor(c(diag(ncol=4,nrow=4)))
+  sim_cor2[i,] &lt;- prior_cor(
+      c(
+        1, 0.3, 0.3, 0.3,
+        0.3, 1, 0.3, 0.3,
+        0.3, 0.3, 1, 0.3,
+        0.3, 0.3, 0.3, 1)
+  )
+  sim_cor3[i,] &lt;- prior_cor(
+      c(1.52, 0.92, 0.97, 1.19,
+        0.92, 1.17, 0.74, 1.08,
+        0.97, 0.74, 1.11, 0.98,
+        1.19, 1.08, 0.98, 1.55)
+  )
+
+  
+}
+prior_data1 &lt;- as.data.frame(sim_cor1)
+prior_data2 &lt;- as.data.frame(sim_cor2)
+prior_data3 &lt;- as.data.frame(sim_cor3)
+colnames(prior_data1) &lt;- c(
+  &#39;phi.cor[1,2]&#39;,&#39;phi.cor[1,3]&#39;,&#39;phi.cor[1,4]&#39;,
+  &#39;phi.cor[2,3]&#39;,&#39;phi.cor[2,4]&#39;,&#39;phi.cor[3,4]&#39;)
+colnames(prior_data2) &lt;- c(
+  &#39;phi.cor[1,2]&#39;,&#39;phi.cor[1,3]&#39;,&#39;phi.cor[1,4]&#39;,
+  &#39;phi.cor[2,3]&#39;,&#39;phi.cor[2,4]&#39;,&#39;phi.cor[3,4]&#39;)
+colnames(prior_data3) &lt;- c(
+  &#39;phi.cor[1,2]&#39;,&#39;phi.cor[1,3]&#39;,&#39;phi.cor[1,4]&#39;,
+  &#39;phi.cor[2,3]&#39;,&#39;phi.cor[2,4]&#39;,&#39;phi.cor[3,4]&#39;)
+prior_data1$model &lt;- &#39;prior&#39;
+prior_data2$model &lt;- &#39;prior&#39;
+prior_data3$model &lt;- &#39;prior&#39;
+prior_data1 %&gt;%
+  pivot_longer(
+    cols=contains(&#39;phi.cor&#39;),
+    names_to = &#39;cor&#39;,
+    values_to=&quot;cor_est&quot;
+  ) %&gt;%
+ggplot(aes(x=cor_est))+
+  geom_density(adjust=2)+
+facet_wrap(.~cor)+
+  labs(title=&quot;Induced prior on correlations&quot;)+
+  theme_classic()</code></pre>
+<p><img src="figure/pools_model_comparison.Rmd/cor-post-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># read in data
+o1 &lt;- readr::read_csv(paste0(getwd(),&quot;/data/pools/extracted_cor_m1.csv&quot;)); o1$model &lt;- &#39;model_1&#39;</code></pre>
+<pre><code>Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>
+-- Column specification --------------------------------------------------------
+cols(
+  X1 = col_double(),
+  `phi.cor[1,2]` = col_double(),
+  `phi.cor[1,3]` = col_double(),
+  `phi.cor[1,4]` = col_double(),
+  `phi.cor[2,3]` = col_double(),
+  `phi.cor[2,4]` = col_double(),
+  `phi.cor[3,4]` = col_double()
+)</code></pre>
+<pre class="r"><code>o2 &lt;- readr::read_csv(paste0(getwd(),&quot;/data/pools/extracted_cor_m2.csv&quot;)); o2$model &lt;- &#39;model_2&#39;</code></pre>
+<pre><code>Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>
+-- Column specification --------------------------------------------------------
+cols(
+  X1 = col_double(),
+  `phi.cor[1,2]` = col_double(),
+  `phi.cor[1,3]` = col_double(),
+  `phi.cor[1,4]` = col_double(),
+  `phi.cor[2,3]` = col_double(),
+  `phi.cor[2,4]` = col_double(),
+  `phi.cor[3,4]` = col_double()
+)</code></pre>
+<pre class="r"><code>o3 &lt;- readr::read_csv(paste0(getwd(),&quot;/data/pools/extracted_cor_m3.csv&quot;)); o3$model &lt;- &#39;model_3&#39;</code></pre>
+<pre><code>Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>
+-- Column specification --------------------------------------------------------
+cols(
+  X1 = col_double(),
+  `phi.cor[1,2]` = col_double(),
+  `phi.cor[1,3]` = col_double(),
+  `phi.cor[1,4]` = col_double(),
+  `phi.cor[2,3]` = col_double(),
+  `phi.cor[2,4]` = col_double(),
+  `phi.cor[3,4]` = col_double()
+)</code></pre>
+<pre class="r"><code>o4 &lt;- readr::read_csv(paste0(getwd(),&quot;/data/pools/extracted_cor_m4.csv&quot;)); o4$model &lt;- &#39;model_4&#39;</code></pre>
+<pre><code>Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>
+-- Column specification --------------------------------------------------------
+cols(
+  X1 = col_double(),
+  `phi.cor[1,2]` = col_double(),
+  `phi.cor[1,3]` = col_double(),
+  `phi.cor[1,4]` = col_double(),
+  `phi.cor[2,3]` = col_double(),
+  `phi.cor[2,4]` = col_double(),
+  `phi.cor[3,4]` = col_double()
+)</code></pre>
+<pre class="r"><code>dat_cor &lt;- full_join(o1[,2:8], o2[,2:8])%&gt;%
+  full_join(o3[,2:8]) %&gt;% 
+  full_join(o4[,2:8]) %&gt;%
+  full_join(prior_data1)</code></pre>
+<pre><code>Joining, by = c(&quot;phi.cor[1,2]&quot;, &quot;phi.cor[1,3]&quot;, &quot;phi.cor[1,4]&quot;, &quot;phi.cor[2,3]&quot;, &quot;phi.cor[2,4]&quot;, &quot;phi.cor[3,4]&quot;, &quot;model&quot;)</code></pre>
+<pre><code>Joining, by = c(&quot;phi.cor[1,2]&quot;, &quot;phi.cor[1,3]&quot;, &quot;phi.cor[1,4]&quot;, &quot;phi.cor[2,3]&quot;, &quot;phi.cor[2,4]&quot;, &quot;phi.cor[3,4]&quot;, &quot;model&quot;)
+Joining, by = c(&quot;phi.cor[1,2]&quot;, &quot;phi.cor[1,3]&quot;, &quot;phi.cor[1,4]&quot;, &quot;phi.cor[2,3]&quot;, &quot;phi.cor[2,4]&quot;, &quot;phi.cor[3,4]&quot;, &quot;model&quot;)
+Joining, by = c(&quot;phi.cor[1,2]&quot;, &quot;phi.cor[1,3]&quot;, &quot;phi.cor[1,4]&quot;, &quot;phi.cor[2,3]&quot;, &quot;phi.cor[2,4]&quot;, &quot;phi.cor[3,4]&quot;, &quot;model&quot;)</code></pre>
+<pre class="r"><code>plot.dat.cor &lt;- dat_cor %&gt;%
+  pivot_longer(
+    cols=contains(&#39;phi.cor&#39;),
+    names_to = &quot;cor&quot;,
+    values_to = &quot;est&quot;
+  )
+sum.dat &lt;- plot.dat.cor %&gt;%
+  group_by(model, cor) %&gt;%
+  summarise(
+    Mean = mean(est),
+    SD = sd(est),
+    Q025 = quantile(est, 0.025),
+    Q1 = quantile(est, 0.25),
+    Median = median(est),
+    Q3 = quantile(est, 0.75),
+    Q975 = quantile(est, 0.975),
+  )</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;model&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>kable(sum.dat,format = &quot;html&quot;, digits=3) %&gt;%
+  kable_styling(full_width = T)</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+model
+</th>
+<th style="text-align:left;">
+cor
+</th>
+<th style="text-align:right;">
+Mean
+</th>
+<th style="text-align:right;">
+SD
+</th>
+<th style="text-align:right;">
+Q025
+</th>
+<th style="text-align:right;">
+Q1
+</th>
+<th style="text-align:right;">
+Median
+</th>
+<th style="text-align:right;">
+Q3
+</th>
+<th style="text-align:right;">
+Q975
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+model_1
+</td>
+<td style="text-align:left;">
+phi.cor[1,2]
+</td>
+<td style="text-align:right;">
+0.696
+</td>
+<td style="text-align:right;">
+0.210
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+0.620
+</td>
+<td style="text-align:right;">
+0.752
+</td>
+<td style="text-align:right;">
+0.842
+</td>
+<td style="text-align:right;">
+0.925
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_1
+</td>
+<td style="text-align:left;">
+phi.cor[1,3]
+</td>
+<td style="text-align:right;">
+0.784
+</td>
+<td style="text-align:right;">
+0.157
+</td>
+<td style="text-align:right;">
+0.368
+</td>
+<td style="text-align:right;">
+0.723
+</td>
+<td style="text-align:right;">
+0.833
+</td>
+<td style="text-align:right;">
+0.895
+</td>
+<td style="text-align:right;">
+0.951
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_1
+</td>
+<td style="text-align:left;">
+phi.cor[1,4]
+</td>
+<td style="text-align:right;">
+0.799
+</td>
+<td style="text-align:right;">
+0.172
+</td>
+<td style="text-align:right;">
+0.319
+</td>
+<td style="text-align:right;">
+0.750
+</td>
+<td style="text-align:right;">
+0.860
+</td>
+<td style="text-align:right;">
+0.908
+</td>
+<td style="text-align:right;">
+0.952
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_1
+</td>
+<td style="text-align:left;">
+phi.cor[2,3]
+</td>
+<td style="text-align:right;">
+0.642
+</td>
+<td style="text-align:right;">
+0.241
+</td>
+<td style="text-align:right;">
+0.022
+</td>
+<td style="text-align:right;">
+0.533
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.821
+</td>
+<td style="text-align:right;">
+0.914
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_1
+</td>
+<td style="text-align:left;">
+phi.cor[2,4]
+</td>
+<td style="text-align:right;">
+0.769
+</td>
+<td style="text-align:right;">
+0.215
+</td>
+<td style="text-align:right;">
+0.109
+</td>
+<td style="text-align:right;">
+0.724
+</td>
+<td style="text-align:right;">
+0.849
+</td>
+<td style="text-align:right;">
+0.903
+</td>
+<td style="text-align:right;">
+0.952
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_1
+</td>
+<td style="text-align:left;">
+phi.cor[3,4]
+</td>
+<td style="text-align:right;">
+0.772
+</td>
+<td style="text-align:right;">
+0.178
+</td>
+<td style="text-align:right;">
+0.237
+</td>
+<td style="text-align:right;">
+0.721
+</td>
+<td style="text-align:right;">
+0.828
+</td>
+<td style="text-align:right;">
+0.887
+</td>
+<td style="text-align:right;">
+0.941
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_2
+</td>
+<td style="text-align:left;">
+phi.cor[1,2]
+</td>
+<td style="text-align:right;">
+0.815
+</td>
+<td style="text-align:right;">
+0.135
+</td>
+<td style="text-align:right;">
+0.441
+</td>
+<td style="text-align:right;">
+0.759
+</td>
+<td style="text-align:right;">
+0.857
+</td>
+<td style="text-align:right;">
+0.910
+</td>
+<td style="text-align:right;">
+0.964
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_2
+</td>
+<td style="text-align:left;">
+phi.cor[1,3]
+</td>
+<td style="text-align:right;">
+0.821
+</td>
+<td style="text-align:right;">
+0.178
+</td>
+<td style="text-align:right;">
+0.331
+</td>
+<td style="text-align:right;">
+0.782
+</td>
+<td style="text-align:right;">
+0.877
+</td>
+<td style="text-align:right;">
+0.928
+</td>
+<td style="text-align:right;">
+0.975
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_2
+</td>
+<td style="text-align:left;">
+phi.cor[1,4]
+</td>
+<td style="text-align:right;">
+0.864
+</td>
+<td style="text-align:right;">
+0.126
+</td>
+<td style="text-align:right;">
+0.470
+</td>
+<td style="text-align:right;">
+0.842
+</td>
+<td style="text-align:right;">
+0.908
+</td>
+<td style="text-align:right;">
+0.938
+</td>
+<td style="text-align:right;">
+0.970
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_2
+</td>
+<td style="text-align:left;">
+phi.cor[2,3]
+</td>
+<td style="text-align:right;">
+0.769
+</td>
+<td style="text-align:right;">
+0.195
+</td>
+<td style="text-align:right;">
+0.216
+</td>
+<td style="text-align:right;">
+0.715
+</td>
+<td style="text-align:right;">
+0.834
+</td>
+<td style="text-align:right;">
+0.896
+</td>
+<td style="text-align:right;">
+0.967
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_2
+</td>
+<td style="text-align:left;">
+phi.cor[2,4]
+</td>
+<td style="text-align:right;">
+0.873
+</td>
+<td style="text-align:right;">
+0.156
+</td>
+<td style="text-align:right;">
+0.462
+</td>
+<td style="text-align:right;">
+0.862
+</td>
+<td style="text-align:right;">
+0.922
+</td>
+<td style="text-align:right;">
+0.950
+</td>
+<td style="text-align:right;">
+0.976
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_2
+</td>
+<td style="text-align:left;">
+phi.cor[3,4]
+</td>
+<td style="text-align:right;">
+0.795
+</td>
+<td style="text-align:right;">
+0.218
+</td>
+<td style="text-align:right;">
+0.100
+</td>
+<td style="text-align:right;">
+0.751
+</td>
+<td style="text-align:right;">
+0.880
+</td>
+<td style="text-align:right;">
+0.931
+</td>
+<td style="text-align:right;">
+0.968
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_3
+</td>
+<td style="text-align:left;">
+phi.cor[1,2]
+</td>
+<td style="text-align:right;">
+0.732
+</td>
+<td style="text-align:right;">
+0.223
+</td>
+<td style="text-align:right;">
+0.133
+</td>
+<td style="text-align:right;">
+0.656
+</td>
+<td style="text-align:right;">
+0.804
+</td>
+<td style="text-align:right;">
+0.883
+</td>
+<td style="text-align:right;">
+0.951
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_3
+</td>
+<td style="text-align:left;">
+phi.cor[1,3]
+</td>
+<td style="text-align:right;">
+0.721
+</td>
+<td style="text-align:right;">
+0.241
+</td>
+<td style="text-align:right;">
+0.003
+</td>
+<td style="text-align:right;">
+0.646
+</td>
+<td style="text-align:right;">
+0.793
+</td>
+<td style="text-align:right;">
+0.884
+</td>
+<td style="text-align:right;">
+0.955
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_3
+</td>
+<td style="text-align:left;">
+phi.cor[1,4]
+</td>
+<td style="text-align:right;">
+0.779
+</td>
+<td style="text-align:right;">
+0.214
+</td>
+<td style="text-align:right;">
+0.121
+</td>
+<td style="text-align:right;">
+0.735
+</td>
+<td style="text-align:right;">
+0.855
+</td>
+<td style="text-align:right;">
+0.912
+</td>
+<td style="text-align:right;">
+0.960
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_3
+</td>
+<td style="text-align:left;">
+phi.cor[2,3]
+</td>
+<td style="text-align:right;">
+0.651
+</td>
+<td style="text-align:right;">
+0.299
+</td>
+<td style="text-align:right;">
+-0.245
+</td>
+<td style="text-align:right;">
+0.566
+</td>
+<td style="text-align:right;">
+0.757
+</td>
+<td style="text-align:right;">
+0.848
+</td>
+<td style="text-align:right;">
+0.930
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_3
+</td>
+<td style="text-align:left;">
+phi.cor[2,4]
+</td>
+<td style="text-align:right;">
+0.843
+</td>
+<td style="text-align:right;">
+0.153
+</td>
+<td style="text-align:right;">
+0.397
+</td>
+<td style="text-align:right;">
+0.816
+</td>
+<td style="text-align:right;">
+0.893
+</td>
+<td style="text-align:right;">
+0.933
+</td>
+<td style="text-align:right;">
+0.968
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_3
+</td>
+<td style="text-align:left;">
+phi.cor[3,4]
+</td>
+<td style="text-align:right;">
+0.698
+</td>
+<td style="text-align:right;">
+0.321
+</td>
+<td style="text-align:right;">
+-0.348
+</td>
+<td style="text-align:right;">
+0.655
+</td>
+<td style="text-align:right;">
+0.818
+</td>
+<td style="text-align:right;">
+0.892
+</td>
+<td style="text-align:right;">
+0.947
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_4
+</td>
+<td style="text-align:left;">
+phi.cor[1,2]
+</td>
+<td style="text-align:right;">
+0.719
+</td>
+<td style="text-align:right;">
+0.281
+</td>
+<td style="text-align:right;">
+-0.151
+</td>
+<td style="text-align:right;">
+0.659
+</td>
+<td style="text-align:right;">
+0.816
+</td>
+<td style="text-align:right;">
+0.891
+</td>
+<td style="text-align:right;">
+0.952
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_4
+</td>
+<td style="text-align:left;">
+phi.cor[1,3]
+</td>
+<td style="text-align:right;">
+0.789
+</td>
+<td style="text-align:right;">
+0.220
+</td>
+<td style="text-align:right;">
+0.151
+</td>
+<td style="text-align:right;">
+0.752
+</td>
+<td style="text-align:right;">
+0.866
+</td>
+<td style="text-align:right;">
+0.920
+</td>
+<td style="text-align:right;">
+0.968
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_4
+</td>
+<td style="text-align:left;">
+phi.cor[1,4]
+</td>
+<td style="text-align:right;">
+0.792
+</td>
+<td style="text-align:right;">
+0.256
+</td>
+<td style="text-align:right;">
+-0.101
+</td>
+<td style="text-align:right;">
+0.773
+</td>
+<td style="text-align:right;">
+0.889
+</td>
+<td style="text-align:right;">
+0.934
+</td>
+<td style="text-align:right;">
+0.972
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_4
+</td>
+<td style="text-align:left;">
+phi.cor[2,3]
+</td>
+<td style="text-align:right;">
+0.652
+</td>
+<td style="text-align:right;">
+0.337
+</td>
+<td style="text-align:right;">
+-0.457
+</td>
+<td style="text-align:right;">
+0.583
+</td>
+<td style="text-align:right;">
+0.777
+</td>
+<td style="text-align:right;">
+0.864
+</td>
+<td style="text-align:right;">
+0.939
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_4
+</td>
+<td style="text-align:left;">
+phi.cor[2,4]
+</td>
+<td style="text-align:right;">
+0.814
+</td>
+<td style="text-align:right;">
+0.263
+</td>
+<td style="text-align:right;">
+-0.185
+</td>
+<td style="text-align:right;">
+0.827
+</td>
+<td style="text-align:right;">
+0.904
+</td>
+<td style="text-align:right;">
+0.942
+</td>
+<td style="text-align:right;">
+0.971
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+model_4
+</td>
+<td style="text-align:left;">
+phi.cor[3,4]
+</td>
+<td style="text-align:right;">
+0.825
+</td>
+<td style="text-align:right;">
+0.181
+</td>
+<td style="text-align:right;">
+0.258
+</td>
+<td style="text-align:right;">
+0.791
+</td>
+<td style="text-align:right;">
+0.883
+</td>
+<td style="text-align:right;">
+0.929
+</td>
+<td style="text-align:right;">
+0.966
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+prior
+</td>
+<td style="text-align:left;">
+phi.cor[1,2]
+</td>
+<td style="text-align:right;">
+-0.002
+</td>
+<td style="text-align:right;">
+0.708
+</td>
+<td style="text-align:right;">
+-0.997
+</td>
+<td style="text-align:right;">
+-0.711
+</td>
+<td style="text-align:right;">
+-0.006
+</td>
+<td style="text-align:right;">
+0.717
+</td>
+<td style="text-align:right;">
+0.997
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+prior
+</td>
+<td style="text-align:left;">
+phi.cor[1,3]
+</td>
+<td style="text-align:right;">
+-0.003
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+-0.997
+</td>
+<td style="text-align:right;">
+-0.706
+</td>
+<td style="text-align:right;">
+-0.009
+</td>
+<td style="text-align:right;">
+0.708
+</td>
+<td style="text-align:right;">
+0.997
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+prior
+</td>
+<td style="text-align:left;">
+phi.cor[1,4]
+</td>
+<td style="text-align:right;">
+-0.003
+</td>
+<td style="text-align:right;">
+0.712
+</td>
+<td style="text-align:right;">
+-0.997
+</td>
+<td style="text-align:right;">
+-0.723
+</td>
+<td style="text-align:right;">
+-0.006
+</td>
+<td style="text-align:right;">
+0.711
+</td>
+<td style="text-align:right;">
+0.997
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+prior
+</td>
+<td style="text-align:left;">
+phi.cor[2,3]
+</td>
+<td style="text-align:right;">
+0.002
+</td>
+<td style="text-align:right;">
+0.712
+</td>
+<td style="text-align:right;">
+-0.997
+</td>
+<td style="text-align:right;">
+-0.713
+</td>
+<td style="text-align:right;">
+0.001
+</td>
+<td style="text-align:right;">
+0.721
+</td>
+<td style="text-align:right;">
+0.997
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+prior
+</td>
+<td style="text-align:left;">
+phi.cor[2,4]
+</td>
+<td style="text-align:right;">
+-0.012
+</td>
+<td style="text-align:right;">
+0.711
+</td>
+<td style="text-align:right;">
+-0.997
+</td>
+<td style="text-align:right;">
+-0.729
+</td>
+<td style="text-align:right;">
+-0.021
+</td>
+<td style="text-align:right;">
+0.709
+</td>
+<td style="text-align:right;">
+0.997
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+prior
+</td>
+<td style="text-align:left;">
+phi.cor[3,4]
+</td>
+<td style="text-align:right;">
+0.004
+</td>
+<td style="text-align:right;">
+0.706
+</td>
+<td style="text-align:right;">
+-0.996
+</td>
+<td style="text-align:right;">
+-0.704
+</td>
+<td style="text-align:right;">
+0.025
+</td>
+<td style="text-align:right;">
+0.705
+</td>
+<td style="text-align:right;">
+0.998
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># cor from DWLS
+cor_est &lt;- data.frame(
+  cor = c(
+  &#39;phi.cor[1,2]&#39;,&#39;phi.cor[1,3]&#39;,&#39;phi.cor[1,4]&#39;,
+  &#39;phi.cor[2,3]&#39;,&#39;phi.cor[2,4]&#39;,&#39;phi.cor[3,4]&#39;),
+  est    = c(.69, .75, .78, .65, .80, .75)
+)
+
+plot.dat.cor %&gt;%
+  filter(model != &#39;prior&#39;)%&gt;%
+ggplot(aes(x=est, y=model, group=interaction(model, cor)))+
+ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize=&quot;all&quot;, fill=&quot;grey75&quot;
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=cor_est, aes(xintercept=est), linetype=&#39;dashed&#39;)+
+  labs(x=&quot;Correlation Estimates&quot;,
+       y=&quot;Estimating Model&quot;)+
+  lims(x=c(-1, 1))+
+  facet_wrap(.~cor)+
+  theme_classic()</code></pre>
+<p><img src="figure/pools_model_comparison.Rmd/cor-post-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(plot.dat.cor,aes(x=est, group=interaction(model, cor), color=model, fill=model))+
+  geom_density(alpha=0.25)+
+  facet_wrap(.~cor)+
+  theme_classic()</code></pre>
+<p><img src="figure/pools_model_comparison.Rmd/cor-post-3.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="manuscript-tables-and-figures" class="section level1">
+<h1>Manuscript Tables and Figures</h1>
+<div id="tables" class="section level2">
+<h2>Tables</h2>
+<pre class="r"><code>sum.dat &lt;- plot.dat %&gt;%
+  group_by(model, factor) %&gt;%
+  summarise(
+    Mean = mean(est),
+    SD = sd(est),
+    Q025 = quantile(est, 0.025),
+    Q1 = quantile(est, 0.25),
+    Median = median(est),
+    Q3 = quantile(est, 0.75),
+    Q975 = quantile(est, 0.975),
+  )</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;model&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>print(
+  xtable(
+    sum.dat,
+    caption = c(&quot;POOLS posterior reliabilities estimates&quot;)
+    ,align = &quot;lrrrrrrrrr&quot;
+  ),
+  include.rownames=T,
+  booktabs=T
+)</code></pre>
+<pre><code>% latex table generated in R 4.0.5 by xtable 1.8-4 package
+% Wed Feb 02 13:41:30 2022
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrrrrrrrr}
+  \toprule
+ &amp; model &amp; factor &amp; Mean &amp; SD &amp; Q025 &amp; Q1 &amp; Median &amp; Q3 &amp; Q975 \\ 
+  \midrule
+1 &amp; model\_1 &amp; f1 &amp; 0.87 &amp; 0.01 &amp; 0.84 &amp; 0.86 &amp; 0.87 &amp; 0.87 &amp; 0.89 \\ 
+  2 &amp; model\_1 &amp; f2 &amp; 0.83 &amp; 0.01 &amp; 0.81 &amp; 0.82 &amp; 0.83 &amp; 0.84 &amp; 0.85 \\ 
+  3 &amp; model\_1 &amp; f3 &amp; 0.65 &amp; 0.03 &amp; 0.60 &amp; 0.64 &amp; 0.66 &amp; 0.67 &amp; 0.70 \\ 
+  4 &amp; model\_1 &amp; f4 &amp; 0.86 &amp; 0.01 &amp; 0.84 &amp; 0.86 &amp; 0.86 &amp; 0.87 &amp; 0.88 \\ 
+  5 &amp; model\_2 &amp; f1 &amp; 0.92 &amp; 0.02 &amp; 0.88 &amp; 0.91 &amp; 0.92 &amp; 0.93 &amp; 0.94 \\ 
+  6 &amp; model\_2 &amp; f2 &amp; 0.80 &amp; 0.02 &amp; 0.76 &amp; 0.78 &amp; 0.80 &amp; 0.81 &amp; 0.83 \\ 
+  7 &amp; model\_2 &amp; f3 &amp; 0.87 &amp; 0.02 &amp; 0.83 &amp; 0.86 &amp; 0.87 &amp; 0.89 &amp; 0.91 \\ 
+  8 &amp; model\_2 &amp; f4 &amp; 0.84 &amp; 0.02 &amp; 0.80 &amp; 0.83 &amp; 0.84 &amp; 0.85 &amp; 0.87 \\ 
+  9 &amp; model\_3 &amp; f1 &amp; 0.91 &amp; 0.01 &amp; 0.89 &amp; 0.90 &amp; 0.91 &amp; 0.92 &amp; 0.93 \\ 
+  10 &amp; model\_3 &amp; f2 &amp; 0.82 &amp; 0.01 &amp; 0.80 &amp; 0.82 &amp; 0.82 &amp; 0.83 &amp; 0.85 \\ 
+  11 &amp; model\_3 &amp; f3 &amp; 0.85 &amp; 0.02 &amp; 0.81 &amp; 0.84 &amp; 0.85 &amp; 0.87 &amp; 0.89 \\ 
+  12 &amp; model\_3 &amp; f4 &amp; 0.86 &amp; 0.01 &amp; 0.84 &amp; 0.85 &amp; 0.86 &amp; 0.87 &amp; 0.88 \\ 
+  13 &amp; model\_4 &amp; f1 &amp; 0.85 &amp; 0.02 &amp; 0.82 &amp; 0.84 &amp; 0.85 &amp; 0.86 &amp; 0.88 \\ 
+  14 &amp; model\_4 &amp; f2 &amp; 0.86 &amp; 0.01 &amp; 0.83 &amp; 0.85 &amp; 0.86 &amp; 0.87 &amp; 0.88 \\ 
+  15 &amp; model\_4 &amp; f3 &amp; 0.68 &amp; 0.02 &amp; 0.63 &amp; 0.66 &amp; 0.68 &amp; 0.70 &amp; 0.73 \\ 
+  16 &amp; model\_4 &amp; f4 &amp; 0.90 &amp; 0.01 &amp; 0.88 &amp; 0.90 &amp; 0.90 &amp; 0.91 &amp; 0.92 \\ 
+  17 &amp; prior\_s &amp; f1 &amp; 0.81 &amp; 0.08 &amp; 0.60 &amp; 0.76 &amp; 0.82 &amp; 0.87 &amp; 0.92 \\ 
+  18 &amp; prior\_s &amp; f2 &amp; 0.78 &amp; 0.10 &amp; 0.54 &amp; 0.73 &amp; 0.80 &amp; 0.85 &amp; 0.91 \\ 
+  19 &amp; prior\_s &amp; f3 &amp; 0.78 &amp; 0.10 &amp; 0.54 &amp; 0.73 &amp; 0.80 &amp; 0.85 &amp; 0.91 \\ 
+  20 &amp; prior\_s &amp; f4 &amp; 0.78 &amp; 0.10 &amp; 0.54 &amp; 0.73 &amp; 0.80 &amp; 0.85 &amp; 0.91 \\ 
+   \bottomrule
+\end{tabular}
+\caption{POOLS posterior reliabilities estimates} 
+\end{table}</code></pre>
+<pre class="r"><code>sum.dat &lt;- plot.dat.cor %&gt;%
+  group_by(model, cor) %&gt;%
+  summarise(
+    Mean = mean(est),
+    SD = sd(est),
+    Q025 = quantile(est, 0.025),
+    Q1 = quantile(est, 0.25),
+    Median = median(est),
+    Q3 = quantile(est, 0.75),
+    Q975 = quantile(est, 0.975),
+  )</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;model&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>print(
+  xtable(
+    sum.dat,
+    caption = c(&quot;POOLS posterior correlation estimates&quot;)
+    ,align = &quot;lrrrrrrrrr&quot;
+  ),
+  include.rownames=T,
+  booktabs=T
+)</code></pre>
+<pre><code>% latex table generated in R 4.0.5 by xtable 1.8-4 package
+% Wed Feb 02 13:41:30 2022
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrrrrrrrr}
+  \toprule
+ &amp; model &amp; cor &amp; Mean &amp; SD &amp; Q025 &amp; Q1 &amp; Median &amp; Q3 &amp; Q975 \\ 
+  \midrule
+1 &amp; model\_1 &amp; phi.cor[1,2] &amp; 0.70 &amp; 0.21 &amp; 0.12 &amp; 0.62 &amp; 0.75 &amp; 0.84 &amp; 0.93 \\ 
+  2 &amp; model\_1 &amp; phi.cor[1,3] &amp; 0.78 &amp; 0.16 &amp; 0.37 &amp; 0.72 &amp; 0.83 &amp; 0.89 &amp; 0.95 \\ 
+  3 &amp; model\_1 &amp; phi.cor[1,4] &amp; 0.80 &amp; 0.17 &amp; 0.32 &amp; 0.75 &amp; 0.86 &amp; 0.91 &amp; 0.95 \\ 
+  4 &amp; model\_1 &amp; phi.cor[2,3] &amp; 0.64 &amp; 0.24 &amp; 0.02 &amp; 0.53 &amp; 0.71 &amp; 0.82 &amp; 0.91 \\ 
+  5 &amp; model\_1 &amp; phi.cor[2,4] &amp; 0.77 &amp; 0.22 &amp; 0.11 &amp; 0.72 &amp; 0.85 &amp; 0.90 &amp; 0.95 \\ 
+  6 &amp; model\_1 &amp; phi.cor[3,4] &amp; 0.77 &amp; 0.18 &amp; 0.24 &amp; 0.72 &amp; 0.83 &amp; 0.89 &amp; 0.94 \\ 
+  7 &amp; model\_2 &amp; phi.cor[1,2] &amp; 0.82 &amp; 0.13 &amp; 0.44 &amp; 0.76 &amp; 0.86 &amp; 0.91 &amp; 0.96 \\ 
+  8 &amp; model\_2 &amp; phi.cor[1,3] &amp; 0.82 &amp; 0.18 &amp; 0.33 &amp; 0.78 &amp; 0.88 &amp; 0.93 &amp; 0.97 \\ 
+  9 &amp; model\_2 &amp; phi.cor[1,4] &amp; 0.86 &amp; 0.13 &amp; 0.47 &amp; 0.84 &amp; 0.91 &amp; 0.94 &amp; 0.97 \\ 
+  10 &amp; model\_2 &amp; phi.cor[2,3] &amp; 0.77 &amp; 0.20 &amp; 0.22 &amp; 0.71 &amp; 0.83 &amp; 0.90 &amp; 0.97 \\ 
+  11 &amp; model\_2 &amp; phi.cor[2,4] &amp; 0.87 &amp; 0.16 &amp; 0.46 &amp; 0.86 &amp; 0.92 &amp; 0.95 &amp; 0.98 \\ 
+  12 &amp; model\_2 &amp; phi.cor[3,4] &amp; 0.80 &amp; 0.22 &amp; 0.10 &amp; 0.75 &amp; 0.88 &amp; 0.93 &amp; 0.97 \\ 
+  13 &amp; model\_3 &amp; phi.cor[1,2] &amp; 0.73 &amp; 0.22 &amp; 0.13 &amp; 0.66 &amp; 0.80 &amp; 0.88 &amp; 0.95 \\ 
+  14 &amp; model\_3 &amp; phi.cor[1,3] &amp; 0.72 &amp; 0.24 &amp; 0.00 &amp; 0.65 &amp; 0.79 &amp; 0.88 &amp; 0.95 \\ 
+  15 &amp; model\_3 &amp; phi.cor[1,4] &amp; 0.78 &amp; 0.21 &amp; 0.12 &amp; 0.73 &amp; 0.86 &amp; 0.91 &amp; 0.96 \\ 
+  16 &amp; model\_3 &amp; phi.cor[2,3] &amp; 0.65 &amp; 0.30 &amp; -0.25 &amp; 0.57 &amp; 0.76 &amp; 0.85 &amp; 0.93 \\ 
+  17 &amp; model\_3 &amp; phi.cor[2,4] &amp; 0.84 &amp; 0.15 &amp; 0.40 &amp; 0.82 &amp; 0.89 &amp; 0.93 &amp; 0.97 \\ 
+  18 &amp; model\_3 &amp; phi.cor[3,4] &amp; 0.70 &amp; 0.32 &amp; -0.35 &amp; 0.66 &amp; 0.82 &amp; 0.89 &amp; 0.95 \\ 
+  19 &amp; model\_4 &amp; phi.cor[1,2] &amp; 0.72 &amp; 0.28 &amp; -0.15 &amp; 0.66 &amp; 0.82 &amp; 0.89 &amp; 0.95 \\ 
+  20 &amp; model\_4 &amp; phi.cor[1,3] &amp; 0.79 &amp; 0.22 &amp; 0.15 &amp; 0.75 &amp; 0.87 &amp; 0.92 &amp; 0.97 \\ 
+  21 &amp; model\_4 &amp; phi.cor[1,4] &amp; 0.79 &amp; 0.26 &amp; -0.10 &amp; 0.77 &amp; 0.89 &amp; 0.93 &amp; 0.97 \\ 
+  22 &amp; model\_4 &amp; phi.cor[2,3] &amp; 0.65 &amp; 0.34 &amp; -0.46 &amp; 0.58 &amp; 0.78 &amp; 0.86 &amp; 0.94 \\ 
+  23 &amp; model\_4 &amp; phi.cor[2,4] &amp; 0.81 &amp; 0.26 &amp; -0.18 &amp; 0.83 &amp; 0.90 &amp; 0.94 &amp; 0.97 \\ 
+  24 &amp; model\_4 &amp; phi.cor[3,4] &amp; 0.82 &amp; 0.18 &amp; 0.26 &amp; 0.79 &amp; 0.88 &amp; 0.93 &amp; 0.97 \\ 
+  25 &amp; prior &amp; phi.cor[1,2] &amp; -0.00 &amp; 0.71 &amp; -1.00 &amp; -0.71 &amp; -0.01 &amp; 0.72 &amp; 1.00 \\ 
+  26 &amp; prior &amp; phi.cor[1,3] &amp; -0.00 &amp; 0.71 &amp; -1.00 &amp; -0.71 &amp; -0.01 &amp; 0.71 &amp; 1.00 \\ 
+  27 &amp; prior &amp; phi.cor[1,4] &amp; -0.00 &amp; 0.71 &amp; -1.00 &amp; -0.72 &amp; -0.01 &amp; 0.71 &amp; 1.00 \\ 
+  28 &amp; prior &amp; phi.cor[2,3] &amp; 0.00 &amp; 0.71 &amp; -1.00 &amp; -0.71 &amp; 0.00 &amp; 0.72 &amp; 1.00 \\ 
+  29 &amp; prior &amp; phi.cor[2,4] &amp; -0.01 &amp; 0.71 &amp; -1.00 &amp; -0.73 &amp; -0.02 &amp; 0.71 &amp; 1.00 \\ 
+  30 &amp; prior &amp; phi.cor[3,4] &amp; 0.00 &amp; 0.71 &amp; -1.00 &amp; -0.70 &amp; 0.02 &amp; 0.70 &amp; 1.00 \\ 
+   \bottomrule
+\end{tabular}
+\caption{POOLS posterior correlation estimates} 
+\end{table}</code></pre>
+</div>
+<div id="figures" class="section level2">
+<h2>Figures</h2>
+<pre class="r"><code>reli_est &lt;- data.frame(
+  factor = c(&#39;EfL&#39;, &#39;SC&#39;, &#39;IN&#39;, &#39;EnL&#39;),
+  est    = c(.82, .79, .80, .78)
+)
+
+p &lt;- plot.dat %&gt;%
+  filter(model != &#39;prior_s&#39;) %&gt;%
+  mutate(model = factor(model, levels=rev(paste0(&#39;model_&#39;,1:4)),
+                        labels=rev(paste0(&#39;Model &#39;, 1:4))),
+         factor = factor(factor, levels=c(&#39;f1&#39;,&#39;f2&#39;,&#39;f3&#39;,&#39;f4&#39;),
+                         labels=c(&#39;EfL&#39;,&#39;SC&#39;,&#39;IN&#39;,&#39;EnL&#39;)))%&gt;%
+  ggplot(aes(x=est, y=model, group=model))+
+  ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize=&quot;all&quot;, fill=&quot;grey75&quot;
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=reli_est, aes(xintercept=est), linetype=&#39;dashed&#39;)+
+  #annotate(&#39;text&#39;, x=0.6,y=4.5,label=expression(omega^2==.8))+
+  labs(x= expression(paste(&quot;Reliability Posterior (&quot;, omega^2, &quot;)&quot;)),
+       y=NULL)+
+  lims(x=c(0.5, 1))+
+  facet_wrap(.~factor, nrow=1)+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank())
+p</code></pre>
+<p><img src="figure/pools_model_comparison.Rmd/man-figures-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggsave(filename = &quot;fig/pools_posterior_omega.pdf&quot;,plot=p,width = 7, height=3,units=&quot;in&quot;)
+ggsave(filename = &quot;fig/pools_posterior_omega.png&quot;,plot=p,width = 7, height=3,units=&quot;in&quot;)
+ggsave(filename = &quot;fig/pools_posterior_omega.eps&quot;,plot=p,width = 7, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_polygon, x$x, x$y, index): semi-transparency is
+not supported on this device: reported only once per page</code></pre>
+<pre class="r"><code>## correlation results
+cor_est &lt;- data.frame(
+  cor = c(
+  &#39;cor(EfL,SC)&#39;,&#39;cor(EfL,IN)&#39;,&#39;cor(EfL,EnL)&#39;,
+  &#39;cor(SC,IN)&#39;,&#39;cor(SC,EnL)&#39;,&#39;cor(IN,EnL)&#39;),
+  est    = c(.69, .75, .78, .65, .80, .75)
+)
+p &lt;- plot.dat.cor %&gt;%
+  filter(model != &#39;prior&#39;)%&gt;%
+  mutate(
+    model = factor(model, levels=rev(paste0(&#39;model_&#39;,1:4)),
+                        labels=rev(paste0(&#39;Model &#39;, 1:4))),
+    cor = factor(cor, levels=c(
+            &#39;phi.cor[1,2]&#39;,&#39;phi.cor[1,3]&#39;,&#39;phi.cor[1,4]&#39;,
+            &#39;phi.cor[2,3]&#39;,&#39;phi.cor[2,4]&#39;,&#39;phi.cor[3,4]&#39;),
+                 labels=c(
+            &#39;cor(EfL,SC)&#39;,&#39;cor(EfL,IN)&#39;,&#39;cor(EfL,EnL)&#39;,
+            &#39;cor(SC,IN)&#39;,&#39;cor(SC,EnL)&#39;,&#39;cor(IN,EnL)&#39;)
+          )
+  ) %&gt;%
+ggplot(aes(x=est, y=model, group=interaction(model, cor)))+
+ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize=&quot;all&quot;, fill=&quot;grey75&quot;
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=cor_est, aes(xintercept=est), linetype=&#39;dashed&#39;)+
+  labs(x=&quot;Correlation Estimates&quot;,
+       y=NULL)+
+  lims(x=c(0, 1))+
+  facet_wrap(.~cor)+
+  theme_classic()
+p</code></pre>
+<pre><code>Warning: Removed 214 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 195 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 276 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 374 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 270 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 617 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 1946 rows containing non-finite values (stat_boxplot).</code></pre>
+<p><img src="figure/pools_model_comparison.Rmd/man-figures-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggsave(filename = &quot;fig/pools_posterior_phi.pdf&quot;,plot=p,width = 7, height=4.5,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 214 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 195 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 276 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 374 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 270 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 617 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 1946 rows containing non-finite values (stat_boxplot).</code></pre>
+<pre class="r"><code>ggsave(filename = &quot;fig/pools_posterior_phi.png&quot;,plot=p,width = 7, height=4.5,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 214 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 195 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 276 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 374 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 270 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 617 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 1946 rows containing non-finite values (stat_boxplot).</code></pre>
+<pre class="r"><code>ggsave(filename = &quot;fig/pools_posterior_phi.eps&quot;,plot=p,width = 7, height=4.5,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 214 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 195 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 276 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 374 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 270 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 617 rows containing missing values (stat_slabinterval).</code></pre>
+<pre><code>Warning: Removed 1946 rows containing non-finite values (stat_boxplot).</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_polygon, x$x, x$y, index): semi-transparency is
+not supported on this device: reported only once per page</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.0.5 (2021-03-31)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 22000)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=English_United States.1252 
+[2] LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] readxl_1.3.1         car_3.0-10           carData_3.0-4       
+ [4] mvtnorm_1.1-1        LaplacesDemon_16.1.4 runjags_2.2.0-2     
+ [7] lme4_1.1-26          Matrix_1.3-2         sirt_3.9-4          
+[10] R2jags_0.6-1         rjags_4-12           eRm_1.0-2           
+[13] diffIRT_1.5          statmod_1.4.35       xtable_1.8-4        
+[16] kableExtra_1.3.4     lavaan_0.6-7         polycor_0.7-10      
+[19] bayesplot_1.8.0      ggmcmc_1.5.1.1       coda_0.19-4         
+[22] data.table_1.14.0    patchwork_1.1.1      forcats_0.5.1       
+[25] stringr_1.4.0        dplyr_1.0.5          purrr_0.3.4         
+[28] readr_1.4.0          tidyr_1.1.3          tibble_3.1.0        
+[31] ggplot2_3.3.5        tidyverse_1.3.0      workflowr_1.6.2     
+
+loaded via a namespace (and not attached):
+ [1] minqa_1.2.4          TAM_3.5-19           colorspace_2.0-0    
+ [4] rio_0.5.26           ellipsis_0.3.1       ggridges_0.5.3      
+ [7] rprojroot_2.0.2      fs_1.5.0             rstudioapi_0.13     
+[10] farver_2.1.0         fansi_0.4.2          lubridate_1.7.10    
+[13] xml2_1.3.2           splines_4.0.5        mnormt_2.0.2        
+[16] knitr_1.31           jsonlite_1.7.2       nloptr_1.2.2.2      
+[19] broom_0.7.5          dbplyr_2.1.0         ggdist_3.0.1        
+[22] compiler_4.0.5       httr_1.4.2           backports_1.2.1     
+[25] assertthat_0.2.1     cli_2.3.1            later_1.1.0.1       
+[28] htmltools_0.5.1.1    tools_4.0.5          gtable_0.3.0        
+[31] glue_1.4.2           Rcpp_1.0.7           cellranger_1.1.0    
+[34] jquerylib_0.1.3      vctrs_0.3.6          svglite_2.0.0       
+[37] nlme_3.1-152         psych_2.0.12         xfun_0.21           
+[40] ps_1.6.0             openxlsx_4.2.3       rvest_1.0.0         
+[43] lifecycle_1.0.0      MASS_7.3-53.1        scales_1.1.1        
+[46] ragg_1.1.1           hms_1.0.0            promises_1.2.0.1    
+[49] parallel_4.0.5       RColorBrewer_1.1-2   curl_4.3            
+[52] yaml_2.2.1           sass_0.3.1           reshape_0.8.8       
+[55] stringi_1.5.3        highr_0.8            zip_2.1.1           
+[58] boot_1.3-27          rlang_0.4.10         pkgconfig_2.0.3     
+[61] systemfonts_1.0.1    distributional_0.3.0 evaluate_0.14       
+[64] lattice_0.20-41      labeling_0.4.2       tidyselect_1.1.0    
+[67] GGally_2.1.1         plyr_1.8.6           magrittr_2.0.1      
+[70] R6_2.5.0             generics_0.1.0       DBI_1.1.1           
+[73] foreign_0.8-81       pillar_1.5.1         haven_2.3.1         
+[76] withr_2.4.1          abind_1.4-5          modelr_0.1.8        
+[79] crayon_1.4.1         utf8_1.1.4           tmvnsim_1.0-2       
+[82] rmarkdown_2.7        grid_4.0.5           CDM_7.5-15          
+[85] pbivnorm_0.6.0       git2r_0.28.0         reprex_1.0.0        
+[88] digest_0.6.27        webshot_0.5.2        httpuv_1.5.5        
+[91] textshaping_0.3.1    stats4_4.0.5         munsell_0.5.0       
+[94] viridisLite_0.3.0    bslib_0.2.4          R2WinBUGS_2.1-21    </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

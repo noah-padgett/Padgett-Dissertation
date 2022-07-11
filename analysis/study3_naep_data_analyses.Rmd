@@ -1,0 +1,18 @@
+---
+title: "Applied Data Analysis Study 3 - NAEP Data"
+subtitle: "Data data stuff"
+author: "R. Noah Padgett"
+date: "2022-01-11"
+output: html_document
+---
+
+```{r set-up, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages & utility functions
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+```
+

@@ -1,0 +1,7344 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="R. Noah Padgett" />
+
+<meta name="date" content="2022-02-01" />
+
+<title>SERA POOLS Study</title>
+
+<script src="site_libs/header-attrs-2.7/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-sm-12 col-md-4 col-lg-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-sm-12 col-md-8 col-lg-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Padgett-PhD-Dissertation</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">SERA POOLS Study</h1>
+<h3 class="subtitle">Model 1 Results</h3>
+<h4 class="author">R. Noah Padgett</h4>
+<h4 class="date">2022-02-01</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2022-02-02
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 4 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 2
+</p>
+<p>
+<strong>Knit directory:</strong> <code>Padgett-Dissertation/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210401code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210401)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210401code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20210401)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongdetected"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>Cache:</strong> detected </a>
+</p>
+</div>
+<div id="strongCachestrongdetected" class="panel-collapse collapse">
+<div class="panel-body">
+The following chunks had caches available:
+<ul>
+<li>
+model1
+</li>
+</ul>
+<p>To ensure reproducibility of the results, delete the cache directory <code>pools_model1_results_cache</code> and re-run the analysis. To have workflowr automatically delete the cache directory prior to building the file, set <code>delete_cache = TRUE</code> when running <code>wflow_build()</code> or <code>wflow_publish()</code>.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongnoversioncontrol"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>Repository version:</strong> no version control </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongnoversioncontrol" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Tracking code development and connecting the code version to the results is critical for reproducibility. To start using Git, open the Terminal and type <code>git init</code> in your project directory.</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+This project is not being versioned with Git. To obtain the full reproducibility benefits of using workflowr, please see <code>?wflow_start</code>.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<pre class="r"><code># Load packages &amp; utility functions
+source(&quot;code/load_packages.R&quot;)
+source(&quot;code/load_utility_functions.R&quot;)
+# environment options
+options(scipen = 999, digits=3)</code></pre>
+<div id="pools-data" class="section level1">
+<h1>POOLS Data</h1>
+<pre class="r"><code>library(readxl)
+mydata &lt;- read_excel(&quot;data/pools/POOLS_data_2020-11-16.xlsx&quot;)
+
+use.var &lt;- c(paste0(&quot;Q4_&quot;,c(3:5,9,11,15,18)), 
+             paste0(&quot;Q5_&quot;,c(1:3,5:6,12)), 
+             paste0(&quot;Q6_&quot;,c(2,5:8, 11)), 
+             paste0(&quot;Q7_&quot;,c(2, 4:5, 7:8, 14))) 
+
+# trichotomize
+f &lt;- function(x){
+  y=numeric(length(x))
+  for(i in 1:length(x)){
+      if(x[i] &lt; 3){
+        y[i] = 1
+      }
+      if(x[i] == 3){
+        y[i] = 2
+      }
+      if(x[i] &gt; 3){
+        y[i] = 3
+      }
+  }
+  return(y)
+}
+
+mydata &lt;- na.omit(mydata[, use.var]) 
+mydata &lt;- apply(mydata, 2, f) %&gt;%
+  as.data.frame()
+
+psych::describe(
+  mydata
+)</code></pre>
+<pre><code>      vars   n mean   sd median trimmed  mad min max range  skew kurtosis   se
+Q4_3     1 490 1.62 0.65      2    1.53 1.48   1   3     2  0.57    -0.68 0.03
+Q4_4     2 490 1.64 0.65      2    1.56 1.48   1   3     2  0.51    -0.71 0.03
+Q4_5     3 490 1.52 0.68      1    1.40 0.00   1   3     2  0.92    -0.36 0.03
+Q4_9     4 490 1.65 0.76      1    1.56 0.00   1   3     2  0.69    -0.96 0.03
+Q4_11    5 490 1.64 0.72      1    1.55 0.00   1   3     2  0.66    -0.85 0.03
+Q4_15    6 490 1.58 0.68      1    1.47 0.00   1   3     2  0.74    -0.59 0.03
+Q4_18    7 490 1.52 0.63      1    1.43 0.00   1   3     2  0.81    -0.38 0.03
+Q5_1     8 490 1.73 0.77      2    1.66 1.48   1   3     2  0.50    -1.16 0.03
+Q5_2     9 490 2.00 0.86      2    2.00 1.48   1   3     2  0.00    -1.64 0.04
+Q5_3    10 490 1.79 0.81      2    1.73 1.48   1   3     2  0.41    -1.37 0.04
+Q5_5    11 490 2.33 0.81      3    2.41 0.00   1   3     2 -0.67    -1.18 0.04
+Q5_6    12 490 1.94 0.77      2    1.93 1.48   1   3     2  0.09    -1.33 0.03
+Q5_12   13 490 1.92 0.78      2    1.90 1.48   1   3     2  0.14    -1.36 0.04
+Q6_2    14 490 1.40 0.67      1    1.24 0.00   1   3     2  1.42     0.64 0.03
+Q6_5    15 490 1.66 0.80      1    1.58 0.00   1   3     2  0.68    -1.11 0.04
+Q6_6    16 490 1.22 0.52      1    1.09 0.00   1   3     2  2.29     4.28 0.02
+Q6_7    17 490 1.45 0.66      1    1.32 0.00   1   3     2  1.17     0.14 0.03
+Q6_8    18 490 1.43 0.65      1    1.31 0.00   1   3     2  1.21     0.27 0.03
+Q6_11   19 490 1.85 0.76      2    1.81 1.48   1   3     2  0.26    -1.22 0.03
+Q7_2    20 490 1.74 0.69      2    1.67 1.48   1   3     2  0.39    -0.89 0.03
+Q7_4    21 490 1.89 0.79      2    1.86 1.48   1   3     2  0.20    -1.37 0.04
+Q7_5    22 490 1.89 0.76      2    1.86 1.48   1   3     2  0.19    -1.24 0.03
+Q7_7    23 490 2.43 0.78      3    2.54 0.00   1   3     2 -0.91    -0.76 0.04
+Q7_8    24 490 1.87 0.75      2    1.84 1.48   1   3     2  0.21    -1.21 0.03
+Q7_14   25 490 2.39 0.76      3    2.49 0.00   1   3     2 -0.78    -0.85 0.03</code></pre>
+<div id="dwls" class="section level2">
+<h2>DWLS</h2>
+<pre class="r"><code>mod &lt;- &#39;
+EL =~ 1*Q4_3 + lam44*Q4_4 + lam45*Q4_5 + lam49*Q4_9 + lam411*Q4_11 + lam415*Q4_15 + lam418*Q4_18
+SC =~ 1*Q5_1 + lam52*Q5_2 + lam53*Q5_3 + lam55*Q5_5 + lam56*Q5_6 + lam512*Q5_12
+IN =~ 1*Q6_2 + lam65*Q6_5 + lam66*Q6_6 + lam67*Q6_7 + lam68*Q6_8 + lam611*Q6_11
+EN =~ 1*Q7_2 + lam74*Q7_4 + lam75*Q7_5 + lam77*Q7_7 + lam78*Q7_8 + lam714*Q7_14
+
+# Factor covarainces
+EL ~~ EL + SC + IN + EN
+SC ~~ SC + IN + EN
+IN ~~ IN + EN
+EN ~~ EN
+
+# Factor Reliabilities
+rEL := ((1 + lam44 + lam45 + lam49 + lam411 + lam415 + lam418)**2)/((1 + lam44 + lam45 + lam49 + lam411 + lam415 + lam418)**2 + 7)
+rSC := ((1 + lam52 + lam53 + lam55 + lam56 + lam512)**2)/((1 + lam52 + lam53 + lam55 + lam56 + lam512)**2 + 6)
+rIN := ((1 + lam65 + lam66 + lam67 + lam68 + lam611)**2)/((1 + lam65 + lam66 + lam67 + lam68 + lam611)**2 + 6)
+rEN := ((1 + lam74 + lam75 + lam77 + lam78 + lam714)**2)/((1 + lam74 + lam75 + lam77 + lam78 + lam714)**2 + 6)
+&#39;
+fit.dwls &lt;- lavaan::cfa(mod, data=mydata, ordered=T, parameterization=&quot;theta&quot;)
+summary(fit.dwls, standardized=T, fit.measures=T)</code></pre>
+<pre><code>lavaan 0.6-7 ended normally after 66 iterations
+
+  Estimator                                       DWLS
+  Optimization method                           NLMINB
+  Number of free parameters                         81
+                                                      
+  Number of observations                           490
+                                                      
+Model Test User Model:
+                                              Standard      Robust
+  Test Statistic                               593.869     765.951
+  Degrees of freedom                               269         269
+  P-value (Chi-square)                           0.000       0.000
+  Scaling correction factor                                  0.883
+  Shift parameter                                           93.760
+       simple second-order correction                             
+
+Model Test Baseline Model:
+
+  Test statistic                             32729.962   10489.239
+  Degrees of freedom                               300         300
+  P-value                                        0.000       0.000
+  Scaling correction factor                                  3.183
+
+User Model versus Baseline Model:
+
+  Comparative Fit Index (CFI)                    0.990       0.951
+  Tucker-Lewis Index (TLI)                       0.989       0.946
+                                                                  
+  Robust Comparative Fit Index (CFI)                            NA
+  Robust Tucker-Lewis Index (TLI)                               NA
+
+Root Mean Square Error of Approximation:
+
+  RMSEA                                          0.050       0.061
+  90 Percent confidence interval - lower         0.044       0.056
+  90 Percent confidence interval - upper         0.055       0.067
+  P-value RMSEA &lt;= 0.05                          0.529       0.000
+                                                                  
+  Robust RMSEA                                                  NA
+  90 Percent confidence interval - lower                        NA
+  90 Percent confidence interval - upper                        NA
+
+Standardized Root Mean Square Residual:
+
+  SRMR                                           0.065       0.065
+
+Parameter Estimates:
+
+  Standard errors                           Robust.sem
+  Information                                 Expected
+  Information saturated (h1) model        Unstructured
+
+Latent Variables:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+  EL =~                                                                 
+    Q4_3              1.000                               1.234    0.777
+    Q4_4    (lm44)    1.445    0.145    9.972    0.000    1.783    0.872
+    Q4_5    (lm45)    0.949    0.101    9.390    0.000    1.171    0.760
+    Q4_9    (lm49)    0.763    0.084    9.048    0.000    0.942    0.686
+    Q4_11   (l411)    1.048    0.110    9.536    0.000    1.293    0.791
+    Q4_15   (l415)    0.994    0.107    9.309    0.000    1.227    0.775
+    Q4_18   (l418)    1.272    0.137    9.295    0.000    1.569    0.843
+  SC =~                                                                 
+    Q5_1              1.000                               1.082    0.734
+    Q5_2    (lm52)    0.976    0.119    8.171    0.000    1.056    0.726
+    Q5_3    (lm53)    0.944    0.124    7.587    0.000    1.021    0.714
+    Q5_5    (lm55)    0.803    0.114    7.052    0.000    0.869    0.656
+    Q5_6    (lm56)    1.224    0.162    7.549    0.000    1.324    0.798
+    Q5_12   (l512)    1.188    0.160    7.446    0.000    1.286    0.789
+  IN =~                                                                 
+    Q6_2              1.000                               1.054    0.725
+    Q6_5    (lm65)    0.618    0.095    6.522    0.000    0.651    0.546
+    Q6_6    (lm66)    1.704    0.290    5.882    0.000    1.796    0.874
+    Q6_7    (lm67)    1.518    0.220    6.893    0.000    1.600    0.848
+    Q6_8    (lm68)    1.234    0.157    7.839    0.000    1.301    0.793
+    Q6_11   (l611)    1.602    0.256    6.258    0.000    1.688    0.860
+  EN =~                                                                 
+    Q7_2              1.000                               1.243    0.779
+    Q7_4    (lm74)    0.800    0.088    9.095    0.000    0.994    0.705
+    Q7_5    (lm75)    1.108    0.132    8.392    0.000    1.378    0.809
+    Q7_7    (lm77)    0.875    0.125    6.996    0.000    1.087    0.736
+    Q7_8    (lm78)    0.867    0.095    9.155    0.000    1.078    0.733
+    Q7_14   (l714)    0.672    0.088    7.626    0.000    0.835    0.641
+
+Covariances:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+  EL ~~                                                                 
+    SC                0.915    0.139    6.573    0.000    0.685    0.685
+    IN                0.973    0.152    6.402    0.000    0.748    0.748
+    EN                1.193    0.161    7.417    0.000    0.778    0.778
+  SC ~~                                                                 
+    IN                0.740    0.129    5.718    0.000    0.649    0.649
+    EN                1.080    0.161    6.691    0.000    0.803    0.803
+  IN ~~                                                                 
+    EN                0.979    0.156    6.265    0.000    0.747    0.747
+
+Intercepts:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+   .Q4_3              0.000                               0.000    0.000
+   .Q4_4              0.000                               0.000    0.000
+   .Q4_5              0.000                               0.000    0.000
+   .Q4_9              0.000                               0.000    0.000
+   .Q4_11             0.000                               0.000    0.000
+   .Q4_15             0.000                               0.000    0.000
+   .Q4_18             0.000                               0.000    0.000
+   .Q5_1              0.000                               0.000    0.000
+   .Q5_2              0.000                               0.000    0.000
+   .Q5_3              0.000                               0.000    0.000
+   .Q5_5              0.000                               0.000    0.000
+   .Q5_6              0.000                               0.000    0.000
+   .Q5_12             0.000                               0.000    0.000
+   .Q6_2              0.000                               0.000    0.000
+   .Q6_5              0.000                               0.000    0.000
+   .Q6_6              0.000                               0.000    0.000
+   .Q6_7              0.000                               0.000    0.000
+   .Q6_8              0.000                               0.000    0.000
+   .Q6_11             0.000                               0.000    0.000
+   .Q7_2              0.000                               0.000    0.000
+   .Q7_4              0.000                               0.000    0.000
+   .Q7_5              0.000                               0.000    0.000
+   .Q7_7              0.000                               0.000    0.000
+   .Q7_8              0.000                               0.000    0.000
+   .Q7_14             0.000                               0.000    0.000
+    EL                0.000                               0.000    0.000
+    SC                0.000                               0.000    0.000
+    IN                0.000                               0.000    0.000
+    EN                0.000                               0.000    0.000
+
+Thresholds:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+    Q4_3|t1          -0.106    0.090   -1.181    0.238   -0.106   -0.067
+    Q4_3|t2           2.073    0.136   15.218    0.000    2.073    1.305
+    Q4_4|t1          -0.241    0.115   -2.098    0.036   -0.241   -0.118
+    Q4_4|t2           2.644    0.185   14.260    0.000    2.644    1.293
+    Q4_5|t1           0.317    0.090    3.516    0.000    0.317    0.206
+    Q4_5|t2           1.938    0.128   15.163    0.000    1.938    1.259
+    Q4_9|t1           0.091    0.078    1.168    0.243    0.091    0.067
+    Q4_9|t2           1.292    0.097   13.316    0.000    1.292    0.941
+    Q4_11|t1          0.017    0.093    0.180    0.857    0.017    0.010
+    Q4_11|t2          1.716    0.126   13.628    0.000    1.716    1.050
+    Q4_15|t1          0.105    0.091    1.163    0.245    0.105    0.067
+    Q4_15|t2          1.974    0.139   14.200    0.000    1.974    1.247
+    Q4_18|t1          0.258    0.109    2.368    0.018    0.258    0.139
+    Q4_18|t2          2.672    0.190   14.079    0.000    2.672    1.436
+    Q5_1|t1          -0.121    0.083   -1.451    0.147   -0.121   -0.082
+    Q5_1|t2           1.251    0.104   12.001    0.000    1.251    0.849
+    Q5_2|t1          -0.493    0.085   -5.781    0.000   -0.493   -0.339
+    Q5_2|t2           0.501    0.084    5.987    0.000    0.501    0.344
+    Q5_3|t1          -0.146    0.081   -1.813    0.070   -0.146   -0.102
+    Q5_3|t2           0.987    0.094   10.505    0.000    0.987    0.691
+    Q5_5|t1          -1.021    0.090  -11.329    0.000   -1.021   -0.771
+    Q5_5|t2          -0.163    0.076   -2.143    0.032   -0.163   -0.123
+    Q5_6|t1          -0.737    0.101   -7.317    0.000   -0.737   -0.444
+    Q5_6|t2           1.000    0.106    9.460    0.000    1.000    0.602
+    Q5_12|t1         -0.641    0.098   -6.572    0.000   -0.641   -0.394
+    Q5_12|t2          1.001    0.108    9.310    0.000    1.001    0.615
+    Q6_2|t1           0.788    0.098    8.044    0.000    0.788    0.542
+    Q6_2|t2           1.845    0.133   13.877    0.000    1.845    1.270
+    Q6_5|t1           0.128    0.068    1.886    0.059    0.128    0.108
+    Q6_5|t2           0.979    0.079   12.392    0.000    0.979    0.820
+    Q6_6|t1           1.934    0.262    7.394    0.000    1.934    0.941
+    Q6_6|t2           3.402    0.391    8.706    0.000    3.402    1.655
+    Q6_7|t1           0.701    0.126    5.564    0.000    0.701    0.372
+    Q6_7|t2           2.509    0.216   11.601    0.000    2.509    1.330
+    Q6_8|t1           0.655    0.107    6.131    0.000    0.655    0.399
+    Q6_8|t2           2.244    0.170   13.237    0.000    2.244    1.368
+    Q6_11|t1         -0.633    0.120   -5.279    0.000   -0.633   -0.323
+    Q6_11|t2          1.513    0.156    9.676    0.000    1.513    0.771
+    Q7_2|t1          -0.396    0.092   -4.325    0.000   -0.396   -0.248
+    Q7_2|t2           1.718    0.125   13.767    0.000    1.718    1.077
+    Q7_4|t1          -0.455    0.081   -5.608    0.000   -0.455   -0.323
+    Q7_4|t2           0.911    0.087   10.467    0.000    0.911    0.646
+    Q7_5|t1          -0.661    0.101   -6.551    0.000   -0.661   -0.388
+    Q7_5|t2           1.220    0.107   11.362    0.000    1.220    0.717
+    Q7_7|t1          -1.343    0.116  -11.624    0.000   -1.343   -0.909
+    Q7_7|t2          -0.421    0.090   -4.696    0.000   -0.421   -0.285
+    Q7_8|t1          -0.546    0.086   -6.388    0.000   -0.546   -0.372
+    Q7_8|t2           1.103    0.093   11.889    0.000    1.103    0.750
+    Q7_14|t1         -1.257    0.095  -13.256    0.000   -1.257   -0.965
+    Q7_14|t2         -0.187    0.075   -2.503    0.012   -0.187   -0.144
+
+Variances:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+    EL                1.522    0.237    6.417    0.000    1.000    1.000
+    SC                1.171    0.229    5.119    0.000    1.000    1.000
+    IN                1.111    0.234    4.753    0.000    1.000    1.000
+    EN                1.545    0.275    5.620    0.000    1.000    1.000
+   .Q4_3              1.000                               1.000    0.396
+   .Q4_4              1.000                               1.000    0.239
+   .Q4_5              1.000                               1.000    0.422
+   .Q4_9              1.000                               1.000    0.530
+   .Q4_11             1.000                               1.000    0.374
+   .Q4_15             1.000                               1.000    0.399
+   .Q4_18             1.000                               1.000    0.289
+   .Q5_1              1.000                               1.000    0.461
+   .Q5_2              1.000                               1.000    0.473
+   .Q5_3              1.000                               1.000    0.490
+   .Q5_5              1.000                               1.000    0.570
+   .Q5_6              1.000                               1.000    0.363
+   .Q5_12             1.000                               1.000    0.377
+   .Q6_2              1.000                               1.000    0.474
+   .Q6_5              1.000                               1.000    0.702
+   .Q6_6              1.000                               1.000    0.237
+   .Q6_7              1.000                               1.000    0.281
+   .Q6_8              1.000                               1.000    0.371
+   .Q6_11             1.000                               1.000    0.260
+   .Q7_2              1.000                               1.000    0.393
+   .Q7_4              1.000                               1.000    0.503
+   .Q7_5              1.000                               1.000    0.345
+   .Q7_7              1.000                               1.000    0.458
+   .Q7_8              1.000                               1.000    0.463
+   .Q7_14             1.000                               1.000    0.589
+
+Scales y*:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+    Q4_3              0.630                               0.630    1.000
+    Q4_4              0.489                               0.489    1.000
+    Q4_5              0.650                               0.650    1.000
+    Q4_9              0.728                               0.728    1.000
+    Q4_11             0.612                               0.612    1.000
+    Q4_15             0.632                               0.632    1.000
+    Q4_18             0.537                               0.537    1.000
+    Q5_1              0.679                               0.679    1.000
+    Q5_2              0.688                               0.688    1.000
+    Q5_3              0.700                               0.700    1.000
+    Q5_5              0.755                               0.755    1.000
+    Q5_6              0.603                               0.603    1.000
+    Q5_12             0.614                               0.614    1.000
+    Q6_2              0.688                               0.688    1.000
+    Q6_5              0.838                               0.838    1.000
+    Q6_6              0.486                               0.486    1.000
+    Q6_7              0.530                               0.530    1.000
+    Q6_8              0.609                               0.609    1.000
+    Q6_11             0.510                               0.510    1.000
+    Q7_2              0.627                               0.627    1.000
+    Q7_4              0.709                               0.709    1.000
+    Q7_5              0.587                               0.587    1.000
+    Q7_7              0.677                               0.677    1.000
+    Q7_8              0.680                               0.680    1.000
+    Q7_14             0.768                               0.768    1.000
+
+Defined Parameters:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+    rEL               0.889    0.013   68.903    0.000    0.920    0.824
+    rSC               0.863    0.020   42.191    0.000    0.878    0.785
+    rIN               0.908    0.016   56.391    0.000    0.915    0.801
+    rEN               0.825    0.022   37.817    0.000    0.871    0.781</code></pre>
+</div>
+</div>
+<div id="model-1-traditional-ifa" class="section level1">
+<h1>Model 1: Traditional IFA</h1>
+<div id="model-details" class="section level2">
+<h2>Model details</h2>
+<pre class="r"><code>cat(read_file(paste0(w.d, &quot;/code/pools_study/model_ifa.txt&quot;)))</code></pre>
+<pre><code>model {
+### Model
+  for(p in 1:N){
+    for(i in 1:nit){
+      # data model
+      y[p,i] ~ dcat(pi[p,i, ])
+
+      # LRV
+      ystar[p,i] ~ dnorm(lambda[i]*ksi[p,map[nit]], 1)
+
+     # Pr(nu = 3)
+      pi[p,i,3] = phi(ystar[p,i] - tau[i,2])
+      # Pr(nu = 2)
+      pi[p,i,2] = phi(ystar[p,i] - tau[i,1]) - phi(ystar[p,i] - tau[i,2])
+      # Pr(nu = 1)
+      pi[p,i,1] = 1 - phi(ystar[p,i] - tau[i,1])
+
+    }
+  }
+  ### Priors
+  # person parameters
+  for(p in 1:N){
+    #eta[p] ~ dnorm(0, 1) # latent ability
+    ksi[p, 1:M] ~ dmnorm(kappa[], inv.phi[,])
+  }
+  for(m in 1:M){
+    kappa[m] &lt;- 0              # Means of latent variables
+  }
+  inv.phi[1:M,1:M] ~ dwish(dxphi.0[ , ], d);    # prior for precision matrix for the latent variables
+  phi[1:M,1:M] &lt;- inverse(inv.phi[ , ]);        # the covariance matrix for the latent vars
+
+  for(m in 1:M){
+    for(mm in 1:M){
+      dxphi.0[m,mm] &lt;- d*phi.0[m,mm];
+    }
+  }
+
+  # factor correlations
+  for(m in 1:M){
+    for(mm in 1:M){
+      phi.cor[m,mm] = (phi[m,mm])/((pow(phi[m,m], 0.5))*(pow(phi[mm,mm], 0.5)));
+    }
+  }
+
+
+  # priors for loadings
+  # loadings
+  lambda[1] = 1
+  lambda[8] = 1
+  lambda[13] = 1
+  lambda[19] = 1
+  for(i in 2:7){
+    lambda[i] ~ dnorm(0, 1)T(0,)
+  }
+  for(i in 9:12){
+    lambda[i] ~ dnorm(0, 1)T(0,)
+  }
+  for(i in 14:18){
+    lambda[i] ~ dnorm(0, 1)T(0,)
+  }
+  for(i in 20:25){
+    lambda[i] ~ dnorm(0, 1)T(0,)
+  }
+
+
+  for(i in 1:nit){
+    # Thresholds
+    tau[i, 1] = 0
+    tau[i, 2] ~ dnorm(0, 0.1)T(tau[i, 1],)
+    # LRV total variance
+    # total variance = residual variance + fact. Var.
+    theta[i] = 1 + pow(lambda[i],2)
+    # standardized loading
+    lambda.std[i] = lambda[i]/pow(theta[i],0.5)
+  }
+
+  # compute omega
+  lambda_sum1[1] = lambda[1]
+  lambda_sum2[1] = lambda[8]
+  lambda_sum3[1] = lambda[13]
+  lambda_sum4[1] = lambda[19]
+  for(i in 2:6){
+    #lambda_sum (sum factor loadings)
+    lambda_sum1[i] = lambda_sum1[i-1]+lambda[i]
+    lambda_sum2[i] = lambda_sum2[i-1]+lambda[i+7]
+    lambda_sum3[i] = lambda_sum3[i-1]+lambda[i+12]
+    lambda_sum4[i] = lambda_sum4[i-1]+lambda[i+18]
+  }
+  lambda_sum1[7] = lambda_sum1[6] + lambda[7]
+  # compute reliability
+  reli.omega[1] = (pow(lambda_sum1[7],2))/(pow(lambda_sum1[7],2)+7)
+  reli.omega[2] = (pow(lambda_sum2[6],2))/(pow(lambda_sum2[6],2)+6)
+  reli.omega[3] = (pow(lambda_sum3[6],2))/(pow(lambda_sum3[6],2)+6)
+  reli.omega[4] = (pow(lambda_sum4[6],2))/(pow(lambda_sum4[6],2)+6)
+}</code></pre>
+</div>
+<div id="model-results" class="section level2">
+<h2>Model results</h2>
+<pre class="r"><code># Save parameters
+jags.params &lt;- c(&quot;tau&quot;, &quot;lambda&quot;, &quot;theta&quot;, &quot;reli.omega&quot;, &quot;lambda.std&quot;,
+                 &quot;phi.cor&quot;, &quot;inv.phi&quot;, &quot;phi&quot;)
+# initial-values
+jags.inits &lt;- function(){
+    list(
+      &quot;inv.phi&quot;=solve(matrix(
+    c(1.52, 0.92, 0.97, 1.19,
+      0.92, 1.17, 0.74, 1.08,
+      0.97, 0.74, 1.11, 0.98,
+      1.19, 1.08, 0.98, 1.55), ncol=4, nrow=4, byrow=T
+    ))
+  )
+}
+
+# data
+jags.data &lt;- list(
+  y = mydata,
+  N = nrow(mydata),
+  nit = ncol(mydata),
+  map = c(rep(1,7), rep(2,6), rep(3,6), rep(4,6)),
+  d = 8,
+  M = 4,
+  phi.0 = matrix(
+    c(1, 0.69, 0.75, 0.78,
+      0.69, 1, 0.65, 0.80,
+      0.75, 0.65, 1, 0.75,
+      0.78, 0.80, 0.75, 1), ncol=4, nrow=4, byrow=T
+    )
+)
+
+model.fit &lt;-  R2jags::jags(
+  model = paste0(w.d, &quot;/code/pools_study/model_ifa.txt&quot;),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)</code></pre>
+<pre><code>module glm loaded</code></pre>
+<pre><code>Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+Graph information:
+   Observed stochastic nodes: 12250
+   Unobserved stochastic nodes: 12787
+   Total graph size: 122291
+
+Initializing model</code></pre>
+<pre class="r"><code>print(model.fit, width=1000)</code></pre>
+<pre><code>Inference for Bugs model at &quot;C:/Users/noahp/Documents/GitHub/Padgett-Dissertation/code/pools_study/model_ifa.txt&quot;, fit using jags,
+ 4 chains, each with 10000 iterations (first 5000 discarded), n.thin = 5
+ n.sims = 4000 iterations saved
+                 mu.vect sd.vect      2.5%       25%       50%       75%     97.5% Rhat n.eff
+inv.phi[1,1]       3.156   1.614     0.760     2.008     2.900     4.000     7.169 1.03   140
+inv.phi[2,1]      -0.460   1.056    -2.762    -1.056    -0.414     0.219     1.509 1.02   160
+inv.phi[3,1]      -1.252   1.105    -3.846    -1.855    -1.116    -0.456     0.492 1.01   230
+inv.phi[4,1]      -1.271   1.433    -4.447    -2.124    -1.135    -0.283     1.152 1.01   310
+inv.phi[1,2]      -0.460   1.056    -2.762    -1.056    -0.414     0.219     1.509 1.02   160
+inv.phi[2,2]       2.869   1.461     0.891     1.777     2.594     3.680     6.307 1.01   250
+inv.phi[3,2]      -0.135   0.898    -1.976    -0.681    -0.115     0.424     1.689 1.01   490
+inv.phi[4,2]      -1.766   1.409    -4.945    -2.551    -1.569    -0.786     0.497 1.02   180
+inv.phi[1,3]      -1.252   1.105    -3.846    -1.855    -1.116    -0.456     0.492 1.01   230
+inv.phi[2,3]      -0.135   0.898    -1.976    -0.681    -0.115     0.424     1.689 1.01   490
+inv.phi[3,3]       2.748   1.319     0.722     1.799     2.512     3.474     5.946 1.02   180
+inv.phi[4,3]      -1.000   1.135    -3.497    -1.667    -0.889    -0.225     0.910 1.01   280
+inv.phi[1,4]      -1.271   1.433    -4.447    -2.124    -1.135    -0.283     1.152 1.01   310
+inv.phi[2,4]      -1.766   1.409    -4.945    -2.551    -1.569    -0.786     0.497 1.02   180
+inv.phi[3,4]      -1.000   1.135    -3.497    -1.667    -0.889    -0.225     0.910 1.01   280
+inv.phi[4,4]       4.019   2.103     0.992     2.441     3.660     5.165     9.062 1.03   130
+lambda[1]          1.000   0.000     1.000     1.000     1.000     1.000     1.000 1.00     1
+lambda[2]          1.241   0.109     1.034     1.165     1.239     1.315     1.461 1.00  1600
+lambda[3]          0.789   0.080     0.640     0.734     0.786     0.839     0.956 1.00  1500
+lambda[4]          0.780   0.081     0.632     0.724     0.777     0.835     0.945 1.00  1100
+lambda[5]          0.997   0.092     0.831     0.934     0.994     1.056     1.185 1.00   660
+lambda[6]          0.916   0.085     0.756     0.858     0.914     0.972     1.094 1.00  1500
+lambda[7]          1.000   0.095     0.824     0.933     0.997     1.061     1.195 1.01   380
+lambda[8]          1.000   0.000     1.000     1.000     1.000     1.000     1.000 1.00     1
+lambda[9]          0.865   0.083     0.709     0.808     0.863     0.920     1.030 1.00   900
+lambda[10]         0.769   0.075     0.629     0.717     0.767     0.818     0.923 1.00  1500
+lambda[11]         0.732   0.078     0.587     0.679     0.730     0.783     0.893 1.00  3000
+lambda[12]         1.025   0.089     0.857     0.965     1.024     1.082     1.205 1.00  3900
+lambda[13]         1.000   0.000     1.000     1.000     1.000     1.000     1.000 1.00     1
+lambda[14]         0.421   0.064     0.298     0.378     0.419     0.462     0.550 1.00  1300
+lambda[15]         0.471   0.062     0.351     0.429     0.471     0.511     0.596 1.00  1300
+lambda[16]         0.292   0.062     0.175     0.250     0.292     0.332     0.416 1.00  2100
+lambda[17]         0.658   0.074     0.519     0.609     0.656     0.706     0.810 1.00   560
+lambda[18]         0.542   0.069     0.414     0.495     0.539     0.587     0.685 1.00   840
+lambda[19]         1.000   0.000     1.000     1.000     1.000     1.000     1.000 1.00     1
+lambda[20]         1.142   0.099     0.956     1.072     1.141     1.207     1.343 1.00  1400
+lambda[21]         0.966   0.085     0.805     0.906     0.965     1.022     1.141 1.00  2400
+lambda[22]         1.197   0.104     1.006     1.126     1.194     1.264     1.410 1.00  1200
+lambda[23]         0.883   0.087     0.719     0.825     0.880     0.940     1.062 1.00  1700
+lambda[24]         1.002   0.087     0.840     0.943     0.999     1.060     1.176 1.00  1600
+lambda[25]         0.770   0.079     0.623     0.713     0.769     0.822     0.929 1.00   640
+lambda.std[1]      0.707   0.000     0.707     0.707     0.707     0.707     0.707 1.00     1
+lambda.std[2]      0.777   0.027     0.719     0.759     0.778     0.796     0.825 1.00  1900
+lambda.std[3]      0.617   0.039     0.539     0.592     0.618     0.643     0.691 1.00  1500
+lambda.std[4]      0.613   0.040     0.534     0.586     0.614     0.641     0.687 1.00  1100
+lambda.std[5]      0.704   0.032     0.639     0.683     0.705     0.726     0.764 1.00   690
+lambda.std[6]      0.673   0.034     0.603     0.651     0.675     0.697     0.738 1.00  1400
+lambda.std[7]      0.705   0.033     0.636     0.682     0.706     0.728     0.767 1.01   370
+lambda.std[8]      0.707   0.000     0.707     0.707     0.707     0.707     0.707 1.00     1
+lambda.std[9]      0.652   0.036     0.579     0.628     0.653     0.677     0.718 1.00   830
+lambda.std[10]     0.608   0.037     0.532     0.583     0.609     0.633     0.678 1.00  1500
+lambda.std[11]     0.588   0.041     0.506     0.562     0.590     0.617     0.666 1.00  3100
+lambda.std[12]     0.714   0.030     0.651     0.695     0.715     0.734     0.769 1.00  3600
+lambda.std[13]     0.707   0.000     0.707     0.707     0.707     0.707     0.707 1.00     1
+lambda.std[14]     0.386   0.050     0.286     0.354     0.386     0.419     0.482 1.00  1400
+lambda.std[15]     0.424   0.046     0.331     0.394     0.426     0.455     0.512 1.00  1300
+lambda.std[16]     0.279   0.054     0.172     0.243     0.280     0.315     0.384 1.00  2100
+lambda.std[17]     0.548   0.043     0.460     0.520     0.549     0.577     0.629 1.00   550
+lambda.std[18]     0.474   0.047     0.382     0.443     0.475     0.506     0.565 1.00   860
+lambda.std[19]     0.707   0.000     0.707     0.707     0.707     0.707     0.707 1.00     1
+lambda.std[20]     0.750   0.029     0.691     0.731     0.752     0.770     0.802 1.00  1300
+lambda.std[21]     0.693   0.032     0.627     0.671     0.694     0.715     0.752 1.00  2800
+lambda.std[22]     0.765   0.027     0.709     0.748     0.767     0.784     0.816 1.00  1100
+lambda.std[23]     0.660   0.037     0.584     0.637     0.660     0.685     0.728 1.00  1800
+lambda.std[24]     0.706   0.031     0.643     0.686     0.707     0.728     0.762 1.00  1700
+lambda.std[25]     0.608   0.039     0.529     0.580     0.609     0.635     0.681 1.00   660
+phi[1,1]           2.621   1.631     0.856     1.636     2.254     3.045     7.216 1.03   170
+phi[2,1]           1.583   0.883     0.188     1.006     1.510     2.039     3.640 1.03  1800
+phi[3,1]           1.931   1.046     0.465     1.233     1.774     2.384     4.552 1.02   490
+phi[4,1]           1.908   0.735     0.526     1.456     1.897     2.322     3.473 1.03   360
+phi[1,2]           1.583   0.883     0.188     1.006     1.510     2.039     3.640 1.03  1800
+phi[2,2]           2.078   1.022     0.723     1.368     1.900     2.517     4.717 1.02   280
+phi[3,2]           1.399   0.818     0.025     0.837     1.314     1.881     3.145 1.02   200
+phi[4,2]           1.677   0.701     0.186     1.261     1.715     2.117     3.064 1.02   270
+phi[1,3]           1.931   1.046     0.465     1.233     1.774     2.384     4.552 1.02   490
+phi[2,3]           1.399   0.818     0.025     0.837     1.314     1.881     3.145 1.02   200
+phi[3,3]           2.373   1.199     0.821     1.525     2.127     2.949     5.177 1.00  4000
+phi[4,3]           1.781   0.671     0.426     1.336     1.785     2.224     3.074 1.00   550
+phi[1,4]           1.908   0.735     0.526     1.456     1.897     2.322     3.473 1.03   360
+phi[2,4]           1.677   0.701     0.186     1.261     1.715     2.117     3.064 1.02   270
+phi[3,4]           1.781   0.671     0.426     1.336     1.785     2.224     3.074 1.00   550
+phi[4,4]           2.290   0.242     1.855     2.124     2.279     2.439     2.811 1.00  1800
+phi.cor[1,1]       1.000   0.000     1.000     1.000     1.000     1.000     1.000 1.00     1
+phi.cor[2,1]       0.696   0.210     0.125     0.620     0.752     0.842     0.925 1.03   200
+phi.cor[3,1]       0.784   0.157     0.368     0.723     0.833     0.895     0.951 1.01   780
+phi.cor[4,1]       0.799   0.172     0.319     0.750     0.860     0.908     0.952 1.03   890
+phi.cor[1,2]       0.696   0.210     0.125     0.620     0.752     0.842     0.925 1.03   200
+phi.cor[2,2]       1.000   0.000     1.000     1.000     1.000     1.000     1.000 1.00     1
+phi.cor[3,2]       0.642   0.241     0.022     0.533     0.707     0.821     0.914 1.02   170
+phi.cor[4,2]       0.769   0.215     0.109     0.724     0.849     0.903     0.952 1.05   210
+phi.cor[1,3]       0.784   0.157     0.368     0.723     0.833     0.895     0.951 1.01   780
+phi.cor[2,3]       0.642   0.241     0.022     0.533     0.707     0.821     0.914 1.02   170
+phi.cor[3,3]       1.000   0.000     1.000     1.000     1.000     1.000     1.000 1.00     1
+phi.cor[4,3]       0.772   0.178     0.237     0.721     0.828     0.887     0.941 1.02   200
+phi.cor[1,4]       0.799   0.172     0.319     0.750     0.860     0.908     0.952 1.03   890
+phi.cor[2,4]       0.769   0.215     0.109     0.724     0.849     0.903     0.952 1.05   210
+phi.cor[3,4]       0.772   0.178     0.237     0.721     0.828     0.887     0.941 1.02   200
+phi.cor[4,4]       1.000   0.000     1.000     1.000     1.000     1.000     1.000 1.00     1
+reli.omega[1]      0.865   0.011     0.843     0.858     0.866     0.873     0.886 1.01   430
+reli.omega[2]      0.828   0.011     0.807     0.821     0.829     0.836     0.849 1.00  4000
+reli.omega[3]      0.655   0.025     0.604     0.638     0.655     0.672     0.703 1.01   410
+reli.omega[4]      0.864   0.011     0.842     0.857     0.864     0.872     0.884 1.00  3100
+tau[1,1]           0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[2,1]           0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[3,1]           0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[4,1]           0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[5,1]           0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[6,1]           0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[7,1]           0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[8,1]           0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[9,1]           0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[10,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[11,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[12,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[13,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[14,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[15,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[16,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[17,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[18,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[19,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[20,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[21,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[22,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[23,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[24,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[25,1]          0.000   0.000     0.000     0.000     0.000     0.000     0.000 1.00     1
+tau[1,2]           2.842   0.149     2.553     2.743     2.837     2.942     3.138 1.00  3900
+tau[2,2]           3.235   0.198     2.868     3.095     3.228     3.368     3.648 1.00  2300
+tau[3,2]           2.353   0.152     2.062     2.247     2.349     2.454     2.648 1.00  1800
+tau[4,2]           1.780   0.117     1.556     1.699     1.778     1.858     2.011 1.00   770
+tau[5,2]           2.298   0.144     2.023     2.195     2.298     2.397     2.584 1.00   840
+tau[6,2]           2.586   0.157     2.297     2.475     2.582     2.689     2.909 1.00  2700
+tau[7,2]           3.085   0.198     2.709     2.952     3.082     3.217     3.483 1.00  1500
+tau[8,2]           1.898   0.106     1.691     1.825     1.898     1.967     2.107 1.00  4000
+tau[9,2]           1.095   0.081     0.941     1.040     1.094     1.150     1.258 1.00  1200
+tau[10,2]          1.436   0.099     1.245     1.372     1.435     1.501     1.644 1.00  4000
+tau[11,2]          0.667   0.054     0.564     0.631     0.665     0.701     0.776 1.00  3100
+tau[12,2]          1.697   0.102     1.501     1.626     1.696     1.763     1.902 1.00  3300
+tau[13,2]          1.678   0.090     1.505     1.615     1.677     1.740     1.856 1.00  1500
+tau[14,2]          1.637   0.132     1.380     1.547     1.638     1.724     1.901 1.00  1000
+tau[15,2]          1.273   0.092     1.100     1.212     1.270     1.336     1.455 1.00  2500
+tau[16,2]          1.838   0.184     1.492     1.712     1.832     1.961     2.212 1.00  4000
+tau[17,2]          2.208   0.155     1.910     2.103     2.205     2.310     2.525 1.00   720
+tau[18,2]          2.091   0.147     1.801     1.993     2.090     2.188     2.388 1.00  1400
+tau[19,2]          1.954   0.100     1.766     1.884     1.953     2.021     2.153 1.00  2000
+tau[20,2]          2.643   0.153     2.352     2.537     2.640     2.745     2.953 1.00  1300
+tau[21,2]          1.650   0.103     1.450     1.581     1.648     1.719     1.854 1.00   700
+tau[22,2]          2.035   0.125     1.798     1.951     2.030     2.116     2.283 1.00   700
+tau[23,2]          0.583   0.051     0.488     0.547     0.582     0.617     0.687 1.00  4000
+tau[24,2]          1.907   0.110     1.702     1.832     1.904     1.983     2.132 1.00  1000
+tau[25,2]          0.745   0.056     0.641     0.706     0.744     0.783     0.862 1.00  2300
+theta[1]           2.000   0.000     2.000     2.000     2.000     2.000     2.000 1.00     1
+theta[2]           2.553   0.272     2.069     2.357     2.536     2.729     3.135 1.00  1400
+theta[3]           1.628   0.128     1.409     1.539     1.617     1.704     1.914 1.00  1500
+theta[4]           1.615   0.128     1.399     1.524     1.604     1.697     1.893 1.00  1300
+theta[5]           2.003   0.185     1.691     1.873     1.989     2.116     2.405 1.00   630
+theta[6]           1.847   0.157     1.572     1.736     1.836     1.946     2.198 1.00  1600
+theta[7]           2.009   0.192     1.679     1.871     1.995     2.127     2.429 1.01   390
+theta[8]           2.000   0.000     2.000     2.000     2.000     2.000     2.000 1.00     1
+theta[9]           1.755   0.145     1.503     1.653     1.744     1.846     2.061 1.00  1000
+theta[10]          1.597   0.117     1.395     1.514     1.589     1.670     1.852 1.00  1500
+theta[11]          1.542   0.115     1.344     1.461     1.533     1.613     1.797 1.00  2900
+theta[12]          2.059   0.184     1.734     1.932     2.048     2.170     2.451 1.00  4000
+theta[13]          2.000   0.000     2.000     2.000     2.000     2.000     2.000 1.00     1
+theta[14]          1.181   0.055     1.089     1.143     1.175     1.213     1.302 1.00  1300
+theta[15]          1.225   0.059     1.123     1.184     1.222     1.261     1.355 1.00  1500
+theta[16]          1.089   0.037     1.031     1.063     1.085     1.111     1.173 1.00  3100
+theta[17]          1.439   0.099     1.269     1.371     1.430     1.499     1.655 1.00   580
+theta[18]          1.298   0.076     1.171     1.245     1.291     1.344     1.470 1.00   810
+theta[19]          2.000   0.000     2.000     2.000     2.000     2.000     2.000 1.00     1
+theta[20]          2.313   0.228     1.913     2.150     2.302     2.457     2.805 1.00  1500
+theta[21]          1.941   0.166     1.648     1.821     1.931     2.044     2.301 1.00  2100
+theta[22]          2.445   0.253     2.013     2.267     2.425     2.597     2.987 1.00  1300
+theta[23]          1.788   0.155     1.517     1.681     1.774     1.884     2.127 1.00  1500
+theta[24]          2.012   0.175     1.705     1.889     1.999     2.125     2.383 1.00  1500
+theta[25]          1.599   0.123     1.388     1.508     1.591     1.676     1.863 1.00   610
+deviance       15091.744 119.045 14858.102 15012.531 15091.659 15170.140 15327.725 1.00  4000
+
+For each parameter, n.eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor (at convergence, Rhat=1).
+
+DIC info (using the rule, pD = var(deviance)/2)
+pD = 7086.0 and DIC = 22177.7
+DIC is an estimate of expected predictive error (lower deviance is better).</code></pre>
+<pre class="r"><code>kable(model.fit$BUGSoutput$summary, format=&quot;html&quot;, digits=3) %&gt;%
+  kable_styling(full_width = T) %&gt;%
+  scroll_box(width=&quot;100%&quot;, height=&quot;500px&quot;)</code></pre>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:500px; overflow-x: scroll; width:100%; ">
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+mean
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+sd
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+2.5%
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+25%
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+50%
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+75%
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+97.5%
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Rhat
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+n.eff
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+deviance
+</td>
+<td style="text-align:right;">
+15091.744
+</td>
+<td style="text-align:right;">
+119.045
+</td>
+<td style="text-align:right;">
+14858.102
+</td>
+<td style="text-align:right;">
+15012.531
+</td>
+<td style="text-align:right;">
+15091.659
+</td>
+<td style="text-align:right;">
+15170.140
+</td>
+<td style="text-align:right;">
+15327.725
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[1,1]
+</td>
+<td style="text-align:right;">
+3.156
+</td>
+<td style="text-align:right;">
+1.614
+</td>
+<td style="text-align:right;">
+0.760
+</td>
+<td style="text-align:right;">
+2.008
+</td>
+<td style="text-align:right;">
+2.900
+</td>
+<td style="text-align:right;">
+4.000
+</td>
+<td style="text-align:right;">
+7.169
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+140
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[2,1]
+</td>
+<td style="text-align:right;">
+-0.460
+</td>
+<td style="text-align:right;">
+1.056
+</td>
+<td style="text-align:right;">
+-2.762
+</td>
+<td style="text-align:right;">
+-1.056
+</td>
+<td style="text-align:right;">
+-0.414
+</td>
+<td style="text-align:right;">
+0.219
+</td>
+<td style="text-align:right;">
+1.509
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+160
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[3,1]
+</td>
+<td style="text-align:right;">
+-1.252
+</td>
+<td style="text-align:right;">
+1.105
+</td>
+<td style="text-align:right;">
+-3.846
+</td>
+<td style="text-align:right;">
+-1.855
+</td>
+<td style="text-align:right;">
+-1.116
+</td>
+<td style="text-align:right;">
+-0.456
+</td>
+<td style="text-align:right;">
+0.492
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+230
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[4,1]
+</td>
+<td style="text-align:right;">
+-1.271
+</td>
+<td style="text-align:right;">
+1.433
+</td>
+<td style="text-align:right;">
+-4.447
+</td>
+<td style="text-align:right;">
+-2.124
+</td>
+<td style="text-align:right;">
+-1.135
+</td>
+<td style="text-align:right;">
+-0.283
+</td>
+<td style="text-align:right;">
+1.152
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+310
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[1,2]
+</td>
+<td style="text-align:right;">
+-0.460
+</td>
+<td style="text-align:right;">
+1.056
+</td>
+<td style="text-align:right;">
+-2.762
+</td>
+<td style="text-align:right;">
+-1.056
+</td>
+<td style="text-align:right;">
+-0.414
+</td>
+<td style="text-align:right;">
+0.219
+</td>
+<td style="text-align:right;">
+1.509
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+160
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[2,2]
+</td>
+<td style="text-align:right;">
+2.869
+</td>
+<td style="text-align:right;">
+1.461
+</td>
+<td style="text-align:right;">
+0.891
+</td>
+<td style="text-align:right;">
+1.777
+</td>
+<td style="text-align:right;">
+2.594
+</td>
+<td style="text-align:right;">
+3.680
+</td>
+<td style="text-align:right;">
+6.307
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+250
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[3,2]
+</td>
+<td style="text-align:right;">
+-0.135
+</td>
+<td style="text-align:right;">
+0.898
+</td>
+<td style="text-align:right;">
+-1.976
+</td>
+<td style="text-align:right;">
+-0.681
+</td>
+<td style="text-align:right;">
+-0.115
+</td>
+<td style="text-align:right;">
+0.424
+</td>
+<td style="text-align:right;">
+1.689
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+490
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[4,2]
+</td>
+<td style="text-align:right;">
+-1.766
+</td>
+<td style="text-align:right;">
+1.409
+</td>
+<td style="text-align:right;">
+-4.945
+</td>
+<td style="text-align:right;">
+-2.551
+</td>
+<td style="text-align:right;">
+-1.569
+</td>
+<td style="text-align:right;">
+-0.786
+</td>
+<td style="text-align:right;">
+0.497
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+180
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[1,3]
+</td>
+<td style="text-align:right;">
+-1.252
+</td>
+<td style="text-align:right;">
+1.105
+</td>
+<td style="text-align:right;">
+-3.846
+</td>
+<td style="text-align:right;">
+-1.855
+</td>
+<td style="text-align:right;">
+-1.116
+</td>
+<td style="text-align:right;">
+-0.456
+</td>
+<td style="text-align:right;">
+0.492
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+230
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[2,3]
+</td>
+<td style="text-align:right;">
+-0.135
+</td>
+<td style="text-align:right;">
+0.898
+</td>
+<td style="text-align:right;">
+-1.976
+</td>
+<td style="text-align:right;">
+-0.681
+</td>
+<td style="text-align:right;">
+-0.115
+</td>
+<td style="text-align:right;">
+0.424
+</td>
+<td style="text-align:right;">
+1.689
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+490
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[3,3]
+</td>
+<td style="text-align:right;">
+2.748
+</td>
+<td style="text-align:right;">
+1.319
+</td>
+<td style="text-align:right;">
+0.722
+</td>
+<td style="text-align:right;">
+1.799
+</td>
+<td style="text-align:right;">
+2.512
+</td>
+<td style="text-align:right;">
+3.474
+</td>
+<td style="text-align:right;">
+5.946
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+180
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[4,3]
+</td>
+<td style="text-align:right;">
+-1.000
+</td>
+<td style="text-align:right;">
+1.135
+</td>
+<td style="text-align:right;">
+-3.497
+</td>
+<td style="text-align:right;">
+-1.667
+</td>
+<td style="text-align:right;">
+-0.889
+</td>
+<td style="text-align:right;">
+-0.225
+</td>
+<td style="text-align:right;">
+0.910
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+280
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[1,4]
+</td>
+<td style="text-align:right;">
+-1.271
+</td>
+<td style="text-align:right;">
+1.433
+</td>
+<td style="text-align:right;">
+-4.447
+</td>
+<td style="text-align:right;">
+-2.124
+</td>
+<td style="text-align:right;">
+-1.135
+</td>
+<td style="text-align:right;">
+-0.283
+</td>
+<td style="text-align:right;">
+1.152
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+310
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[2,4]
+</td>
+<td style="text-align:right;">
+-1.766
+</td>
+<td style="text-align:right;">
+1.409
+</td>
+<td style="text-align:right;">
+-4.945
+</td>
+<td style="text-align:right;">
+-2.551
+</td>
+<td style="text-align:right;">
+-1.569
+</td>
+<td style="text-align:right;">
+-0.786
+</td>
+<td style="text-align:right;">
+0.497
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+180
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[3,4]
+</td>
+<td style="text-align:right;">
+-1.000
+</td>
+<td style="text-align:right;">
+1.135
+</td>
+<td style="text-align:right;">
+-3.497
+</td>
+<td style="text-align:right;">
+-1.667
+</td>
+<td style="text-align:right;">
+-0.889
+</td>
+<td style="text-align:right;">
+-0.225
+</td>
+<td style="text-align:right;">
+0.910
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+280
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inv.phi[4,4]
+</td>
+<td style="text-align:right;">
+4.019
+</td>
+<td style="text-align:right;">
+2.103
+</td>
+<td style="text-align:right;">
+0.992
+</td>
+<td style="text-align:right;">
+2.441
+</td>
+<td style="text-align:right;">
+3.660
+</td>
+<td style="text-align:right;">
+5.165
+</td>
+<td style="text-align:right;">
+9.062
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+130
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[1]
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[2]
+</td>
+<td style="text-align:right;">
+1.241
+</td>
+<td style="text-align:right;">
+0.109
+</td>
+<td style="text-align:right;">
+1.034
+</td>
+<td style="text-align:right;">
+1.165
+</td>
+<td style="text-align:right;">
+1.239
+</td>
+<td style="text-align:right;">
+1.315
+</td>
+<td style="text-align:right;">
+1.461
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1600
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[3]
+</td>
+<td style="text-align:right;">
+0.789
+</td>
+<td style="text-align:right;">
+0.080
+</td>
+<td style="text-align:right;">
+0.640
+</td>
+<td style="text-align:right;">
+0.734
+</td>
+<td style="text-align:right;">
+0.786
+</td>
+<td style="text-align:right;">
+0.839
+</td>
+<td style="text-align:right;">
+0.956
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[4]
+</td>
+<td style="text-align:right;">
+0.780
+</td>
+<td style="text-align:right;">
+0.081
+</td>
+<td style="text-align:right;">
+0.632
+</td>
+<td style="text-align:right;">
+0.724
+</td>
+<td style="text-align:right;">
+0.777
+</td>
+<td style="text-align:right;">
+0.835
+</td>
+<td style="text-align:right;">
+0.945
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1100
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[5]
+</td>
+<td style="text-align:right;">
+0.997
+</td>
+<td style="text-align:right;">
+0.092
+</td>
+<td style="text-align:right;">
+0.831
+</td>
+<td style="text-align:right;">
+0.934
+</td>
+<td style="text-align:right;">
+0.994
+</td>
+<td style="text-align:right;">
+1.056
+</td>
+<td style="text-align:right;">
+1.185
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+660
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[6]
+</td>
+<td style="text-align:right;">
+0.916
+</td>
+<td style="text-align:right;">
+0.085
+</td>
+<td style="text-align:right;">
+0.756
+</td>
+<td style="text-align:right;">
+0.858
+</td>
+<td style="text-align:right;">
+0.914
+</td>
+<td style="text-align:right;">
+0.972
+</td>
+<td style="text-align:right;">
+1.094
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[7]
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+0.095
+</td>
+<td style="text-align:right;">
+0.824
+</td>
+<td style="text-align:right;">
+0.933
+</td>
+<td style="text-align:right;">
+0.997
+</td>
+<td style="text-align:right;">
+1.061
+</td>
+<td style="text-align:right;">
+1.195
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+380
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[8]
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[9]
+</td>
+<td style="text-align:right;">
+0.865
+</td>
+<td style="text-align:right;">
+0.083
+</td>
+<td style="text-align:right;">
+0.709
+</td>
+<td style="text-align:right;">
+0.808
+</td>
+<td style="text-align:right;">
+0.863
+</td>
+<td style="text-align:right;">
+0.920
+</td>
+<td style="text-align:right;">
+1.030
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+900
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[10]
+</td>
+<td style="text-align:right;">
+0.769
+</td>
+<td style="text-align:right;">
+0.075
+</td>
+<td style="text-align:right;">
+0.629
+</td>
+<td style="text-align:right;">
+0.717
+</td>
+<td style="text-align:right;">
+0.767
+</td>
+<td style="text-align:right;">
+0.818
+</td>
+<td style="text-align:right;">
+0.923
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[11]
+</td>
+<td style="text-align:right;">
+0.732
+</td>
+<td style="text-align:right;">
+0.078
+</td>
+<td style="text-align:right;">
+0.587
+</td>
+<td style="text-align:right;">
+0.679
+</td>
+<td style="text-align:right;">
+0.730
+</td>
+<td style="text-align:right;">
+0.783
+</td>
+<td style="text-align:right;">
+0.893
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+3000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[12]
+</td>
+<td style="text-align:right;">
+1.025
+</td>
+<td style="text-align:right;">
+0.089
+</td>
+<td style="text-align:right;">
+0.857
+</td>
+<td style="text-align:right;">
+0.965
+</td>
+<td style="text-align:right;">
+1.024
+</td>
+<td style="text-align:right;">
+1.082
+</td>
+<td style="text-align:right;">
+1.205
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+3900
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[13]
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[14]
+</td>
+<td style="text-align:right;">
+0.421
+</td>
+<td style="text-align:right;">
+0.064
+</td>
+<td style="text-align:right;">
+0.298
+</td>
+<td style="text-align:right;">
+0.378
+</td>
+<td style="text-align:right;">
+0.419
+</td>
+<td style="text-align:right;">
+0.462
+</td>
+<td style="text-align:right;">
+0.550
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1300
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[15]
+</td>
+<td style="text-align:right;">
+0.471
+</td>
+<td style="text-align:right;">
+0.062
+</td>
+<td style="text-align:right;">
+0.351
+</td>
+<td style="text-align:right;">
+0.429
+</td>
+<td style="text-align:right;">
+0.471
+</td>
+<td style="text-align:right;">
+0.511
+</td>
+<td style="text-align:right;">
+0.596
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1300
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[16]
+</td>
+<td style="text-align:right;">
+0.292
+</td>
+<td style="text-align:right;">
+0.062
+</td>
+<td style="text-align:right;">
+0.175
+</td>
+<td style="text-align:right;">
+0.250
+</td>
+<td style="text-align:right;">
+0.292
+</td>
+<td style="text-align:right;">
+0.332
+</td>
+<td style="text-align:right;">
+0.416
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2100
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[17]
+</td>
+<td style="text-align:right;">
+0.658
+</td>
+<td style="text-align:right;">
+0.074
+</td>
+<td style="text-align:right;">
+0.519
+</td>
+<td style="text-align:right;">
+0.609
+</td>
+<td style="text-align:right;">
+0.656
+</td>
+<td style="text-align:right;">
+0.706
+</td>
+<td style="text-align:right;">
+0.810
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+560
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[18]
+</td>
+<td style="text-align:right;">
+0.542
+</td>
+<td style="text-align:right;">
+0.069
+</td>
+<td style="text-align:right;">
+0.414
+</td>
+<td style="text-align:right;">
+0.495
+</td>
+<td style="text-align:right;">
+0.539
+</td>
+<td style="text-align:right;">
+0.587
+</td>
+<td style="text-align:right;">
+0.685
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+840
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[19]
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[20]
+</td>
+<td style="text-align:right;">
+1.142
+</td>
+<td style="text-align:right;">
+0.099
+</td>
+<td style="text-align:right;">
+0.956
+</td>
+<td style="text-align:right;">
+1.072
+</td>
+<td style="text-align:right;">
+1.141
+</td>
+<td style="text-align:right;">
+1.207
+</td>
+<td style="text-align:right;">
+1.343
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1400
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[21]
+</td>
+<td style="text-align:right;">
+0.966
+</td>
+<td style="text-align:right;">
+0.085
+</td>
+<td style="text-align:right;">
+0.805
+</td>
+<td style="text-align:right;">
+0.906
+</td>
+<td style="text-align:right;">
+0.965
+</td>
+<td style="text-align:right;">
+1.022
+</td>
+<td style="text-align:right;">
+1.141
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2400
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[22]
+</td>
+<td style="text-align:right;">
+1.197
+</td>
+<td style="text-align:right;">
+0.104
+</td>
+<td style="text-align:right;">
+1.006
+</td>
+<td style="text-align:right;">
+1.126
+</td>
+<td style="text-align:right;">
+1.194
+</td>
+<td style="text-align:right;">
+1.264
+</td>
+<td style="text-align:right;">
+1.410
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1200
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[23]
+</td>
+<td style="text-align:right;">
+0.883
+</td>
+<td style="text-align:right;">
+0.087
+</td>
+<td style="text-align:right;">
+0.719
+</td>
+<td style="text-align:right;">
+0.825
+</td>
+<td style="text-align:right;">
+0.880
+</td>
+<td style="text-align:right;">
+0.940
+</td>
+<td style="text-align:right;">
+1.062
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1700
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[24]
+</td>
+<td style="text-align:right;">
+1.002
+</td>
+<td style="text-align:right;">
+0.087
+</td>
+<td style="text-align:right;">
+0.840
+</td>
+<td style="text-align:right;">
+0.943
+</td>
+<td style="text-align:right;">
+0.999
+</td>
+<td style="text-align:right;">
+1.060
+</td>
+<td style="text-align:right;">
+1.176
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1600
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda[25]
+</td>
+<td style="text-align:right;">
+0.770
+</td>
+<td style="text-align:right;">
+0.079
+</td>
+<td style="text-align:right;">
+0.623
+</td>
+<td style="text-align:right;">
+0.713
+</td>
+<td style="text-align:right;">
+0.769
+</td>
+<td style="text-align:right;">
+0.822
+</td>
+<td style="text-align:right;">
+0.929
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+640
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[1]
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[2]
+</td>
+<td style="text-align:right;">
+0.777
+</td>
+<td style="text-align:right;">
+0.027
+</td>
+<td style="text-align:right;">
+0.719
+</td>
+<td style="text-align:right;">
+0.759
+</td>
+<td style="text-align:right;">
+0.778
+</td>
+<td style="text-align:right;">
+0.796
+</td>
+<td style="text-align:right;">
+0.825
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1900
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[3]
+</td>
+<td style="text-align:right;">
+0.617
+</td>
+<td style="text-align:right;">
+0.039
+</td>
+<td style="text-align:right;">
+0.539
+</td>
+<td style="text-align:right;">
+0.592
+</td>
+<td style="text-align:right;">
+0.618
+</td>
+<td style="text-align:right;">
+0.643
+</td>
+<td style="text-align:right;">
+0.691
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[4]
+</td>
+<td style="text-align:right;">
+0.613
+</td>
+<td style="text-align:right;">
+0.040
+</td>
+<td style="text-align:right;">
+0.534
+</td>
+<td style="text-align:right;">
+0.586
+</td>
+<td style="text-align:right;">
+0.614
+</td>
+<td style="text-align:right;">
+0.641
+</td>
+<td style="text-align:right;">
+0.687
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1100
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[5]
+</td>
+<td style="text-align:right;">
+0.704
+</td>
+<td style="text-align:right;">
+0.032
+</td>
+<td style="text-align:right;">
+0.639
+</td>
+<td style="text-align:right;">
+0.683
+</td>
+<td style="text-align:right;">
+0.705
+</td>
+<td style="text-align:right;">
+0.726
+</td>
+<td style="text-align:right;">
+0.764
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+690
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[6]
+</td>
+<td style="text-align:right;">
+0.673
+</td>
+<td style="text-align:right;">
+0.034
+</td>
+<td style="text-align:right;">
+0.603
+</td>
+<td style="text-align:right;">
+0.651
+</td>
+<td style="text-align:right;">
+0.675
+</td>
+<td style="text-align:right;">
+0.697
+</td>
+<td style="text-align:right;">
+0.738
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1400
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[7]
+</td>
+<td style="text-align:right;">
+0.705
+</td>
+<td style="text-align:right;">
+0.033
+</td>
+<td style="text-align:right;">
+0.636
+</td>
+<td style="text-align:right;">
+0.682
+</td>
+<td style="text-align:right;">
+0.706
+</td>
+<td style="text-align:right;">
+0.728
+</td>
+<td style="text-align:right;">
+0.767
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+370
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[8]
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[9]
+</td>
+<td style="text-align:right;">
+0.652
+</td>
+<td style="text-align:right;">
+0.036
+</td>
+<td style="text-align:right;">
+0.579
+</td>
+<td style="text-align:right;">
+0.628
+</td>
+<td style="text-align:right;">
+0.653
+</td>
+<td style="text-align:right;">
+0.677
+</td>
+<td style="text-align:right;">
+0.718
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+830
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[10]
+</td>
+<td style="text-align:right;">
+0.608
+</td>
+<td style="text-align:right;">
+0.037
+</td>
+<td style="text-align:right;">
+0.532
+</td>
+<td style="text-align:right;">
+0.583
+</td>
+<td style="text-align:right;">
+0.609
+</td>
+<td style="text-align:right;">
+0.633
+</td>
+<td style="text-align:right;">
+0.678
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[11]
+</td>
+<td style="text-align:right;">
+0.588
+</td>
+<td style="text-align:right;">
+0.041
+</td>
+<td style="text-align:right;">
+0.506
+</td>
+<td style="text-align:right;">
+0.562
+</td>
+<td style="text-align:right;">
+0.590
+</td>
+<td style="text-align:right;">
+0.617
+</td>
+<td style="text-align:right;">
+0.666
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+3100
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[12]
+</td>
+<td style="text-align:right;">
+0.714
+</td>
+<td style="text-align:right;">
+0.030
+</td>
+<td style="text-align:right;">
+0.651
+</td>
+<td style="text-align:right;">
+0.695
+</td>
+<td style="text-align:right;">
+0.715
+</td>
+<td style="text-align:right;">
+0.734
+</td>
+<td style="text-align:right;">
+0.769
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+3600
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[13]
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[14]
+</td>
+<td style="text-align:right;">
+0.386
+</td>
+<td style="text-align:right;">
+0.050
+</td>
+<td style="text-align:right;">
+0.286
+</td>
+<td style="text-align:right;">
+0.354
+</td>
+<td style="text-align:right;">
+0.386
+</td>
+<td style="text-align:right;">
+0.419
+</td>
+<td style="text-align:right;">
+0.482
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1400
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[15]
+</td>
+<td style="text-align:right;">
+0.424
+</td>
+<td style="text-align:right;">
+0.046
+</td>
+<td style="text-align:right;">
+0.331
+</td>
+<td style="text-align:right;">
+0.394
+</td>
+<td style="text-align:right;">
+0.426
+</td>
+<td style="text-align:right;">
+0.455
+</td>
+<td style="text-align:right;">
+0.512
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1300
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[16]
+</td>
+<td style="text-align:right;">
+0.279
+</td>
+<td style="text-align:right;">
+0.054
+</td>
+<td style="text-align:right;">
+0.172
+</td>
+<td style="text-align:right;">
+0.243
+</td>
+<td style="text-align:right;">
+0.280
+</td>
+<td style="text-align:right;">
+0.315
+</td>
+<td style="text-align:right;">
+0.384
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2100
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[17]
+</td>
+<td style="text-align:right;">
+0.548
+</td>
+<td style="text-align:right;">
+0.043
+</td>
+<td style="text-align:right;">
+0.460
+</td>
+<td style="text-align:right;">
+0.520
+</td>
+<td style="text-align:right;">
+0.549
+</td>
+<td style="text-align:right;">
+0.577
+</td>
+<td style="text-align:right;">
+0.629
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+550
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[18]
+</td>
+<td style="text-align:right;">
+0.474
+</td>
+<td style="text-align:right;">
+0.047
+</td>
+<td style="text-align:right;">
+0.382
+</td>
+<td style="text-align:right;">
+0.443
+</td>
+<td style="text-align:right;">
+0.475
+</td>
+<td style="text-align:right;">
+0.506
+</td>
+<td style="text-align:right;">
+0.565
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+860
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[19]
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[20]
+</td>
+<td style="text-align:right;">
+0.750
+</td>
+<td style="text-align:right;">
+0.029
+</td>
+<td style="text-align:right;">
+0.691
+</td>
+<td style="text-align:right;">
+0.731
+</td>
+<td style="text-align:right;">
+0.752
+</td>
+<td style="text-align:right;">
+0.770
+</td>
+<td style="text-align:right;">
+0.802
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1300
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[21]
+</td>
+<td style="text-align:right;">
+0.693
+</td>
+<td style="text-align:right;">
+0.032
+</td>
+<td style="text-align:right;">
+0.627
+</td>
+<td style="text-align:right;">
+0.671
+</td>
+<td style="text-align:right;">
+0.694
+</td>
+<td style="text-align:right;">
+0.715
+</td>
+<td style="text-align:right;">
+0.752
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2800
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[22]
+</td>
+<td style="text-align:right;">
+0.765
+</td>
+<td style="text-align:right;">
+0.027
+</td>
+<td style="text-align:right;">
+0.709
+</td>
+<td style="text-align:right;">
+0.748
+</td>
+<td style="text-align:right;">
+0.767
+</td>
+<td style="text-align:right;">
+0.784
+</td>
+<td style="text-align:right;">
+0.816
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1100
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[23]
+</td>
+<td style="text-align:right;">
+0.660
+</td>
+<td style="text-align:right;">
+0.037
+</td>
+<td style="text-align:right;">
+0.584
+</td>
+<td style="text-align:right;">
+0.637
+</td>
+<td style="text-align:right;">
+0.660
+</td>
+<td style="text-align:right;">
+0.685
+</td>
+<td style="text-align:right;">
+0.728
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1800
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[24]
+</td>
+<td style="text-align:right;">
+0.706
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+0.643
+</td>
+<td style="text-align:right;">
+0.686
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.728
+</td>
+<td style="text-align:right;">
+0.762
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1700
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lambda.std[25]
+</td>
+<td style="text-align:right;">
+0.608
+</td>
+<td style="text-align:right;">
+0.039
+</td>
+<td style="text-align:right;">
+0.529
+</td>
+<td style="text-align:right;">
+0.580
+</td>
+<td style="text-align:right;">
+0.609
+</td>
+<td style="text-align:right;">
+0.635
+</td>
+<td style="text-align:right;">
+0.681
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+660
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[1,1]
+</td>
+<td style="text-align:right;">
+2.621
+</td>
+<td style="text-align:right;">
+1.631
+</td>
+<td style="text-align:right;">
+0.856
+</td>
+<td style="text-align:right;">
+1.636
+</td>
+<td style="text-align:right;">
+2.254
+</td>
+<td style="text-align:right;">
+3.045
+</td>
+<td style="text-align:right;">
+7.216
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+170
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[2,1]
+</td>
+<td style="text-align:right;">
+1.583
+</td>
+<td style="text-align:right;">
+0.883
+</td>
+<td style="text-align:right;">
+0.188
+</td>
+<td style="text-align:right;">
+1.006
+</td>
+<td style="text-align:right;">
+1.510
+</td>
+<td style="text-align:right;">
+2.039
+</td>
+<td style="text-align:right;">
+3.640
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+1800
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[3,1]
+</td>
+<td style="text-align:right;">
+1.931
+</td>
+<td style="text-align:right;">
+1.046
+</td>
+<td style="text-align:right;">
+0.465
+</td>
+<td style="text-align:right;">
+1.233
+</td>
+<td style="text-align:right;">
+1.774
+</td>
+<td style="text-align:right;">
+2.384
+</td>
+<td style="text-align:right;">
+4.552
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+490
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[4,1]
+</td>
+<td style="text-align:right;">
+1.908
+</td>
+<td style="text-align:right;">
+0.735
+</td>
+<td style="text-align:right;">
+0.526
+</td>
+<td style="text-align:right;">
+1.456
+</td>
+<td style="text-align:right;">
+1.897
+</td>
+<td style="text-align:right;">
+2.322
+</td>
+<td style="text-align:right;">
+3.473
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+360
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[1,2]
+</td>
+<td style="text-align:right;">
+1.583
+</td>
+<td style="text-align:right;">
+0.883
+</td>
+<td style="text-align:right;">
+0.188
+</td>
+<td style="text-align:right;">
+1.006
+</td>
+<td style="text-align:right;">
+1.510
+</td>
+<td style="text-align:right;">
+2.039
+</td>
+<td style="text-align:right;">
+3.640
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+1800
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[2,2]
+</td>
+<td style="text-align:right;">
+2.078
+</td>
+<td style="text-align:right;">
+1.022
+</td>
+<td style="text-align:right;">
+0.723
+</td>
+<td style="text-align:right;">
+1.368
+</td>
+<td style="text-align:right;">
+1.900
+</td>
+<td style="text-align:right;">
+2.517
+</td>
+<td style="text-align:right;">
+4.717
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+280
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[3,2]
+</td>
+<td style="text-align:right;">
+1.399
+</td>
+<td style="text-align:right;">
+0.818
+</td>
+<td style="text-align:right;">
+0.025
+</td>
+<td style="text-align:right;">
+0.837
+</td>
+<td style="text-align:right;">
+1.314
+</td>
+<td style="text-align:right;">
+1.881
+</td>
+<td style="text-align:right;">
+3.145
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+200
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[4,2]
+</td>
+<td style="text-align:right;">
+1.677
+</td>
+<td style="text-align:right;">
+0.701
+</td>
+<td style="text-align:right;">
+0.186
+</td>
+<td style="text-align:right;">
+1.261
+</td>
+<td style="text-align:right;">
+1.715
+</td>
+<td style="text-align:right;">
+2.117
+</td>
+<td style="text-align:right;">
+3.064
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+270
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[1,3]
+</td>
+<td style="text-align:right;">
+1.931
+</td>
+<td style="text-align:right;">
+1.046
+</td>
+<td style="text-align:right;">
+0.465
+</td>
+<td style="text-align:right;">
+1.233
+</td>
+<td style="text-align:right;">
+1.774
+</td>
+<td style="text-align:right;">
+2.384
+</td>
+<td style="text-align:right;">
+4.552
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+490
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[2,3]
+</td>
+<td style="text-align:right;">
+1.399
+</td>
+<td style="text-align:right;">
+0.818
+</td>
+<td style="text-align:right;">
+0.025
+</td>
+<td style="text-align:right;">
+0.837
+</td>
+<td style="text-align:right;">
+1.314
+</td>
+<td style="text-align:right;">
+1.881
+</td>
+<td style="text-align:right;">
+3.145
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+200
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[3,3]
+</td>
+<td style="text-align:right;">
+2.373
+</td>
+<td style="text-align:right;">
+1.199
+</td>
+<td style="text-align:right;">
+0.821
+</td>
+<td style="text-align:right;">
+1.525
+</td>
+<td style="text-align:right;">
+2.127
+</td>
+<td style="text-align:right;">
+2.949
+</td>
+<td style="text-align:right;">
+5.177
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[4,3]
+</td>
+<td style="text-align:right;">
+1.781
+</td>
+<td style="text-align:right;">
+0.671
+</td>
+<td style="text-align:right;">
+0.426
+</td>
+<td style="text-align:right;">
+1.336
+</td>
+<td style="text-align:right;">
+1.785
+</td>
+<td style="text-align:right;">
+2.224
+</td>
+<td style="text-align:right;">
+3.074
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+550
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[1,4]
+</td>
+<td style="text-align:right;">
+1.908
+</td>
+<td style="text-align:right;">
+0.735
+</td>
+<td style="text-align:right;">
+0.526
+</td>
+<td style="text-align:right;">
+1.456
+</td>
+<td style="text-align:right;">
+1.897
+</td>
+<td style="text-align:right;">
+2.322
+</td>
+<td style="text-align:right;">
+3.473
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+360
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[2,4]
+</td>
+<td style="text-align:right;">
+1.677
+</td>
+<td style="text-align:right;">
+0.701
+</td>
+<td style="text-align:right;">
+0.186
+</td>
+<td style="text-align:right;">
+1.261
+</td>
+<td style="text-align:right;">
+1.715
+</td>
+<td style="text-align:right;">
+2.117
+</td>
+<td style="text-align:right;">
+3.064
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+270
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[3,4]
+</td>
+<td style="text-align:right;">
+1.781
+</td>
+<td style="text-align:right;">
+0.671
+</td>
+<td style="text-align:right;">
+0.426
+</td>
+<td style="text-align:right;">
+1.336
+</td>
+<td style="text-align:right;">
+1.785
+</td>
+<td style="text-align:right;">
+2.224
+</td>
+<td style="text-align:right;">
+3.074
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+550
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi[4,4]
+</td>
+<td style="text-align:right;">
+2.290
+</td>
+<td style="text-align:right;">
+0.242
+</td>
+<td style="text-align:right;">
+1.855
+</td>
+<td style="text-align:right;">
+2.124
+</td>
+<td style="text-align:right;">
+2.279
+</td>
+<td style="text-align:right;">
+2.439
+</td>
+<td style="text-align:right;">
+2.811
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1800
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[1,1]
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[2,1]
+</td>
+<td style="text-align:right;">
+0.696
+</td>
+<td style="text-align:right;">
+0.210
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+0.620
+</td>
+<td style="text-align:right;">
+0.752
+</td>
+<td style="text-align:right;">
+0.842
+</td>
+<td style="text-align:right;">
+0.925
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+200
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[3,1]
+</td>
+<td style="text-align:right;">
+0.784
+</td>
+<td style="text-align:right;">
+0.157
+</td>
+<td style="text-align:right;">
+0.368
+</td>
+<td style="text-align:right;">
+0.723
+</td>
+<td style="text-align:right;">
+0.833
+</td>
+<td style="text-align:right;">
+0.895
+</td>
+<td style="text-align:right;">
+0.951
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+780
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[4,1]
+</td>
+<td style="text-align:right;">
+0.799
+</td>
+<td style="text-align:right;">
+0.172
+</td>
+<td style="text-align:right;">
+0.319
+</td>
+<td style="text-align:right;">
+0.750
+</td>
+<td style="text-align:right;">
+0.860
+</td>
+<td style="text-align:right;">
+0.908
+</td>
+<td style="text-align:right;">
+0.952
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+890
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[1,2]
+</td>
+<td style="text-align:right;">
+0.696
+</td>
+<td style="text-align:right;">
+0.210
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+0.620
+</td>
+<td style="text-align:right;">
+0.752
+</td>
+<td style="text-align:right;">
+0.842
+</td>
+<td style="text-align:right;">
+0.925
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+200
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[2,2]
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[3,2]
+</td>
+<td style="text-align:right;">
+0.642
+</td>
+<td style="text-align:right;">
+0.241
+</td>
+<td style="text-align:right;">
+0.022
+</td>
+<td style="text-align:right;">
+0.533
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.821
+</td>
+<td style="text-align:right;">
+0.914
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+170
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[4,2]
+</td>
+<td style="text-align:right;">
+0.769
+</td>
+<td style="text-align:right;">
+0.215
+</td>
+<td style="text-align:right;">
+0.109
+</td>
+<td style="text-align:right;">
+0.724
+</td>
+<td style="text-align:right;">
+0.849
+</td>
+<td style="text-align:right;">
+0.903
+</td>
+<td style="text-align:right;">
+0.952
+</td>
+<td style="text-align:right;">
+1.05
+</td>
+<td style="text-align:right;">
+210
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[1,3]
+</td>
+<td style="text-align:right;">
+0.784
+</td>
+<td style="text-align:right;">
+0.157
+</td>
+<td style="text-align:right;">
+0.368
+</td>
+<td style="text-align:right;">
+0.723
+</td>
+<td style="text-align:right;">
+0.833
+</td>
+<td style="text-align:right;">
+0.895
+</td>
+<td style="text-align:right;">
+0.951
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+780
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[2,3]
+</td>
+<td style="text-align:right;">
+0.642
+</td>
+<td style="text-align:right;">
+0.241
+</td>
+<td style="text-align:right;">
+0.022
+</td>
+<td style="text-align:right;">
+0.533
+</td>
+<td style="text-align:right;">
+0.707
+</td>
+<td style="text-align:right;">
+0.821
+</td>
+<td style="text-align:right;">
+0.914
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+170
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[3,3]
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[4,3]
+</td>
+<td style="text-align:right;">
+0.772
+</td>
+<td style="text-align:right;">
+0.178
+</td>
+<td style="text-align:right;">
+0.237
+</td>
+<td style="text-align:right;">
+0.721
+</td>
+<td style="text-align:right;">
+0.828
+</td>
+<td style="text-align:right;">
+0.887
+</td>
+<td style="text-align:right;">
+0.941
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+200
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[1,4]
+</td>
+<td style="text-align:right;">
+0.799
+</td>
+<td style="text-align:right;">
+0.172
+</td>
+<td style="text-align:right;">
+0.319
+</td>
+<td style="text-align:right;">
+0.750
+</td>
+<td style="text-align:right;">
+0.860
+</td>
+<td style="text-align:right;">
+0.908
+</td>
+<td style="text-align:right;">
+0.952
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+890
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[2,4]
+</td>
+<td style="text-align:right;">
+0.769
+</td>
+<td style="text-align:right;">
+0.215
+</td>
+<td style="text-align:right;">
+0.109
+</td>
+<td style="text-align:right;">
+0.724
+</td>
+<td style="text-align:right;">
+0.849
+</td>
+<td style="text-align:right;">
+0.903
+</td>
+<td style="text-align:right;">
+0.952
+</td>
+<td style="text-align:right;">
+1.05
+</td>
+<td style="text-align:right;">
+210
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[3,4]
+</td>
+<td style="text-align:right;">
+0.772
+</td>
+<td style="text-align:right;">
+0.178
+</td>
+<td style="text-align:right;">
+0.237
+</td>
+<td style="text-align:right;">
+0.721
+</td>
+<td style="text-align:right;">
+0.828
+</td>
+<td style="text-align:right;">
+0.887
+</td>
+<td style="text-align:right;">
+0.941
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+200
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+phi.cor[4,4]
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+reli.omega[1]
+</td>
+<td style="text-align:right;">
+0.865
+</td>
+<td style="text-align:right;">
+0.011
+</td>
+<td style="text-align:right;">
+0.843
+</td>
+<td style="text-align:right;">
+0.858
+</td>
+<td style="text-align:right;">
+0.866
+</td>
+<td style="text-align:right;">
+0.873
+</td>
+<td style="text-align:right;">
+0.886
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+430
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+reli.omega[2]
+</td>
+<td style="text-align:right;">
+0.828
+</td>
+<td style="text-align:right;">
+0.011
+</td>
+<td style="text-align:right;">
+0.807
+</td>
+<td style="text-align:right;">
+0.821
+</td>
+<td style="text-align:right;">
+0.829
+</td>
+<td style="text-align:right;">
+0.836
+</td>
+<td style="text-align:right;">
+0.849
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+reli.omega[3]
+</td>
+<td style="text-align:right;">
+0.655
+</td>
+<td style="text-align:right;">
+0.025
+</td>
+<td style="text-align:right;">
+0.604
+</td>
+<td style="text-align:right;">
+0.638
+</td>
+<td style="text-align:right;">
+0.655
+</td>
+<td style="text-align:right;">
+0.672
+</td>
+<td style="text-align:right;">
+0.703
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+410
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+reli.omega[4]
+</td>
+<td style="text-align:right;">
+0.864
+</td>
+<td style="text-align:right;">
+0.011
+</td>
+<td style="text-align:right;">
+0.842
+</td>
+<td style="text-align:right;">
+0.857
+</td>
+<td style="text-align:right;">
+0.864
+</td>
+<td style="text-align:right;">
+0.872
+</td>
+<td style="text-align:right;">
+0.884
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+3100
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[1,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[2,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[3,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[4,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[5,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[6,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[7,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[8,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[9,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[10,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[11,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[12,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[13,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[14,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[15,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[16,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[17,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[18,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[19,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[20,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[21,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[22,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[23,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[24,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[25,1]
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[1,2]
+</td>
+<td style="text-align:right;">
+2.842
+</td>
+<td style="text-align:right;">
+0.149
+</td>
+<td style="text-align:right;">
+2.553
+</td>
+<td style="text-align:right;">
+2.743
+</td>
+<td style="text-align:right;">
+2.837
+</td>
+<td style="text-align:right;">
+2.942
+</td>
+<td style="text-align:right;">
+3.138
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+3900
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[2,2]
+</td>
+<td style="text-align:right;">
+3.235
+</td>
+<td style="text-align:right;">
+0.198
+</td>
+<td style="text-align:right;">
+2.868
+</td>
+<td style="text-align:right;">
+3.095
+</td>
+<td style="text-align:right;">
+3.228
+</td>
+<td style="text-align:right;">
+3.368
+</td>
+<td style="text-align:right;">
+3.648
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2300
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[3,2]
+</td>
+<td style="text-align:right;">
+2.353
+</td>
+<td style="text-align:right;">
+0.152
+</td>
+<td style="text-align:right;">
+2.062
+</td>
+<td style="text-align:right;">
+2.247
+</td>
+<td style="text-align:right;">
+2.349
+</td>
+<td style="text-align:right;">
+2.454
+</td>
+<td style="text-align:right;">
+2.648
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1800
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[4,2]
+</td>
+<td style="text-align:right;">
+1.780
+</td>
+<td style="text-align:right;">
+0.117
+</td>
+<td style="text-align:right;">
+1.556
+</td>
+<td style="text-align:right;">
+1.699
+</td>
+<td style="text-align:right;">
+1.778
+</td>
+<td style="text-align:right;">
+1.858
+</td>
+<td style="text-align:right;">
+2.011
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+770
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[5,2]
+</td>
+<td style="text-align:right;">
+2.298
+</td>
+<td style="text-align:right;">
+0.144
+</td>
+<td style="text-align:right;">
+2.023
+</td>
+<td style="text-align:right;">
+2.195
+</td>
+<td style="text-align:right;">
+2.298
+</td>
+<td style="text-align:right;">
+2.397
+</td>
+<td style="text-align:right;">
+2.584
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+840
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[6,2]
+</td>
+<td style="text-align:right;">
+2.586
+</td>
+<td style="text-align:right;">
+0.157
+</td>
+<td style="text-align:right;">
+2.297
+</td>
+<td style="text-align:right;">
+2.475
+</td>
+<td style="text-align:right;">
+2.582
+</td>
+<td style="text-align:right;">
+2.689
+</td>
+<td style="text-align:right;">
+2.909
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2700
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[7,2]
+</td>
+<td style="text-align:right;">
+3.085
+</td>
+<td style="text-align:right;">
+0.198
+</td>
+<td style="text-align:right;">
+2.709
+</td>
+<td style="text-align:right;">
+2.952
+</td>
+<td style="text-align:right;">
+3.082
+</td>
+<td style="text-align:right;">
+3.217
+</td>
+<td style="text-align:right;">
+3.483
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[8,2]
+</td>
+<td style="text-align:right;">
+1.898
+</td>
+<td style="text-align:right;">
+0.106
+</td>
+<td style="text-align:right;">
+1.691
+</td>
+<td style="text-align:right;">
+1.825
+</td>
+<td style="text-align:right;">
+1.898
+</td>
+<td style="text-align:right;">
+1.967
+</td>
+<td style="text-align:right;">
+2.107
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[9,2]
+</td>
+<td style="text-align:right;">
+1.095
+</td>
+<td style="text-align:right;">
+0.081
+</td>
+<td style="text-align:right;">
+0.941
+</td>
+<td style="text-align:right;">
+1.040
+</td>
+<td style="text-align:right;">
+1.094
+</td>
+<td style="text-align:right;">
+1.150
+</td>
+<td style="text-align:right;">
+1.258
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1200
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[10,2]
+</td>
+<td style="text-align:right;">
+1.436
+</td>
+<td style="text-align:right;">
+0.099
+</td>
+<td style="text-align:right;">
+1.245
+</td>
+<td style="text-align:right;">
+1.372
+</td>
+<td style="text-align:right;">
+1.435
+</td>
+<td style="text-align:right;">
+1.501
+</td>
+<td style="text-align:right;">
+1.644
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[11,2]
+</td>
+<td style="text-align:right;">
+0.667
+</td>
+<td style="text-align:right;">
+0.054
+</td>
+<td style="text-align:right;">
+0.564
+</td>
+<td style="text-align:right;">
+0.631
+</td>
+<td style="text-align:right;">
+0.665
+</td>
+<td style="text-align:right;">
+0.701
+</td>
+<td style="text-align:right;">
+0.776
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+3100
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[12,2]
+</td>
+<td style="text-align:right;">
+1.697
+</td>
+<td style="text-align:right;">
+0.102
+</td>
+<td style="text-align:right;">
+1.501
+</td>
+<td style="text-align:right;">
+1.626
+</td>
+<td style="text-align:right;">
+1.696
+</td>
+<td style="text-align:right;">
+1.763
+</td>
+<td style="text-align:right;">
+1.902
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+3300
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[13,2]
+</td>
+<td style="text-align:right;">
+1.678
+</td>
+<td style="text-align:right;">
+0.090
+</td>
+<td style="text-align:right;">
+1.505
+</td>
+<td style="text-align:right;">
+1.615
+</td>
+<td style="text-align:right;">
+1.677
+</td>
+<td style="text-align:right;">
+1.740
+</td>
+<td style="text-align:right;">
+1.856
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[14,2]
+</td>
+<td style="text-align:right;">
+1.637
+</td>
+<td style="text-align:right;">
+0.132
+</td>
+<td style="text-align:right;">
+1.380
+</td>
+<td style="text-align:right;">
+1.547
+</td>
+<td style="text-align:right;">
+1.638
+</td>
+<td style="text-align:right;">
+1.724
+</td>
+<td style="text-align:right;">
+1.901
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[15,2]
+</td>
+<td style="text-align:right;">
+1.273
+</td>
+<td style="text-align:right;">
+0.092
+</td>
+<td style="text-align:right;">
+1.100
+</td>
+<td style="text-align:right;">
+1.212
+</td>
+<td style="text-align:right;">
+1.270
+</td>
+<td style="text-align:right;">
+1.336
+</td>
+<td style="text-align:right;">
+1.455
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[16,2]
+</td>
+<td style="text-align:right;">
+1.838
+</td>
+<td style="text-align:right;">
+0.184
+</td>
+<td style="text-align:right;">
+1.492
+</td>
+<td style="text-align:right;">
+1.712
+</td>
+<td style="text-align:right;">
+1.832
+</td>
+<td style="text-align:right;">
+1.961
+</td>
+<td style="text-align:right;">
+2.212
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[17,2]
+</td>
+<td style="text-align:right;">
+2.208
+</td>
+<td style="text-align:right;">
+0.155
+</td>
+<td style="text-align:right;">
+1.910
+</td>
+<td style="text-align:right;">
+2.103
+</td>
+<td style="text-align:right;">
+2.205
+</td>
+<td style="text-align:right;">
+2.310
+</td>
+<td style="text-align:right;">
+2.525
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+720
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[18,2]
+</td>
+<td style="text-align:right;">
+2.091
+</td>
+<td style="text-align:right;">
+0.147
+</td>
+<td style="text-align:right;">
+1.801
+</td>
+<td style="text-align:right;">
+1.993
+</td>
+<td style="text-align:right;">
+2.090
+</td>
+<td style="text-align:right;">
+2.188
+</td>
+<td style="text-align:right;">
+2.388
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1400
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[19,2]
+</td>
+<td style="text-align:right;">
+1.954
+</td>
+<td style="text-align:right;">
+0.100
+</td>
+<td style="text-align:right;">
+1.766
+</td>
+<td style="text-align:right;">
+1.884
+</td>
+<td style="text-align:right;">
+1.953
+</td>
+<td style="text-align:right;">
+2.021
+</td>
+<td style="text-align:right;">
+2.153
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[20,2]
+</td>
+<td style="text-align:right;">
+2.643
+</td>
+<td style="text-align:right;">
+0.153
+</td>
+<td style="text-align:right;">
+2.352
+</td>
+<td style="text-align:right;">
+2.537
+</td>
+<td style="text-align:right;">
+2.640
+</td>
+<td style="text-align:right;">
+2.745
+</td>
+<td style="text-align:right;">
+2.953
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1300
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[21,2]
+</td>
+<td style="text-align:right;">
+1.650
+</td>
+<td style="text-align:right;">
+0.103
+</td>
+<td style="text-align:right;">
+1.450
+</td>
+<td style="text-align:right;">
+1.581
+</td>
+<td style="text-align:right;">
+1.648
+</td>
+<td style="text-align:right;">
+1.719
+</td>
+<td style="text-align:right;">
+1.854
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+700
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[22,2]
+</td>
+<td style="text-align:right;">
+2.035
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+1.798
+</td>
+<td style="text-align:right;">
+1.951
+</td>
+<td style="text-align:right;">
+2.030
+</td>
+<td style="text-align:right;">
+2.116
+</td>
+<td style="text-align:right;">
+2.283
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+700
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[23,2]
+</td>
+<td style="text-align:right;">
+0.583
+</td>
+<td style="text-align:right;">
+0.051
+</td>
+<td style="text-align:right;">
+0.488
+</td>
+<td style="text-align:right;">
+0.547
+</td>
+<td style="text-align:right;">
+0.582
+</td>
+<td style="text-align:right;">
+0.617
+</td>
+<td style="text-align:right;">
+0.687
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[24,2]
+</td>
+<td style="text-align:right;">
+1.907
+</td>
+<td style="text-align:right;">
+0.110
+</td>
+<td style="text-align:right;">
+1.702
+</td>
+<td style="text-align:right;">
+1.832
+</td>
+<td style="text-align:right;">
+1.904
+</td>
+<td style="text-align:right;">
+1.983
+</td>
+<td style="text-align:right;">
+2.132
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tau[25,2]
+</td>
+<td style="text-align:right;">
+0.745
+</td>
+<td style="text-align:right;">
+0.056
+</td>
+<td style="text-align:right;">
+0.641
+</td>
+<td style="text-align:right;">
+0.706
+</td>
+<td style="text-align:right;">
+0.744
+</td>
+<td style="text-align:right;">
+0.783
+</td>
+<td style="text-align:right;">
+0.862
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2300
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[1]
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[2]
+</td>
+<td style="text-align:right;">
+2.553
+</td>
+<td style="text-align:right;">
+0.272
+</td>
+<td style="text-align:right;">
+2.069
+</td>
+<td style="text-align:right;">
+2.357
+</td>
+<td style="text-align:right;">
+2.536
+</td>
+<td style="text-align:right;">
+2.729
+</td>
+<td style="text-align:right;">
+3.135
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1400
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[3]
+</td>
+<td style="text-align:right;">
+1.628
+</td>
+<td style="text-align:right;">
+0.128
+</td>
+<td style="text-align:right;">
+1.409
+</td>
+<td style="text-align:right;">
+1.539
+</td>
+<td style="text-align:right;">
+1.617
+</td>
+<td style="text-align:right;">
+1.704
+</td>
+<td style="text-align:right;">
+1.914
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[4]
+</td>
+<td style="text-align:right;">
+1.615
+</td>
+<td style="text-align:right;">
+0.128
+</td>
+<td style="text-align:right;">
+1.399
+</td>
+<td style="text-align:right;">
+1.524
+</td>
+<td style="text-align:right;">
+1.604
+</td>
+<td style="text-align:right;">
+1.697
+</td>
+<td style="text-align:right;">
+1.893
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1300
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[5]
+</td>
+<td style="text-align:right;">
+2.003
+</td>
+<td style="text-align:right;">
+0.185
+</td>
+<td style="text-align:right;">
+1.691
+</td>
+<td style="text-align:right;">
+1.873
+</td>
+<td style="text-align:right;">
+1.989
+</td>
+<td style="text-align:right;">
+2.116
+</td>
+<td style="text-align:right;">
+2.405
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+630
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[6]
+</td>
+<td style="text-align:right;">
+1.847
+</td>
+<td style="text-align:right;">
+0.157
+</td>
+<td style="text-align:right;">
+1.572
+</td>
+<td style="text-align:right;">
+1.736
+</td>
+<td style="text-align:right;">
+1.836
+</td>
+<td style="text-align:right;">
+1.946
+</td>
+<td style="text-align:right;">
+2.198
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1600
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[7]
+</td>
+<td style="text-align:right;">
+2.009
+</td>
+<td style="text-align:right;">
+0.192
+</td>
+<td style="text-align:right;">
+1.679
+</td>
+<td style="text-align:right;">
+1.871
+</td>
+<td style="text-align:right;">
+1.995
+</td>
+<td style="text-align:right;">
+2.127
+</td>
+<td style="text-align:right;">
+2.429
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+390
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[8]
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[9]
+</td>
+<td style="text-align:right;">
+1.755
+</td>
+<td style="text-align:right;">
+0.145
+</td>
+<td style="text-align:right;">
+1.503
+</td>
+<td style="text-align:right;">
+1.653
+</td>
+<td style="text-align:right;">
+1.744
+</td>
+<td style="text-align:right;">
+1.846
+</td>
+<td style="text-align:right;">
+2.061
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[10]
+</td>
+<td style="text-align:right;">
+1.597
+</td>
+<td style="text-align:right;">
+0.117
+</td>
+<td style="text-align:right;">
+1.395
+</td>
+<td style="text-align:right;">
+1.514
+</td>
+<td style="text-align:right;">
+1.589
+</td>
+<td style="text-align:right;">
+1.670
+</td>
+<td style="text-align:right;">
+1.852
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[11]
+</td>
+<td style="text-align:right;">
+1.542
+</td>
+<td style="text-align:right;">
+0.115
+</td>
+<td style="text-align:right;">
+1.344
+</td>
+<td style="text-align:right;">
+1.461
+</td>
+<td style="text-align:right;">
+1.533
+</td>
+<td style="text-align:right;">
+1.613
+</td>
+<td style="text-align:right;">
+1.797
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2900
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[12]
+</td>
+<td style="text-align:right;">
+2.059
+</td>
+<td style="text-align:right;">
+0.184
+</td>
+<td style="text-align:right;">
+1.734
+</td>
+<td style="text-align:right;">
+1.932
+</td>
+<td style="text-align:right;">
+2.048
+</td>
+<td style="text-align:right;">
+2.170
+</td>
+<td style="text-align:right;">
+2.451
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[13]
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[14]
+</td>
+<td style="text-align:right;">
+1.181
+</td>
+<td style="text-align:right;">
+0.055
+</td>
+<td style="text-align:right;">
+1.089
+</td>
+<td style="text-align:right;">
+1.143
+</td>
+<td style="text-align:right;">
+1.175
+</td>
+<td style="text-align:right;">
+1.213
+</td>
+<td style="text-align:right;">
+1.302
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1300
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[15]
+</td>
+<td style="text-align:right;">
+1.225
+</td>
+<td style="text-align:right;">
+0.059
+</td>
+<td style="text-align:right;">
+1.123
+</td>
+<td style="text-align:right;">
+1.184
+</td>
+<td style="text-align:right;">
+1.222
+</td>
+<td style="text-align:right;">
+1.261
+</td>
+<td style="text-align:right;">
+1.355
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[16]
+</td>
+<td style="text-align:right;">
+1.089
+</td>
+<td style="text-align:right;">
+0.037
+</td>
+<td style="text-align:right;">
+1.031
+</td>
+<td style="text-align:right;">
+1.063
+</td>
+<td style="text-align:right;">
+1.085
+</td>
+<td style="text-align:right;">
+1.111
+</td>
+<td style="text-align:right;">
+1.173
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+3100
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[17]
+</td>
+<td style="text-align:right;">
+1.439
+</td>
+<td style="text-align:right;">
+0.099
+</td>
+<td style="text-align:right;">
+1.269
+</td>
+<td style="text-align:right;">
+1.371
+</td>
+<td style="text-align:right;">
+1.430
+</td>
+<td style="text-align:right;">
+1.499
+</td>
+<td style="text-align:right;">
+1.655
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+580
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[18]
+</td>
+<td style="text-align:right;">
+1.298
+</td>
+<td style="text-align:right;">
+0.076
+</td>
+<td style="text-align:right;">
+1.171
+</td>
+<td style="text-align:right;">
+1.245
+</td>
+<td style="text-align:right;">
+1.291
+</td>
+<td style="text-align:right;">
+1.344
+</td>
+<td style="text-align:right;">
+1.470
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+810
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[19]
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+2.000
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[20]
+</td>
+<td style="text-align:right;">
+2.313
+</td>
+<td style="text-align:right;">
+0.228
+</td>
+<td style="text-align:right;">
+1.913
+</td>
+<td style="text-align:right;">
+2.150
+</td>
+<td style="text-align:right;">
+2.302
+</td>
+<td style="text-align:right;">
+2.457
+</td>
+<td style="text-align:right;">
+2.805
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[21]
+</td>
+<td style="text-align:right;">
+1.941
+</td>
+<td style="text-align:right;">
+0.166
+</td>
+<td style="text-align:right;">
+1.648
+</td>
+<td style="text-align:right;">
+1.821
+</td>
+<td style="text-align:right;">
+1.931
+</td>
+<td style="text-align:right;">
+2.044
+</td>
+<td style="text-align:right;">
+2.301
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2100
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[22]
+</td>
+<td style="text-align:right;">
+2.445
+</td>
+<td style="text-align:right;">
+0.253
+</td>
+<td style="text-align:right;">
+2.013
+</td>
+<td style="text-align:right;">
+2.267
+</td>
+<td style="text-align:right;">
+2.425
+</td>
+<td style="text-align:right;">
+2.597
+</td>
+<td style="text-align:right;">
+2.987
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1300
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[23]
+</td>
+<td style="text-align:right;">
+1.788
+</td>
+<td style="text-align:right;">
+0.155
+</td>
+<td style="text-align:right;">
+1.517
+</td>
+<td style="text-align:right;">
+1.681
+</td>
+<td style="text-align:right;">
+1.774
+</td>
+<td style="text-align:right;">
+1.884
+</td>
+<td style="text-align:right;">
+2.127
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[24]
+</td>
+<td style="text-align:right;">
+2.012
+</td>
+<td style="text-align:right;">
+0.175
+</td>
+<td style="text-align:right;">
+1.705
+</td>
+<td style="text-align:right;">
+1.889
+</td>
+<td style="text-align:right;">
+1.999
+</td>
+<td style="text-align:right;">
+2.125
+</td>
+<td style="text-align:right;">
+2.383
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+theta[25]
+</td>
+<td style="text-align:right;">
+1.599
+</td>
+<td style="text-align:right;">
+0.123
+</td>
+<td style="text-align:right;">
+1.388
+</td>
+<td style="text-align:right;">
+1.508
+</td>
+<td style="text-align:right;">
+1.591
+</td>
+<td style="text-align:right;">
+1.676
+</td>
+<td style="text-align:right;">
+1.863
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+610
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="posterior-distribution-summary" class="section level2">
+<h2>Posterior Distribution Summary</h2>
+<pre class="r"><code># extract for plotting
+jags.mcmc &lt;- as.mcmc(model.fit)
+a &lt;- colnames(as.data.frame(jags.mcmc[[1]]))
+fit.mcmc &lt;- data.frame(as.matrix(jags.mcmc, chains = T, iters = T))
+colnames(fit.mcmc) &lt;- c(&quot;chain&quot;, &quot;iter&quot;, a)
+fit.mcmc.ggs &lt;- ggmcmc::ggs(jags.mcmc) # for GRB plot</code></pre>
+<div id="factor-loadings-lambda" class="section level3">
+<h3>Factor Loadings (<span class="math inline">\(\lambda\)</span>)</h3>
+<pre class="r"><code>bayesplot::mcmc_areas(fit.mcmc, regex_pars = &quot;lambda.std&quot;, prob = 0.8); ggsave(&quot;fig/pools_model1_lambda_dens.pdf&quot;)</code></pre>
+<p><img src="figure/pools_model1_results.Rmd/post-summary-lambda-std-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Saving 7 x 5 in image</code></pre>
+<pre class="r"><code>bayesplot::mcmc_acf(fit.mcmc, regex_pars = &quot;lambda.std&quot;); ggsave(&quot;fig/pools_model1_lambda_acf.pdf&quot;)</code></pre>
+<pre><code>Warning: Removed 336 rows containing missing values (geom_segment).</code></pre>
+<pre><code>Warning: Removed 21 row(s) containing missing values (geom_path).</code></pre>
+<p><img src="figure/pools_model1_results.Rmd/post-summary-lambda-std-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Saving 7 x 5 in image</code></pre>
+<pre><code>Warning: Removed 336 rows containing missing values (geom_segment).
+
+Warning: Removed 21 row(s) containing missing values (geom_path).</code></pre>
+<pre class="r"><code>bayesplot::mcmc_trace(fit.mcmc, regex_pars = &quot;lambda.std&quot;); ggsave(&quot;fig/pools_model1_lambda_trace.pdf&quot;)</code></pre>
+<p><img src="figure/pools_model1_results.Rmd/post-summary-lambda-std-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Saving 7 x 5 in image</code></pre>
+<pre class="r"><code>ggmcmc::ggs_grb(fit.mcmc.ggs, family = &quot;lambda.std&quot;); ggsave(&quot;fig/pools_model1_lambda_grb.pdf&quot;)</code></pre>
+<pre><code>Warning: Removed 50 row(s) containing missing values (geom_path).</code></pre>
+<p><img src="figure/pools_model1_results.Rmd/post-summary-lambda-std-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Saving 7 x 5 in image</code></pre>
+<pre><code>Warning: Removed 50 row(s) containing missing values (geom_path).</code></pre>
+</div>
+<div id="factor-correlations" class="section level3">
+<h3>Factor Correlations</h3>
+<pre class="r"><code>bayesplot::mcmc_areas(
+  fit.mcmc,
+  pars = c(&#39;phi.cor[1,2]&#39;, &#39;phi.cor[1,3]&#39;, &#39;phi.cor[1,4]&#39;,
+           &#39;phi.cor[2,3]&#39;, &#39;phi.cor[2,4]&#39;, &#39;phi.cor[3,4]&#39;), prob = 0.8)</code></pre>
+<p><img src="figure/pools_model1_results.Rmd/post-summary-tau-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>bayesplot::mcmc_acf(
+  fit.mcmc,
+  pars = c(&#39;phi.cor[1,2]&#39;, &#39;phi.cor[1,3]&#39;, &#39;phi.cor[1,4]&#39;,
+           &#39;phi.cor[2,3]&#39;, &#39;phi.cor[2,4]&#39;, &#39;phi.cor[3,4]&#39;))</code></pre>
+<p><img src="figure/pools_model1_results.Rmd/post-summary-tau-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>bayesplot::mcmc_trace(
+  fit.mcmc,
+  pars = c(&#39;phi.cor[1,2]&#39;, &#39;phi.cor[1,3]&#39;, &#39;phi.cor[1,4]&#39;,
+           &#39;phi.cor[2,3]&#39;, &#39;phi.cor[2,4]&#39;, &#39;phi.cor[3,4]&#39;))</code></pre>
+<p><img src="figure/pools_model1_results.Rmd/post-summary-tau-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggmcmc::ggs_grb(fit.mcmc.ggs, family = &quot;phi.cor&quot;)</code></pre>
+<pre><code>Warning: Removed 50 row(s) containing missing values (geom_path).</code></pre>
+<p><img src="figure/pools_model1_results.Rmd/post-summary-tau-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># save factor correlations
+use.vars &lt;- c(&#39;phi.cor[1,2]&#39;, &#39;phi.cor[1,3]&#39;, &#39;phi.cor[1,4]&#39;,
+           &#39;phi.cor[2,3]&#39;, &#39;phi.cor[2,4]&#39;, &#39;phi.cor[3,4]&#39;)
+extracted_cor &lt;- fit.mcmc[,use.vars]
+write.csv(x=extracted_cor, file=paste0(getwd(),&quot;/data/pools/extracted_cor_m1.csv&quot;))</code></pre>
+</div>
+<div id="factor-reliability-omega-omega" class="section level3">
+<h3>Factor Reliability Omega (<span class="math inline">\(\omega\)</span>)</h3>
+<pre class="r"><code>bayesplot::mcmc_areas(fit.mcmc, regex_pars = &quot;reli.omega&quot;, prob = 0.8); ggsave(&quot;fig/pools_model1_omega_dens.pdf&quot;)</code></pre>
+<p><img src="figure/pools_model1_results.Rmd/post-summary-omega-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Saving 7 x 5 in image</code></pre>
+<pre class="r"><code>bayesplot::mcmc_acf(fit.mcmc, regex_pars = &quot;reli.omega&quot;); ggsave(&quot;fig/pools_model1_omega_acf.pdf&quot;)</code></pre>
+<p><img src="figure/pools_model1_results.Rmd/post-summary-omega-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Saving 7 x 5 in image</code></pre>
+<pre class="r"><code>bayesplot::mcmc_trace(fit.mcmc, regex_pars = &quot;reli.omega&quot;); ggsave(&quot;fig/pools_model1_omega_trace.pdf&quot;)</code></pre>
+<p><img src="figure/pools_model1_results.Rmd/post-summary-omega-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Saving 7 x 5 in image</code></pre>
+<pre class="r"><code>ggmcmc::ggs_grb(fit.mcmc.ggs, family = &quot;reli.omega&quot;); ggsave(&quot;fig/pools_model1_omega_grb.pdf&quot;)</code></pre>
+<p><img src="figure/pools_model1_results.Rmd/post-summary-omega-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Saving 7 x 5 in image</code></pre>
+<pre class="r"><code># extract omega posterior for results comparison
+extracted_omega &lt;- data.frame(model_1_f1 = fit.mcmc$`reli.omega[1]`,
+                              model_1_f2 = fit.mcmc$`reli.omega[2]`,
+                              model_1_f3 = fit.mcmc$`reli.omega[3]`,
+                              model_1_f4 = fit.mcmc$`reli.omega[4]`)
+write.csv(x=extracted_omega, file=paste0(getwd(),&quot;/data/pools/extracted_omega_m1.csv&quot;))</code></pre>
+</div>
+</div>
+</div>
+<div id="manuscript-table-and-figures" class="section level1">
+<h1>Manuscript Table and Figures</h1>
+<div id="table" class="section level2">
+<h2>Table</h2>
+<pre class="r"><code># print to xtable
+print(
+  xtable(
+    model.fit$BUGSoutput$summary,
+    caption = c(&quot;pools Model 1 posterior distribution summary&quot;)
+    ,align = &quot;lrrrrrrrrr&quot;
+  ),
+  include.rownames=T,
+  booktabs=T
+)</code></pre>
+<pre><code>% latex table generated in R 4.0.5 by xtable 1.8-4 package
+% Wed Feb 02 04:13:56 2022
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrrrrrrrr}
+  \toprule
+ &amp; mean &amp; sd &amp; 2.5\% &amp; 25\% &amp; 50\% &amp; 75\% &amp; 97.5\% &amp; Rhat &amp; n.eff \\ 
+  \midrule
+deviance &amp; 15091.74 &amp; 119.05 &amp; 14858.10 &amp; 15012.53 &amp; 15091.66 &amp; 15170.14 &amp; 15327.72 &amp; 1.00 &amp; 4000.00 \\ 
+  inv.phi[1,1] &amp; 3.16 &amp; 1.61 &amp; 0.76 &amp; 2.01 &amp; 2.90 &amp; 4.00 &amp; 7.17 &amp; 1.03 &amp; 140.00 \\ 
+  inv.phi[2,1] &amp; -0.46 &amp; 1.06 &amp; -2.76 &amp; -1.06 &amp; -0.41 &amp; 0.22 &amp; 1.51 &amp; 1.02 &amp; 160.00 \\ 
+  inv.phi[3,1] &amp; -1.25 &amp; 1.10 &amp; -3.85 &amp; -1.85 &amp; -1.12 &amp; -0.46 &amp; 0.49 &amp; 1.01 &amp; 230.00 \\ 
+  inv.phi[4,1] &amp; -1.27 &amp; 1.43 &amp; -4.45 &amp; -2.12 &amp; -1.13 &amp; -0.28 &amp; 1.15 &amp; 1.01 &amp; 310.00 \\ 
+  inv.phi[1,2] &amp; -0.46 &amp; 1.06 &amp; -2.76 &amp; -1.06 &amp; -0.41 &amp; 0.22 &amp; 1.51 &amp; 1.02 &amp; 160.00 \\ 
+  inv.phi[2,2] &amp; 2.87 &amp; 1.46 &amp; 0.89 &amp; 1.78 &amp; 2.59 &amp; 3.68 &amp; 6.31 &amp; 1.01 &amp; 250.00 \\ 
+  inv.phi[3,2] &amp; -0.13 &amp; 0.90 &amp; -1.98 &amp; -0.68 &amp; -0.11 &amp; 0.42 &amp; 1.69 &amp; 1.01 &amp; 490.00 \\ 
+  inv.phi[4,2] &amp; -1.77 &amp; 1.41 &amp; -4.95 &amp; -2.55 &amp; -1.57 &amp; -0.79 &amp; 0.50 &amp; 1.02 &amp; 180.00 \\ 
+  inv.phi[1,3] &amp; -1.25 &amp; 1.10 &amp; -3.85 &amp; -1.85 &amp; -1.12 &amp; -0.46 &amp; 0.49 &amp; 1.01 &amp; 230.00 \\ 
+  inv.phi[2,3] &amp; -0.13 &amp; 0.90 &amp; -1.98 &amp; -0.68 &amp; -0.11 &amp; 0.42 &amp; 1.69 &amp; 1.01 &amp; 490.00 \\ 
+  inv.phi[3,3] &amp; 2.75 &amp; 1.32 &amp; 0.72 &amp; 1.80 &amp; 2.51 &amp; 3.47 &amp; 5.95 &amp; 1.02 &amp; 180.00 \\ 
+  inv.phi[4,3] &amp; -1.00 &amp; 1.14 &amp; -3.50 &amp; -1.67 &amp; -0.89 &amp; -0.23 &amp; 0.91 &amp; 1.01 &amp; 280.00 \\ 
+  inv.phi[1,4] &amp; -1.27 &amp; 1.43 &amp; -4.45 &amp; -2.12 &amp; -1.13 &amp; -0.28 &amp; 1.15 &amp; 1.01 &amp; 310.00 \\ 
+  inv.phi[2,4] &amp; -1.77 &amp; 1.41 &amp; -4.95 &amp; -2.55 &amp; -1.57 &amp; -0.79 &amp; 0.50 &amp; 1.02 &amp; 180.00 \\ 
+  inv.phi[3,4] &amp; -1.00 &amp; 1.14 &amp; -3.50 &amp; -1.67 &amp; -0.89 &amp; -0.23 &amp; 0.91 &amp; 1.01 &amp; 280.00 \\ 
+  inv.phi[4,4] &amp; 4.02 &amp; 2.10 &amp; 0.99 &amp; 2.44 &amp; 3.66 &amp; 5.17 &amp; 9.06 &amp; 1.03 &amp; 130.00 \\ 
+  lambda[1] &amp; 1.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+  lambda[2] &amp; 1.24 &amp; 0.11 &amp; 1.03 &amp; 1.16 &amp; 1.24 &amp; 1.31 &amp; 1.46 &amp; 1.00 &amp; 1600.00 \\ 
+  lambda[3] &amp; 0.79 &amp; 0.08 &amp; 0.64 &amp; 0.73 &amp; 0.79 &amp; 0.84 &amp; 0.96 &amp; 1.00 &amp; 1500.00 \\ 
+  lambda[4] &amp; 0.78 &amp; 0.08 &amp; 0.63 &amp; 0.72 &amp; 0.78 &amp; 0.84 &amp; 0.95 &amp; 1.00 &amp; 1100.00 \\ 
+  lambda[5] &amp; 1.00 &amp; 0.09 &amp; 0.83 &amp; 0.93 &amp; 0.99 &amp; 1.06 &amp; 1.19 &amp; 1.00 &amp; 660.00 \\ 
+  lambda[6] &amp; 0.92 &amp; 0.09 &amp; 0.76 &amp; 0.86 &amp; 0.91 &amp; 0.97 &amp; 1.09 &amp; 1.00 &amp; 1500.00 \\ 
+  lambda[7] &amp; 1.00 &amp; 0.09 &amp; 0.82 &amp; 0.93 &amp; 1.00 &amp; 1.06 &amp; 1.20 &amp; 1.01 &amp; 380.00 \\ 
+  lambda[8] &amp; 1.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+  lambda[9] &amp; 0.86 &amp; 0.08 &amp; 0.71 &amp; 0.81 &amp; 0.86 &amp; 0.92 &amp; 1.03 &amp; 1.00 &amp; 900.00 \\ 
+  lambda[10] &amp; 0.77 &amp; 0.08 &amp; 0.63 &amp; 0.72 &amp; 0.77 &amp; 0.82 &amp; 0.92 &amp; 1.00 &amp; 1500.00 \\ 
+  lambda[11] &amp; 0.73 &amp; 0.08 &amp; 0.59 &amp; 0.68 &amp; 0.73 &amp; 0.78 &amp; 0.89 &amp; 1.00 &amp; 3000.00 \\ 
+  lambda[12] &amp; 1.03 &amp; 0.09 &amp; 0.86 &amp; 0.97 &amp; 1.02 &amp; 1.08 &amp; 1.20 &amp; 1.00 &amp; 3900.00 \\ 
+  lambda[13] &amp; 1.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+  lambda[14] &amp; 0.42 &amp; 0.06 &amp; 0.30 &amp; 0.38 &amp; 0.42 &amp; 0.46 &amp; 0.55 &amp; 1.00 &amp; 1300.00 \\ 
+  lambda[15] &amp; 0.47 &amp; 0.06 &amp; 0.35 &amp; 0.43 &amp; 0.47 &amp; 0.51 &amp; 0.60 &amp; 1.00 &amp; 1300.00 \\ 
+  lambda[16] &amp; 0.29 &amp; 0.06 &amp; 0.17 &amp; 0.25 &amp; 0.29 &amp; 0.33 &amp; 0.42 &amp; 1.00 &amp; 2100.00 \\ 
+  lambda[17] &amp; 0.66 &amp; 0.07 &amp; 0.52 &amp; 0.61 &amp; 0.66 &amp; 0.71 &amp; 0.81 &amp; 1.01 &amp; 560.00 \\ 
+  lambda[18] &amp; 0.54 &amp; 0.07 &amp; 0.41 &amp; 0.49 &amp; 0.54 &amp; 0.59 &amp; 0.69 &amp; 1.00 &amp; 840.00 \\ 
+  lambda[19] &amp; 1.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+  lambda[20] &amp; 1.14 &amp; 0.10 &amp; 0.96 &amp; 1.07 &amp; 1.14 &amp; 1.21 &amp; 1.34 &amp; 1.00 &amp; 1400.00 \\ 
+  lambda[21] &amp; 0.97 &amp; 0.09 &amp; 0.80 &amp; 0.91 &amp; 0.97 &amp; 1.02 &amp; 1.14 &amp; 1.00 &amp; 2400.00 \\ 
+  lambda[22] &amp; 1.20 &amp; 0.10 &amp; 1.01 &amp; 1.13 &amp; 1.19 &amp; 1.26 &amp; 1.41 &amp; 1.00 &amp; 1200.00 \\ 
+  lambda[23] &amp; 0.88 &amp; 0.09 &amp; 0.72 &amp; 0.83 &amp; 0.88 &amp; 0.94 &amp; 1.06 &amp; 1.00 &amp; 1700.00 \\ 
+  lambda[24] &amp; 1.00 &amp; 0.09 &amp; 0.84 &amp; 0.94 &amp; 1.00 &amp; 1.06 &amp; 1.18 &amp; 1.00 &amp; 1600.00 \\ 
+  lambda[25] &amp; 0.77 &amp; 0.08 &amp; 0.62 &amp; 0.71 &amp; 0.77 &amp; 0.82 &amp; 0.93 &amp; 1.00 &amp; 640.00 \\ 
+  lambda.std[1] &amp; 0.71 &amp; 0.00 &amp; 0.71 &amp; 0.71 &amp; 0.71 &amp; 0.71 &amp; 0.71 &amp; 1.00 &amp; 1.00 \\ 
+  lambda.std[2] &amp; 0.78 &amp; 0.03 &amp; 0.72 &amp; 0.76 &amp; 0.78 &amp; 0.80 &amp; 0.83 &amp; 1.00 &amp; 1900.00 \\ 
+  lambda.std[3] &amp; 0.62 &amp; 0.04 &amp; 0.54 &amp; 0.59 &amp; 0.62 &amp; 0.64 &amp; 0.69 &amp; 1.00 &amp; 1500.00 \\ 
+  lambda.std[4] &amp; 0.61 &amp; 0.04 &amp; 0.53 &amp; 0.59 &amp; 0.61 &amp; 0.64 &amp; 0.69 &amp; 1.00 &amp; 1100.00 \\ 
+  lambda.std[5] &amp; 0.70 &amp; 0.03 &amp; 0.64 &amp; 0.68 &amp; 0.71 &amp; 0.73 &amp; 0.76 &amp; 1.00 &amp; 690.00 \\ 
+  lambda.std[6] &amp; 0.67 &amp; 0.03 &amp; 0.60 &amp; 0.65 &amp; 0.67 &amp; 0.70 &amp; 0.74 &amp; 1.00 &amp; 1400.00 \\ 
+  lambda.std[7] &amp; 0.70 &amp; 0.03 &amp; 0.64 &amp; 0.68 &amp; 0.71 &amp; 0.73 &amp; 0.77 &amp; 1.01 &amp; 370.00 \\ 
+  lambda.std[8] &amp; 0.71 &amp; 0.00 &amp; 0.71 &amp; 0.71 &amp; 0.71 &amp; 0.71 &amp; 0.71 &amp; 1.00 &amp; 1.00 \\ 
+  lambda.std[9] &amp; 0.65 &amp; 0.04 &amp; 0.58 &amp; 0.63 &amp; 0.65 &amp; 0.68 &amp; 0.72 &amp; 1.00 &amp; 830.00 \\ 
+  lambda.std[10] &amp; 0.61 &amp; 0.04 &amp; 0.53 &amp; 0.58 &amp; 0.61 &amp; 0.63 &amp; 0.68 &amp; 1.00 &amp; 1500.00 \\ 
+  lambda.std[11] &amp; 0.59 &amp; 0.04 &amp; 0.51 &amp; 0.56 &amp; 0.59 &amp; 0.62 &amp; 0.67 &amp; 1.00 &amp; 3100.00 \\ 
+  lambda.std[12] &amp; 0.71 &amp; 0.03 &amp; 0.65 &amp; 0.69 &amp; 0.72 &amp; 0.73 &amp; 0.77 &amp; 1.00 &amp; 3600.00 \\ 
+  lambda.std[13] &amp; 0.71 &amp; 0.00 &amp; 0.71 &amp; 0.71 &amp; 0.71 &amp; 0.71 &amp; 0.71 &amp; 1.00 &amp; 1.00 \\ 
+  lambda.std[14] &amp; 0.39 &amp; 0.05 &amp; 0.29 &amp; 0.35 &amp; 0.39 &amp; 0.42 &amp; 0.48 &amp; 1.00 &amp; 1400.00 \\ 
+  lambda.std[15] &amp; 0.42 &amp; 0.05 &amp; 0.33 &amp; 0.39 &amp; 0.43 &amp; 0.45 &amp; 0.51 &amp; 1.00 &amp; 1300.00 \\ 
+  lambda.std[16] &amp; 0.28 &amp; 0.05 &amp; 0.17 &amp; 0.24 &amp; 0.28 &amp; 0.32 &amp; 0.38 &amp; 1.00 &amp; 2100.00 \\ 
+  lambda.std[17] &amp; 0.55 &amp; 0.04 &amp; 0.46 &amp; 0.52 &amp; 0.55 &amp; 0.58 &amp; 0.63 &amp; 1.01 &amp; 550.00 \\ 
+  lambda.std[18] &amp; 0.47 &amp; 0.05 &amp; 0.38 &amp; 0.44 &amp; 0.47 &amp; 0.51 &amp; 0.57 &amp; 1.00 &amp; 860.00 \\ 
+  lambda.std[19] &amp; 0.71 &amp; 0.00 &amp; 0.71 &amp; 0.71 &amp; 0.71 &amp; 0.71 &amp; 0.71 &amp; 1.00 &amp; 1.00 \\ 
+  lambda.std[20] &amp; 0.75 &amp; 0.03 &amp; 0.69 &amp; 0.73 &amp; 0.75 &amp; 0.77 &amp; 0.80 &amp; 1.00 &amp; 1300.00 \\ 
+  lambda.std[21] &amp; 0.69 &amp; 0.03 &amp; 0.63 &amp; 0.67 &amp; 0.69 &amp; 0.71 &amp; 0.75 &amp; 1.00 &amp; 2800.00 \\ 
+  lambda.std[22] &amp; 0.77 &amp; 0.03 &amp; 0.71 &amp; 0.75 &amp; 0.77 &amp; 0.78 &amp; 0.82 &amp; 1.00 &amp; 1100.00 \\ 
+  lambda.std[23] &amp; 0.66 &amp; 0.04 &amp; 0.58 &amp; 0.64 &amp; 0.66 &amp; 0.68 &amp; 0.73 &amp; 1.00 &amp; 1800.00 \\ 
+  lambda.std[24] &amp; 0.71 &amp; 0.03 &amp; 0.64 &amp; 0.69 &amp; 0.71 &amp; 0.73 &amp; 0.76 &amp; 1.00 &amp; 1700.00 \\ 
+  lambda.std[25] &amp; 0.61 &amp; 0.04 &amp; 0.53 &amp; 0.58 &amp; 0.61 &amp; 0.64 &amp; 0.68 &amp; 1.00 &amp; 660.00 \\ 
+  phi[1,1] &amp; 2.62 &amp; 1.63 &amp; 0.86 &amp; 1.64 &amp; 2.25 &amp; 3.05 &amp; 7.22 &amp; 1.03 &amp; 170.00 \\ 
+  phi[2,1] &amp; 1.58 &amp; 0.88 &amp; 0.19 &amp; 1.01 &amp; 1.51 &amp; 2.04 &amp; 3.64 &amp; 1.03 &amp; 1800.00 \\ 
+  phi[3,1] &amp; 1.93 &amp; 1.05 &amp; 0.46 &amp; 1.23 &amp; 1.77 &amp; 2.38 &amp; 4.55 &amp; 1.02 &amp; 490.00 \\ 
+  phi[4,1] &amp; 1.91 &amp; 0.74 &amp; 0.53 &amp; 1.46 &amp; 1.90 &amp; 2.32 &amp; 3.47 &amp; 1.03 &amp; 360.00 \\ 
+  phi[1,2] &amp; 1.58 &amp; 0.88 &amp; 0.19 &amp; 1.01 &amp; 1.51 &amp; 2.04 &amp; 3.64 &amp; 1.03 &amp; 1800.00 \\ 
+  phi[2,2] &amp; 2.08 &amp; 1.02 &amp; 0.72 &amp; 1.37 &amp; 1.90 &amp; 2.52 &amp; 4.72 &amp; 1.02 &amp; 280.00 \\ 
+  phi[3,2] &amp; 1.40 &amp; 0.82 &amp; 0.03 &amp; 0.84 &amp; 1.31 &amp; 1.88 &amp; 3.14 &amp; 1.02 &amp; 200.00 \\ 
+  phi[4,2] &amp; 1.68 &amp; 0.70 &amp; 0.19 &amp; 1.26 &amp; 1.71 &amp; 2.12 &amp; 3.06 &amp; 1.02 &amp; 270.00 \\ 
+  phi[1,3] &amp; 1.93 &amp; 1.05 &amp; 0.46 &amp; 1.23 &amp; 1.77 &amp; 2.38 &amp; 4.55 &amp; 1.02 &amp; 490.00 \\ 
+  phi[2,3] &amp; 1.40 &amp; 0.82 &amp; 0.03 &amp; 0.84 &amp; 1.31 &amp; 1.88 &amp; 3.14 &amp; 1.02 &amp; 200.00 \\ 
+  phi[3,3] &amp; 2.37 &amp; 1.20 &amp; 0.82 &amp; 1.52 &amp; 2.13 &amp; 2.95 &amp; 5.18 &amp; 1.00 &amp; 4000.00 \\ 
+  phi[4,3] &amp; 1.78 &amp; 0.67 &amp; 0.43 &amp; 1.34 &amp; 1.78 &amp; 2.22 &amp; 3.07 &amp; 1.01 &amp; 550.00 \\ 
+  phi[1,4] &amp; 1.91 &amp; 0.74 &amp; 0.53 &amp; 1.46 &amp; 1.90 &amp; 2.32 &amp; 3.47 &amp; 1.03 &amp; 360.00 \\ 
+  phi[2,4] &amp; 1.68 &amp; 0.70 &amp; 0.19 &amp; 1.26 &amp; 1.71 &amp; 2.12 &amp; 3.06 &amp; 1.02 &amp; 270.00 \\ 
+  phi[3,4] &amp; 1.78 &amp; 0.67 &amp; 0.43 &amp; 1.34 &amp; 1.78 &amp; 2.22 &amp; 3.07 &amp; 1.01 &amp; 550.00 \\ 
+  phi[4,4] &amp; 2.29 &amp; 0.24 &amp; 1.86 &amp; 2.12 &amp; 2.28 &amp; 2.44 &amp; 2.81 &amp; 1.00 &amp; 1800.00 \\ 
+  phi.cor[1,1] &amp; 1.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+  phi.cor[2,1] &amp; 0.70 &amp; 0.21 &amp; 0.12 &amp; 0.62 &amp; 0.75 &amp; 0.84 &amp; 0.93 &amp; 1.03 &amp; 200.00 \\ 
+  phi.cor[3,1] &amp; 0.78 &amp; 0.16 &amp; 0.37 &amp; 0.72 &amp; 0.83 &amp; 0.89 &amp; 0.95 &amp; 1.01 &amp; 780.00 \\ 
+  phi.cor[4,1] &amp; 0.80 &amp; 0.17 &amp; 0.32 &amp; 0.75 &amp; 0.86 &amp; 0.91 &amp; 0.95 &amp; 1.03 &amp; 890.00 \\ 
+  phi.cor[1,2] &amp; 0.70 &amp; 0.21 &amp; 0.12 &amp; 0.62 &amp; 0.75 &amp; 0.84 &amp; 0.93 &amp; 1.03 &amp; 200.00 \\ 
+  phi.cor[2,2] &amp; 1.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+  phi.cor[3,2] &amp; 0.64 &amp; 0.24 &amp; 0.02 &amp; 0.53 &amp; 0.71 &amp; 0.82 &amp; 0.91 &amp; 1.02 &amp; 170.00 \\ 
+  phi.cor[4,2] &amp; 0.77 &amp; 0.22 &amp; 0.11 &amp; 0.72 &amp; 0.85 &amp; 0.90 &amp; 0.95 &amp; 1.05 &amp; 210.00 \\ 
+  phi.cor[1,3] &amp; 0.78 &amp; 0.16 &amp; 0.37 &amp; 0.72 &amp; 0.83 &amp; 0.89 &amp; 0.95 &amp; 1.01 &amp; 780.00 \\ 
+  phi.cor[2,3] &amp; 0.64 &amp; 0.24 &amp; 0.02 &amp; 0.53 &amp; 0.71 &amp; 0.82 &amp; 0.91 &amp; 1.02 &amp; 170.00 \\ 
+  phi.cor[3,3] &amp; 1.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+  phi.cor[4,3] &amp; 0.77 &amp; 0.18 &amp; 0.24 &amp; 0.72 &amp; 0.83 &amp; 0.89 &amp; 0.94 &amp; 1.02 &amp; 200.00 \\ 
+  phi.cor[1,4] &amp; 0.80 &amp; 0.17 &amp; 0.32 &amp; 0.75 &amp; 0.86 &amp; 0.91 &amp; 0.95 &amp; 1.03 &amp; 890.00 \\ 
+  phi.cor[2,4] &amp; 0.77 &amp; 0.22 &amp; 0.11 &amp; 0.72 &amp; 0.85 &amp; 0.90 &amp; 0.95 &amp; 1.05 &amp; 210.00 \\ 
+  phi.cor[3,4] &amp; 0.77 &amp; 0.18 &amp; 0.24 &amp; 0.72 &amp; 0.83 &amp; 0.89 &amp; 0.94 &amp; 1.02 &amp; 200.00 \\ 
+  phi.cor[4,4] &amp; 1.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+  reli.omega[1] &amp; 0.87 &amp; 0.01 &amp; 0.84 &amp; 0.86 &amp; 0.87 &amp; 0.87 &amp; 0.89 &amp; 1.01 &amp; 430.00 \\ 
+  reli.omega[2] &amp; 0.83 &amp; 0.01 &amp; 0.81 &amp; 0.82 &amp; 0.83 &amp; 0.84 &amp; 0.85 &amp; 1.00 &amp; 4000.00 \\ 
+  reli.omega[3] &amp; 0.65 &amp; 0.03 &amp; 0.60 &amp; 0.64 &amp; 0.66 &amp; 0.67 &amp; 0.70 &amp; 1.01 &amp; 410.00 \\ 
+  reli.omega[4] &amp; 0.86 &amp; 0.01 &amp; 0.84 &amp; 0.86 &amp; 0.86 &amp; 0.87 &amp; 0.88 &amp; 1.00 &amp; 3100.00 \\ 
+  tau[1,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[2,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[3,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[4,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[5,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[6,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[7,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[8,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[9,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[10,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[11,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[12,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[13,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[14,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[15,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[16,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[17,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[18,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[19,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[20,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[21,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[22,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[23,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[24,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[25,1] &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 0.00 &amp; 1.00 &amp; 1.00 \\ 
+  tau[1,2] &amp; 2.84 &amp; 0.15 &amp; 2.55 &amp; 2.74 &amp; 2.84 &amp; 2.94 &amp; 3.14 &amp; 1.00 &amp; 3900.00 \\ 
+  tau[2,2] &amp; 3.23 &amp; 0.20 &amp; 2.87 &amp; 3.10 &amp; 3.23 &amp; 3.37 &amp; 3.65 &amp; 1.00 &amp; 2300.00 \\ 
+  tau[3,2] &amp; 2.35 &amp; 0.15 &amp; 2.06 &amp; 2.25 &amp; 2.35 &amp; 2.45 &amp; 2.65 &amp; 1.00 &amp; 1800.00 \\ 
+  tau[4,2] &amp; 1.78 &amp; 0.12 &amp; 1.56 &amp; 1.70 &amp; 1.78 &amp; 1.86 &amp; 2.01 &amp; 1.00 &amp; 770.00 \\ 
+  tau[5,2] &amp; 2.30 &amp; 0.14 &amp; 2.02 &amp; 2.19 &amp; 2.30 &amp; 2.40 &amp; 2.58 &amp; 1.00 &amp; 840.00 \\ 
+  tau[6,2] &amp; 2.59 &amp; 0.16 &amp; 2.30 &amp; 2.47 &amp; 2.58 &amp; 2.69 &amp; 2.91 &amp; 1.00 &amp; 2700.00 \\ 
+  tau[7,2] &amp; 3.09 &amp; 0.20 &amp; 2.71 &amp; 2.95 &amp; 3.08 &amp; 3.22 &amp; 3.48 &amp; 1.00 &amp; 1500.00 \\ 
+  tau[8,2] &amp; 1.90 &amp; 0.11 &amp; 1.69 &amp; 1.83 &amp; 1.90 &amp; 1.97 &amp; 2.11 &amp; 1.00 &amp; 4000.00 \\ 
+  tau[9,2] &amp; 1.10 &amp; 0.08 &amp; 0.94 &amp; 1.04 &amp; 1.09 &amp; 1.15 &amp; 1.26 &amp; 1.00 &amp; 1200.00 \\ 
+  tau[10,2] &amp; 1.44 &amp; 0.10 &amp; 1.25 &amp; 1.37 &amp; 1.44 &amp; 1.50 &amp; 1.64 &amp; 1.00 &amp; 4000.00 \\ 
+  tau[11,2] &amp; 0.67 &amp; 0.05 &amp; 0.56 &amp; 0.63 &amp; 0.66 &amp; 0.70 &amp; 0.78 &amp; 1.00 &amp; 3100.00 \\ 
+  tau[12,2] &amp; 1.70 &amp; 0.10 &amp; 1.50 &amp; 1.63 &amp; 1.70 &amp; 1.76 &amp; 1.90 &amp; 1.00 &amp; 3300.00 \\ 
+  tau[13,2] &amp; 1.68 &amp; 0.09 &amp; 1.50 &amp; 1.61 &amp; 1.68 &amp; 1.74 &amp; 1.86 &amp; 1.00 &amp; 1500.00 \\ 
+  tau[14,2] &amp; 1.64 &amp; 0.13 &amp; 1.38 &amp; 1.55 &amp; 1.64 &amp; 1.72 &amp; 1.90 &amp; 1.00 &amp; 1000.00 \\ 
+  tau[15,2] &amp; 1.27 &amp; 0.09 &amp; 1.10 &amp; 1.21 &amp; 1.27 &amp; 1.34 &amp; 1.46 &amp; 1.00 &amp; 2500.00 \\ 
+  tau[16,2] &amp; 1.84 &amp; 0.18 &amp; 1.49 &amp; 1.71 &amp; 1.83 &amp; 1.96 &amp; 2.21 &amp; 1.00 &amp; 4000.00 \\ 
+  tau[17,2] &amp; 2.21 &amp; 0.16 &amp; 1.91 &amp; 2.10 &amp; 2.21 &amp; 2.31 &amp; 2.52 &amp; 1.00 &amp; 720.00 \\ 
+  tau[18,2] &amp; 2.09 &amp; 0.15 &amp; 1.80 &amp; 1.99 &amp; 2.09 &amp; 2.19 &amp; 2.39 &amp; 1.00 &amp; 1400.00 \\ 
+  tau[19,2] &amp; 1.95 &amp; 0.10 &amp; 1.77 &amp; 1.88 &amp; 1.95 &amp; 2.02 &amp; 2.15 &amp; 1.00 &amp; 2000.00 \\ 
+  tau[20,2] &amp; 2.64 &amp; 0.15 &amp; 2.35 &amp; 2.54 &amp; 2.64 &amp; 2.75 &amp; 2.95 &amp; 1.00 &amp; 1300.00 \\ 
+  tau[21,2] &amp; 1.65 &amp; 0.10 &amp; 1.45 &amp; 1.58 &amp; 1.65 &amp; 1.72 &amp; 1.85 &amp; 1.00 &amp; 700.00 \\ 
+  tau[22,2] &amp; 2.03 &amp; 0.12 &amp; 1.80 &amp; 1.95 &amp; 2.03 &amp; 2.12 &amp; 2.28 &amp; 1.00 &amp; 700.00 \\ 
+  tau[23,2] &amp; 0.58 &amp; 0.05 &amp; 0.49 &amp; 0.55 &amp; 0.58 &amp; 0.62 &amp; 0.69 &amp; 1.00 &amp; 4000.00 \\ 
+  tau[24,2] &amp; 1.91 &amp; 0.11 &amp; 1.70 &amp; 1.83 &amp; 1.90 &amp; 1.98 &amp; 2.13 &amp; 1.00 &amp; 1000.00 \\ 
+  tau[25,2] &amp; 0.75 &amp; 0.06 &amp; 0.64 &amp; 0.71 &amp; 0.74 &amp; 0.78 &amp; 0.86 &amp; 1.00 &amp; 2300.00 \\ 
+  theta[1] &amp; 2.00 &amp; 0.00 &amp; 2.00 &amp; 2.00 &amp; 2.00 &amp; 2.00 &amp; 2.00 &amp; 1.00 &amp; 1.00 \\ 
+  theta[2] &amp; 2.55 &amp; 0.27 &amp; 2.07 &amp; 2.36 &amp; 2.54 &amp; 2.73 &amp; 3.13 &amp; 1.00 &amp; 1400.00 \\ 
+  theta[3] &amp; 1.63 &amp; 0.13 &amp; 1.41 &amp; 1.54 &amp; 1.62 &amp; 1.70 &amp; 1.91 &amp; 1.00 &amp; 1500.00 \\ 
+  theta[4] &amp; 1.62 &amp; 0.13 &amp; 1.40 &amp; 1.52 &amp; 1.60 &amp; 1.70 &amp; 1.89 &amp; 1.00 &amp; 1300.00 \\ 
+  theta[5] &amp; 2.00 &amp; 0.19 &amp; 1.69 &amp; 1.87 &amp; 1.99 &amp; 2.12 &amp; 2.40 &amp; 1.00 &amp; 630.00 \\ 
+  theta[6] &amp; 1.85 &amp; 0.16 &amp; 1.57 &amp; 1.74 &amp; 1.84 &amp; 1.95 &amp; 2.20 &amp; 1.00 &amp; 1600.00 \\ 
+  theta[7] &amp; 2.01 &amp; 0.19 &amp; 1.68 &amp; 1.87 &amp; 1.99 &amp; 2.13 &amp; 2.43 &amp; 1.01 &amp; 390.00 \\ 
+  theta[8] &amp; 2.00 &amp; 0.00 &amp; 2.00 &amp; 2.00 &amp; 2.00 &amp; 2.00 &amp; 2.00 &amp; 1.00 &amp; 1.00 \\ 
+  theta[9] &amp; 1.75 &amp; 0.14 &amp; 1.50 &amp; 1.65 &amp; 1.74 &amp; 1.85 &amp; 2.06 &amp; 1.00 &amp; 1000.00 \\ 
+  theta[10] &amp; 1.60 &amp; 0.12 &amp; 1.40 &amp; 1.51 &amp; 1.59 &amp; 1.67 &amp; 1.85 &amp; 1.00 &amp; 1500.00 \\ 
+  theta[11] &amp; 1.54 &amp; 0.12 &amp; 1.34 &amp; 1.46 &amp; 1.53 &amp; 1.61 &amp; 1.80 &amp; 1.00 &amp; 2900.00 \\ 
+  theta[12] &amp; 2.06 &amp; 0.18 &amp; 1.73 &amp; 1.93 &amp; 2.05 &amp; 2.17 &amp; 2.45 &amp; 1.00 &amp; 4000.00 \\ 
+  theta[13] &amp; 2.00 &amp; 0.00 &amp; 2.00 &amp; 2.00 &amp; 2.00 &amp; 2.00 &amp; 2.00 &amp; 1.00 &amp; 1.00 \\ 
+  theta[14] &amp; 1.18 &amp; 0.05 &amp; 1.09 &amp; 1.14 &amp; 1.18 &amp; 1.21 &amp; 1.30 &amp; 1.00 &amp; 1300.00 \\ 
+  theta[15] &amp; 1.23 &amp; 0.06 &amp; 1.12 &amp; 1.18 &amp; 1.22 &amp; 1.26 &amp; 1.36 &amp; 1.00 &amp; 1500.00 \\ 
+  theta[16] &amp; 1.09 &amp; 0.04 &amp; 1.03 &amp; 1.06 &amp; 1.09 &amp; 1.11 &amp; 1.17 &amp; 1.00 &amp; 3100.00 \\ 
+  theta[17] &amp; 1.44 &amp; 0.10 &amp; 1.27 &amp; 1.37 &amp; 1.43 &amp; 1.50 &amp; 1.66 &amp; 1.00 &amp; 580.00 \\ 
+  theta[18] &amp; 1.30 &amp; 0.08 &amp; 1.17 &amp; 1.24 &amp; 1.29 &amp; 1.34 &amp; 1.47 &amp; 1.00 &amp; 810.00 \\ 
+  theta[19] &amp; 2.00 &amp; 0.00 &amp; 2.00 &amp; 2.00 &amp; 2.00 &amp; 2.00 &amp; 2.00 &amp; 1.00 &amp; 1.00 \\ 
+  theta[20] &amp; 2.31 &amp; 0.23 &amp; 1.91 &amp; 2.15 &amp; 2.30 &amp; 2.46 &amp; 2.80 &amp; 1.00 &amp; 1500.00 \\ 
+  theta[21] &amp; 1.94 &amp; 0.17 &amp; 1.65 &amp; 1.82 &amp; 1.93 &amp; 2.04 &amp; 2.30 &amp; 1.00 &amp; 2100.00 \\ 
+  theta[22] &amp; 2.44 &amp; 0.25 &amp; 2.01 &amp; 2.27 &amp; 2.42 &amp; 2.60 &amp; 2.99 &amp; 1.00 &amp; 1300.00 \\ 
+  theta[23] &amp; 1.79 &amp; 0.16 &amp; 1.52 &amp; 1.68 &amp; 1.77 &amp; 1.88 &amp; 2.13 &amp; 1.00 &amp; 1500.00 \\ 
+  theta[24] &amp; 2.01 &amp; 0.17 &amp; 1.70 &amp; 1.89 &amp; 2.00 &amp; 2.12 &amp; 2.38 &amp; 1.00 &amp; 1500.00 \\ 
+  theta[25] &amp; 1.60 &amp; 0.12 &amp; 1.39 &amp; 1.51 &amp; 1.59 &amp; 1.68 &amp; 1.86 &amp; 1.00 &amp; 610.00 \\ 
+   \bottomrule
+\end{tabular}
+\caption{pools Model 1 posterior distribution summary} 
+\end{table}</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.0.5 (2021-03-31)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 22000)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=English_United States.1252 
+[2] LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] readxl_1.3.1         car_3.0-10           carData_3.0-4       
+ [4] mvtnorm_1.1-1        LaplacesDemon_16.1.4 runjags_2.2.0-2     
+ [7] lme4_1.1-26          Matrix_1.3-2         sirt_3.9-4          
+[10] R2jags_0.6-1         rjags_4-12           eRm_1.0-2           
+[13] diffIRT_1.5          statmod_1.4.35       xtable_1.8-4        
+[16] kableExtra_1.3.4     lavaan_0.6-7         polycor_0.7-10      
+[19] bayesplot_1.8.0      ggmcmc_1.5.1.1       coda_0.19-4         
+[22] data.table_1.14.0    patchwork_1.1.1      forcats_0.5.1       
+[25] stringr_1.4.0        dplyr_1.0.5          purrr_0.3.4         
+[28] readr_1.4.0          tidyr_1.1.3          tibble_3.1.0        
+[31] ggplot2_3.3.5        tidyverse_1.3.0      workflowr_1.6.2     
+
+loaded via a namespace (and not attached):
+ [1] minqa_1.2.4        TAM_3.5-19         colorspace_2.0-0   rio_0.5.26        
+ [5] ellipsis_0.3.1     ggridges_0.5.3     rprojroot_2.0.2    fs_1.5.0          
+ [9] rstudioapi_0.13    farver_2.1.0       fansi_0.4.2        lubridate_1.7.10  
+[13] xml2_1.3.2         splines_4.0.5      mnormt_2.0.2       knitr_1.31        
+[17] jsonlite_1.7.2     nloptr_1.2.2.2     broom_0.7.5        dbplyr_2.1.0      
+[21] compiler_4.0.5     httr_1.4.2         backports_1.2.1    assertthat_0.2.1  
+[25] cli_2.3.1          later_1.1.0.1      htmltools_0.5.1.1  tools_4.0.5       
+[29] gtable_0.3.0       glue_1.4.2         reshape2_1.4.4     Rcpp_1.0.7        
+[33] cellranger_1.1.0   jquerylib_0.1.3    vctrs_0.3.6        svglite_2.0.0     
+[37] nlme_3.1-152       psych_2.0.12       xfun_0.21          ps_1.6.0          
+[41] openxlsx_4.2.3     rvest_1.0.0        lifecycle_1.0.0    MASS_7.3-53.1     
+[45] scales_1.1.1       ragg_1.1.1         hms_1.0.0          promises_1.2.0.1  
+[49] parallel_4.0.5     RColorBrewer_1.1-2 curl_4.3           yaml_2.2.1        
+[53] sass_0.3.1         reshape_0.8.8      stringi_1.5.3      highr_0.8         
+[57] zip_2.1.1          boot_1.3-27        rlang_0.4.10       pkgconfig_2.0.3   
+[61] systemfonts_1.0.1  evaluate_0.14      lattice_0.20-41    labeling_0.4.2    
+[65] tidyselect_1.1.0   GGally_2.1.1       plyr_1.8.6         magrittr_2.0.1    
+[69] R6_2.5.0           generics_0.1.0     DBI_1.1.1          foreign_0.8-81    
+[73] pillar_1.5.1       haven_2.3.1        withr_2.4.1        abind_1.4-5       
+[77] modelr_0.1.8       crayon_1.4.1       utf8_1.1.4         tmvnsim_1.0-2     
+[81] rmarkdown_2.7      grid_4.0.5         CDM_7.5-15         pbivnorm_0.6.0    
+[85] git2r_0.28.0       reprex_1.0.0       digest_0.6.27      webshot_0.5.2     
+[89] httpuv_1.5.5       textshaping_0.3.1  stats4_4.0.5       munsell_0.5.0     
+[93] viridisLite_0.3.0  bslib_0.2.4        R2WinBUGS_2.1-21  </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

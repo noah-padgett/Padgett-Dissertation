@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="R. Noah Padgett" />
+
+<meta name="date" content="2022-01-11" />
+
+<title>Simulation Study 1</title>
+
+<script src="site_libs/header-attrs-2.7/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-sm-12 col-md-4 col-lg-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-sm-12 col-md-8 col-lg-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Padgett-PhD-Dissertation</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Simulation Study 1</h1>
+<h3 class="subtitle">Data Generation</h3>
+<h4 class="author">R. Noah Padgett</h4>
+<h4 class="date">2022-01-11</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2022-01-12
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 5 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>Padgett-Dissertation/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210401code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210401)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210401code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20210401)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongnoversioncontrol"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>Repository version:</strong> no version control </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongnoversioncontrol" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Tracking code development and connecting the code version to the results is critical for reproducibility. To start using Git, open the Terminal and type <code>git init</code> in your project directory.</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+This project is not being versioned with Git. To obtain the full reproducibility benefits of using workflowr, please see <code>?wflow_start</code>.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<pre class="r"><code># Load packages &amp; utility functions
+source(&quot;code/load_packages.R&quot;)
+source(&quot;code/load_utility_functions.R&quot;)
+# environment options
+options(scipen = 999, digits=3)</code></pre>
+<pre class="r"><code># ===================================== #
+# study_1_generate_data.R
+# ===================================== #
+# Padgett - Dissertation
+# Created
+#   on: 2022-01-06
+#   by: R. Noah Padgett
+# Last Editted
+#   on: 2022-01-10
+#   by: R. Noah Padgett
+# ===================================== #
+# Purpose: Generate data for study 1
+# ===================================== #
+# libraries
+library(mvtnorm)
+
+set.seed(1)
+N &lt;- 1000
+N_cat &lt;- 3
+N_items &lt;- 5
+
+# data parameters
+paravec &lt;- c(
+      N = N
+    , J = N_items
+    , C = N_cat
+    , etaCor = .23
+    , etasd1 = 1
+    , etasd2 = sqrt(0.1)
+  , lambda=0.9
+    , nu=1.5
+    , sigma.ei=0.25
+    , rho1=0.1
+)
+# thresholds
+sim_tau &lt;- matrix(ncol=N_cat-1, nrow=N_items)
+for(c in 1:(N_cat-1)){
+  if(c == 1){
+    sim_tau[,1] &lt;- runif(N_items, -1, -0.33)
+  }
+  if(c &gt; 1){
+    sim_tau[,c] &lt;- sim_tau[,c-1] + runif(N_items, 1.0, 1.67)
+  }
+}
+
+
+simulate_data_misclass &lt;- function(paravec, tau=NULL){
+  # NOTE: tau is a matrix[J, C-1] of item threshold parameters that possibly vary over items
+  # useful functions
+  invlogit &lt;- function(x) {exp(x)/(1+exp(x))}
+  logit &lt;- function(x){log(x/(1-x))}
+  # Generating Data
+  N &lt;- paravec[1] # number of respondents
+  J &lt;- paravec[2] # number of items
+  C &lt;- paravec[3] # number of response categories
+  # ========================= #
+  # latent person parameters
+  etaCor &lt;- paravec[4] # correlation between ability and speediness
+  etasd &lt;- paravec[5:6]
+  eta &lt;- mvtnorm::rmvnorm(
+    N, mean = c(0, 0),
+    sigma = matrix(c(etasd[1], etasd[2]*etaCor,
+                     etasd[2]*etaCor, etasd[2]**2),
+                   ncol = 2))
+  eta0 &lt;- matrix(eta[,1],nrow=1) # ability
+  eta1 &lt;- matrix(eta[,2],nrow=1) # log speediness
+  # ========================= #
+  # item parameters
+  # item factor loadings
+  lambda &lt;- matrix(rep(paravec[7], J), ncol=1)
+  # item latent residual variances
+  theta &lt;- c(1 - lambda**2)
+  # item thresholds
+  if(is.null(tau)){
+    tau &lt;- matrix(ncol=C-1, nrow=J)
+    for(c in 1:(C-1)){
+      if(c == 1){
+        tau[,1] &lt;- runif(J, -1, -0.33)
+      }
+      if(c &gt; 1){
+        tau[,c] &lt;- tau[,c-1] + runif(J, 0.25, 1)
+      }
+    }
+  }
+
+  # latent item response
+  ystar &lt;- lambda%*%eta0
+  ystar &lt;- apply(ystar, 2, FUN = function(x){mvtnorm::rmvnorm(1, x, diag(theta, ncol=J, nrow=J))})
+  # response time parameters (copied from Molenaar et al. 2021)
+  nu &lt;- matrix(rep(paravec[8], J), ncol=1)
+  sigma.ei &lt;- matrix(rep(paravec[9], J), ncol=1)
+  rho1 &lt;- paravec[10]
+  #rho2 &lt;- 0
+  #delta &lt;- 0
+
+  mulogt &lt;- logt &lt;- matrix(nrow=N, ncol=J)
+  i&lt;-j &lt;- 1
+  for(i in 1:N){
+    for(j in 1:J){
+      # obtain expected log response time
+      mulogt[i,j] &lt;- nu[j, 1] - eta1[1,i] - rho1*abs( eta0[1,i] - sum(tau[j,])/length(tau[j,]) )
+      # sample observed log response time
+      # logRT ~ N(mulogt, sigma.ie)
+      logt[i,j] &lt;- rnorm(1, mulogt[i,j], sqrt(sigma.ei[j,1]))
+    }
+  }
+
+  # construct missclassification
+  # based on latent response time (nu - eta1)
+  misclass.time.trans &lt;- function(lrt, c, b, K, diagonal = FALSE){
+    if(c == b){
+      g &lt;- 1/(1 + exp(-lrt))
+      if(diagonal == TRUE){
+        g &lt;- 1
+      }
+    }
+    if(c != b){
+      g &lt;- (1/(K-1))*(1-1/(1 + exp(-lrt)))
+      if(diagonal == TRUE){
+        g &lt;- 0
+      }
+    }
+    g
+  }
+
+  gamma &lt;- array(dim=c(N,J,C,C))
+
+  for(i in 1:N){for(j in 1:J){for(b in 1:C){for(c in 1:C){
+    gamma[i,j,b,c] &lt;- misclass.time.trans(nu[j, 1] - eta1[1, i], b, c, C)
+  }}}}# end loops
+
+
+  pi &lt;- pi.gte &lt;- omega &lt;- array(0,dim=c(N, J, C))
+  Y &lt;- matrix(nrow=N, ncol=J)
+  i &lt;- j &lt;- c &lt;- 1
+  for(i in 1:N){
+    for(j in 1:J){
+
+      # transform into probability scale
+      for(c in 2:C){
+        # P(greater than or equal to category c &gt; 1)
+        pi.gte[i,j,c] &lt;- invlogit(ystar[j,i]-tau[j,(c-1)])
+      }
+      # P(greater than or equal to category 1)
+      pi.gte[i,j,1] &lt;- 1
+      # equal to prob.
+      for(c in 1:(C-1)){
+        # P(greater equal to category c &lt; C)
+        pi[i,j,c] &lt;- pi.gte[i,j,c]-pi.gte[i,j,c+1]
+      }
+      # P(greater equal to category C)
+      pi[i,j,C] &lt;- pi.gte[i,j,C]
+
+      # observed category prob (Pr(y=c))
+      for(c in 1:C){
+        for(ct in 1:C){
+          # sum over ct
+          omega[i,j,c] = omega[i,j,c] + gamma[i,j,ct,c]*pi[i,j,ct]
+        }
+      }
+      Y[i,j] &lt;- sample(x=1:C, size=1, prob=omega[i,j,])
+      # rescale to 0/1 if dichotomous items
+      if(C == 2){
+        Y[i,j] = Y[i,j]-1
+      }
+    }
+  }
+  # true_values &lt;- list(eta0, eta1, lambda, nu, sigma.ei, tau, mulogt, ystar, theta, gamma, omega)
+  # names(true_values) &lt;- c(&quot;eta&quot;, &quot;&quot;)
+  sim_data &lt;- list(Y, logt)
+  names(sim_data) &lt;- c(&quot;y&quot;, &quot;logt&quot;)
+  return(sim_data)
+
+}
+
+# Use parameters to simulate data
+sim.data &lt;- simulate_data_misclass(paravec, tau=sim_tau)</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.0.5 (2021-03-31)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 22000)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=English_United States.1252 
+[2] LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] car_3.0-10           carData_3.0-4        mvtnorm_1.1-1       
+ [4] LaplacesDemon_16.1.4 runjags_2.2.0-2      lme4_1.1-26         
+ [7] Matrix_1.3-2         sirt_3.9-4           R2jags_0.6-1        
+[10] rjags_4-12           eRm_1.0-2            diffIRT_1.5         
+[13] statmod_1.4.35       xtable_1.8-4         kableExtra_1.3.4    
+[16] lavaan_0.6-7         polycor_0.7-10       bayesplot_1.8.0     
+[19] ggmcmc_1.5.1.1       coda_0.19-4          data.table_1.14.0   
+[22] patchwork_1.1.1      forcats_0.5.1        stringr_1.4.0       
+[25] dplyr_1.0.5          purrr_0.3.4          readr_1.4.0         
+[28] tidyr_1.1.3          tibble_3.1.0         ggplot2_3.3.5       
+[31] tidyverse_1.3.0      workflowr_1.6.2     
+
+loaded via a namespace (and not attached):
+ [1] minqa_1.2.4        TAM_3.5-19         colorspace_2.0-0   rio_0.5.26        
+ [5] ellipsis_0.3.1     ggridges_0.5.3     rprojroot_2.0.2    fs_1.5.0          
+ [9] rstudioapi_0.13    fansi_0.4.2        lubridate_1.7.10   xml2_1.3.2        
+[13] splines_4.0.5      mnormt_2.0.2       knitr_1.31         jsonlite_1.7.2    
+[17] nloptr_1.2.2.2     broom_0.7.5        dbplyr_2.1.0       compiler_4.0.5    
+[21] httr_1.4.2         backports_1.2.1    assertthat_0.2.1   cli_2.3.1         
+[25] later_1.1.0.1      htmltools_0.5.1.1  tools_4.0.5        gtable_0.3.0      
+[29] glue_1.4.2         Rcpp_1.0.7         cellranger_1.1.0   jquerylib_0.1.3   
+[33] vctrs_0.3.6        svglite_2.0.0      nlme_3.1-152       psych_2.0.12      
+[37] xfun_0.21          ps_1.6.0           openxlsx_4.2.3     rvest_1.0.0       
+[41] lifecycle_1.0.0    MASS_7.3-53.1      scales_1.1.1       hms_1.0.0         
+[45] promises_1.2.0.1   parallel_4.0.5     RColorBrewer_1.1-2 curl_4.3          
+[49] yaml_2.2.1         sass_0.3.1         reshape_0.8.8      stringi_1.5.3     
+[53] zip_2.1.1          boot_1.3-27        rlang_0.4.10       pkgconfig_2.0.3   
+[57] systemfonts_1.0.1  evaluate_0.14      lattice_0.20-41    tidyselect_1.1.0  
+[61] GGally_2.1.1       plyr_1.8.6         magrittr_2.0.1     R6_2.5.0          
+[65] generics_0.1.0     DBI_1.1.1          foreign_0.8-81     pillar_1.5.1      
+[69] haven_2.3.1        withr_2.4.1        abind_1.4-5        modelr_0.1.8      
+[73] crayon_1.4.1       utf8_1.1.4         tmvnsim_1.0-2      rmarkdown_2.7     
+[77] grid_4.0.5         readxl_1.3.1       CDM_7.5-15         pbivnorm_0.6.0    
+[81] git2r_0.28.0       reprex_1.0.0       digest_0.6.27      webshot_0.5.2     
+[85] httpuv_1.5.5       stats4_4.0.5       munsell_0.5.0      viridisLite_0.3.0 
+[89] bslib_0.2.4        R2WinBUGS_2.1-21  </code></pre>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

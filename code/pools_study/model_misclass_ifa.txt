@@ -1,0 +1,109 @@
+model {
+### Model
+  for(p in 1:N){
+    for(i in 1:nit){
+      # data model
+      y[p,i] ~ dcat(omega[p,i, ])
+
+      # LRV
+      ystar[p,i] ~ dnorm(lambda[i]*ksi[p,map[nit]], 1)
+
+     # Pr(nu = 3)
+      pi[p,i,3] = phi(ystar[p,i] - tau[i,2])
+      # Pr(nu = 2)
+      pi[p,i,2] = phi(ystar[p,i] - tau[i,1]) - phi(ystar[p,i] - tau[i,2])
+      # Pr(nu = 1)
+      pi[p,i,1] = 1 - phi(ystar[p,i] - tau[i,1])
+
+      # compute misclassificatication based prob
+      # observed category prob (Pr(y=c))
+      for(c in 1:ncat){
+        omega[p,i, c] = gamma[i,c,1]*pi[p,i,1] +
+            gamma[i,c,2]*pi[p,i,2] +
+            gamma[i,c,3]*pi[p,i,3]
+      }
+    }
+  }
+  ### Priors
+  # misclassification
+  for(i in 1:nit){
+    for(c in 1:ncat){
+      gamma[i,c,1:ncat] ~ ddirch(xi*alpha[c,1:ncat])
+    }
+  }
+
+  # person parameters
+  for(p in 1:N){
+    #eta[p] ~ dnorm(0, 1) # latent ability
+    ksi[p, 1:M] ~ dmnorm(kappa[], inv.phi[,])
+  }
+  for(m in 1:M){
+    kappa[m] <- 0              # Means of latent variables
+  }
+  inv.phi[1:M,1:M] ~ dwish(dxphi.0[ , ], d);  	# prior for precision matrix for the latent variables
+  phi[1:M,1:M] <- inverse(inv.phi[ , ]);  		# the covariance matrix for the latent vars
+
+  for(m in 1:M){
+    for(mm in 1:M){
+      dxphi.0[m,mm] <- d*phi.0[m,mm];
+    }
+  }
+
+  # factor correlations
+  for(m in 1:M){
+    for(mm in 1:M){
+      phi.cor[m,mm] = (phi[m,mm])/((pow(phi[m,m], 0.5))*(pow(phi[mm,mm], 0.5)));
+    }
+  }
+
+
+  # priors for loadings
+  # loadings
+  lambda[1] = 1
+  lambda[8] = 1
+  lambda[13] = 1
+  lambda[19] = 1
+  for(i in 2:7){
+    lambda[i] ~ dnorm(0, 1)T(0,)
+  }
+  for(i in 9:12){
+    lambda[i] ~ dnorm(0, 1)T(0,)
+  }
+  for(i in 14:18){
+    lambda[i] ~ dnorm(0, 1)T(0,)
+  }
+  for(i in 20:25){
+    lambda[i] ~ dnorm(0, 1)T(0,)
+  }
+
+
+  for(i in 1:nit){
+    # Thresholds
+    tau[i, 1] = 0
+    tau[i, 2] ~ dnorm(0, 0.1)T(tau[i, 1],)
+    # LRV total variance
+    # total variance = residual variance + fact. Var.
+    theta[i] = 1 + pow(lambda[i],2)
+    # standardized loading
+    lambda.std[i] = lambda[i]/pow(theta[i],0.5)
+  }
+
+  # compute omega
+  lambda_sum1[1] = lambda[1]
+  lambda_sum2[1] = lambda[8]
+  lambda_sum3[1] = lambda[13]
+  lambda_sum4[1] = lambda[19]
+  for(i in 2:6){
+    #lambda_sum (sum factor loadings)
+    lambda_sum1[i] = lambda_sum1[i-1]+lambda[i]
+    lambda_sum2[i] = lambda_sum2[i-1]+lambda[i+7]
+    lambda_sum3[i] = lambda_sum3[i-1]+lambda[i+12]
+    lambda_sum4[i] = lambda_sum4[i-1]+lambda[i+18]
+  }
+  lambda_sum1[7] = lambda_sum1[6] + lambda[7]
+  # compute reliability
+  reli.omega[1] = (pow(lambda_sum1[7],2))/(pow(lambda_sum1[7],2)+7)
+  reli.omega[2] = (pow(lambda_sum2[6],2))/(pow(lambda_sum2[6],2)+6)
+  reli.omega[3] = (pow(lambda_sum3[6],2))/(pow(lambda_sum3[6],2)+6)
+  reli.omega[4] = (pow(lambda_sum4[6],2))/(pow(lambda_sum4[6],2)+6)
+}

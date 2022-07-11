@@ -1,0 +1,698 @@
+---
+title: "Study 4: Extroversion Data Analysis"
+subtitle: "Full Model Prior-Posterior Sensitivity Part 1"
+author: "R. Noah Padgett"
+date: "2022-01-17"
+output: html_document
+---
+
+```{r set-up, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages & utility functions
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+library(diffIRT)
+data("extraversion")
+mydata <- na.omit(extraversion)
+
+# model constants
+# Save parameters
+jags.params <- c("tau",
+                 "lambda","lambda.std",
+                 "theta",
+                 "icept",
+                 "prec",
+                 "prec.s",
+                 "sigma.ts",
+                 "rho",
+                 "reli.omega")
+#data
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+```
+
+
+# Model 4: Full IFA with Misclassification
+
+The code below contains the specification of the full model that has been used throughout this project.
+
+```{r model4-code, cache=TRUE, autodep=TRUE}
+
+cat(read_file(paste0(w.d, "/code/study_4/model_4.txt")))
+
+# omega simulator
+prior_omega <- function(lambda, theta){
+  (sum(lambda)**2)/(sum(lambda)**2 + sum(theta))
+}
+
+# induced prior on omega is:
+prior_lambda <- function(n){
+  y <- rep(-1, n)
+  for(i in 1:n){
+    while(y[i] < 0){
+      y[i] <- rnorm(1, 0, sqrt(1/.44))
+    }
+  }
+  return(y)
+}
+
+nsim=1000
+sim_omega <- numeric(nsim)
+for(i in 1:nsim){
+  lam_vec <- prior_lambda(10)
+  tht_vec <- rep(1, 10)
+  sim_omega[i] <- prior_omega(lam_vec, tht_vec)
+}
+prior_data <- data.frame(Base=sim_omega)
+
+ggplot(prior_data, aes(x=Base))+
+  geom_density(adjust=2)+
+  labs(title="Induced prior on omega")+
+  theme_classic()
+
+```
+
+I will test the various different prior structures.
+The prior structure is very complex.
+There are many moving pieces in this posterior distribution and for this prior-posterior sensitivity analysis we will focus on the effects of prior specification on the posterior of $\omega$ only.
+
+The pieces are most likely to effect the posterior of $\omega$ are the priors for the
+
+a. factor loadings ($\lambda$) 
+
+b. misclassification rates ($\gamma$) by tuning of misclassification
+
+For each specification below, we will show the induced prior on $\omega$.
+
+## Factor Loading Prior Alternatives
+
+For the following investigations, the prior for the tuning parameter of misclassification rates is held constant at 1.
+The following major section will test how the tuning paramter incluences the results as well.
+
+### Alternative A
+
+In Alternative A, the prior for the factor loadings are made more diffuse.
+\[\lambda \sim N^+(0,.44) \Longrightarrow \lambda \sim N^+(0,.01)\]
+and remember, the variability is parameterized as the precision and not variance.
+
+```{r model4-spec-alt-a, cache=TRUE, autodep=TRUE}
+
+prior_lambda_A <- function(n){
+  y <- rep(-1, n)
+  for(i in 1:n){
+    while(y[i] < 0){
+      y[i] <- rnorm(1, 0, sqrt(1/.01))
+    }
+  }
+  return(y)
+}
+
+nsim=1000
+sim_omega <- numeric(nsim)
+for(i in 1:nsim){
+  lam_vec <- prior_lambda(10)
+  tht_vec <- rep(1, 10)
+  sim_omega[i] <- prior_omega(lam_vec, tht_vec)
+}
+prior_data$Alt_A <- sim_omega
+
+ggplot(prior_data, aes(x=Alt_A))+
+  geom_density(adjust=2)+
+  labs(title="Induced prior on omega")+
+  theme_classic()
+
+```
+
+
+### Alternative B
+
+In Alternative B, the prior for the factor loadings are made more informative and centered on more commonly estimated values of loadings.
+\[\lambda \sim N^+(0,.44) \Longrightarrow \lambda \sim N^+(1,2)\]
+
+```{r model4-spec-alt-b, cache=TRUE, autodep=TRUE}
+
+prior_lambda_B <- function(n){
+  y <- rep(-1, n)
+  for(i in 1:n){
+    while(y[i] < 0){
+      y[i] <- rnorm(1, 0, sqrt(1/2))
+    }
+  }
+  return(y)
+}
+
+sim_omega <- numeric(nsim)
+for(i in 1:nsim){
+  lam_vec <- prior_lambda_B(10)
+  tht_vec <- rep(1, 10)
+  sim_omega[i] <- prior_omega(lam_vec, tht_vec)
+}
+prior_data$Alt_B <- sim_omega
+
+ggplot(prior_data, aes(x=Alt_B))+
+  geom_density(adjust=2)+
+  labs(title="Induced prior on omega")+
+  theme_classic()
+
+
+```
+
+### Alternative C
+
+In Alternative C, the prior for the factor loadings are made non-sign controlled. Meaning that the orientation indeterminancy is not fixed by constraining the loadings to be positive.
+\[\lambda \sim N^+(0,.44) \Longrightarrow \lambda \sim N(0,.44)\]
+
+```{r model4-spec-alt-c, cache=TRUE, autodep=TRUE}
+
+prior_lambda_C <- function(n){
+  rnorm(n, 0, sqrt(1/.44))
+}
+
+sim_omega <- numeric(nsim)
+for(i in 1:nsim){
+  lam_vec <- prior_lambda_C(10)
+  tht_vec <- rep(1, 10)
+  sim_omega[i] <- prior_omega(lam_vec, tht_vec)
+}
+prior_data$Alt_C <- sim_omega
+
+ggplot(prior_data, aes(x=Alt_C))+
+  geom_density(adjust=2)+
+  labs(title="Induced prior on omega")+
+  theme_classic()
+
+```
+
+### Alternative D
+
+In Alternative D, the prior for the factor loadings are made non-sign controlled and relatively mor informative. Meaning that the orientation indeterminancy is not fixed by constraining the loadings to be positive and there is less uncertainty.
+The main aim of this specification is to test whether a completely different shaped _induced prior_ on omega influences the results.
+\[\lambda \sim N^+(0,.44) \Longrightarrow \lambda \sim N(0,10)\]
+
+```{r model4-spec-alt-d, cache=TRUE, autodep=TRUE}
+
+prior_lambda_D <- function(n){
+  rnorm(n, 0, sqrt(1/10))
+}
+
+sim_omega <- numeric(nsim)
+for(i in 1:nsim){
+  lam_vec <- prior_lambda_D(10)
+  tht_vec <- rep(1, 10)
+  sim_omega[i] <- prior_omega(lam_vec, tht_vec)
+}
+prior_data$Alt_D <- sim_omega
+
+ggplot(prior_data, aes(x=Alt_D))+
+  geom_density(adjust=2)+
+  labs(title="Induced prior on omega")+
+  theme_classic()
+
+```
+
+
+### Alternative E
+
+In Alternative E, the prior for the factor loadings are made with sign controlled and relatively more informative. Meaning that the orientation indeterminancy is fixed by constraining the loadings to be positive and there is less uncertainty.
+The main aim of this specification is to test whether a completely different shaped _induced prior_ on omega influences the results.
+\[\lambda \sim N^+(0,.44) \Longrightarrow \lambda \sim N^+(0,5)\]
+
+```{r model4-spec-alt-e, cache=TRUE, autodep=TRUE}
+
+prior_lambda_E <- function(n){
+  y <- rep(-1, n)
+  for(i in 1:n){
+    while(y[i] < 0){
+      y[i] <- rnorm(1, 0, sqrt(1/5))
+    }
+  }
+  return(y)
+}
+
+sim_omega <- numeric(nsim)
+for(i in 1:nsim){
+  lam_vec <- prior_lambda_E(10)
+  tht_vec <- rep(1, 10)
+  sim_omega[i] <- prior_omega(lam_vec, tht_vec)
+}
+prior_data$Alt_E <- sim_omega
+
+ggplot(prior_data, aes(x=Alt_E))+
+  geom_density(adjust=2)+
+  labs(title="Induced prior on omega")+
+  theme_classic()
+
+```
+
+
+### Comparing A-E
+
+```{r model4-spec-compare, cache=TRUE, autodep=TRUE}
+
+plot.prior <- prior_data %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Prior",
+    values_to="omega"
+  ) %>%
+  mutate(
+    Prior = factor(Prior, levels=c("Base", "Alt_A", "Alt_B", "Alt_C", "Alt_D", "Alt_E"))
+  )
+cols=c("Base"="black", "Alt_A"="#009e73", "Alt_B"="#E69F00", "Alt_C"="#CC79A7","Alt_D"="#56B4E9", "Alt_E"="#f0e442") #"#56B4E9", "#E69F00" "#CC79A7", "#d55e00", "#f0e442, "	#0072b2"
+
+p <- ggplot(plot.prior, aes(x=omega, color=Prior, fill=Prior))+
+  geom_density(adjust=2, alpha=0.1)+
+  scale_color_manual(values=cols, name="Prior")+
+  scale_fill_manual(values=cols, name="Prior")+
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+p
+  
+```
+
+
+## Estimate Models
+
+### Base Prior
+
+```{r model4-base, cache=TRUE, autodep=TRUE}
+
+# Save parameters
+jags.params <- c("tau",
+                 "lambda","lambda.std",
+                 "theta",
+                 "icept",
+                 "prec",
+                 "prec.s",
+                 "sigma.ts", "cor.ts",
+                 "rho",
+                 "reli.omega")
+# initial-values
+jags.inits <- function(){
+    list(
+      "tau"=matrix(c(-0.64, -0.09, -1.05, -1.42, -0.11, -1.29, -1.59, -1.81, -0.93, -1.11), ncol=1, nrow=10),
+      "lambda"=rep(0.7,10),
+      "eta"=rnorm(142),
+      "speed"=rnorm(142),
+      "ystar"=matrix(c(0.7*rep(rnorm(142),10)), ncol=10),
+      "rho"=0.1,
+      "icept"=rep(0, 10),
+      "prec.s"=10,
+      "prec"=rep(4, 10),
+      "sigma.ts"=0.1
+    )
+  }
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+fit.base_prior <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.base_prior, width=1000)
+
+```
+
+### Alt Prior A
+
+```{r model4-alt-A, cache=TRUE, autodep=TRUE}
+
+# alt A
+fit.prior_a <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4A.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.prior_a, width=1000)
+
+```
+
+### Alt Prior B
+
+```{r model4-alt-B, cache=TRUE, autodep=TRUE}
+
+# alt B
+fit.prior_b <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4B.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.prior_b, width=1000)
+
+```
+
+### Alt Prior C
+
+```{r model4-alt-C, cache=TRUE, autodep=TRUE}
+
+# alt C
+fit.prior_c <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4C.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.prior_c, width=1000)
+
+```
+
+### Alt Prior D
+
+```{r model4-alt-D, cache=TRUE, autodep=TRUE}
+
+# alt D
+fit.prior_d <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4D.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.prior_d, width=1000)
+
+```
+
+### Alt Prior E
+
+```{r model4-alt-E, cache=TRUE, autodep=TRUE}
+
+# alt E
+fit.prior_e <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4E.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 5000,
+  n.iter = 10000
+)
+
+print(fit.prior_e, width=1000)
+
+```
+
+### Compare Posteriors + Priors
+
+```{r model4-post-prior-comp, cache=TRUE, autodep=TRUE}
+
+post.sims <- data.frame(
+  Base = fit.base_prior$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_A = fit.prior_a$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_B = fit.prior_b$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_C = fit.prior_c$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_D = fit.prior_d$BUGSoutput$sims.matrix[,"reli.omega"],
+  Alt_E = fit.prior_e$BUGSoutput$sims.matrix[,"reli.omega"]
+)
+
+plot.post <- post.sims %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="Prior",
+    values_to="omega"
+  ) %>%
+  mutate(
+    Prior = factor(Prior,
+                   levels=c("Base", "Alt_A", "Alt_B", "Alt_C", "Alt_D", "Alt_E"))
+  )
+#cols=c("Base"="black", "Alt_A"="#009e73", "Alt_B"="#E69F00", "Alt_C"="#CC79A7","Alt_D"="#56B4E9") #"#56B4E9", "#E69F00" "#CC79A7", "#d55e00", "#f0e442, "	#0072b2"
+
+# joint prior and post samples
+plot.prior$type="Prior"
+plot.post$type="Post"
+plot.dat <- full_join(plot.prior, plot.post) %>%
+  mutate(
+    Prior = factor(Prior,
+                   levels=c("Base", "Alt_A", "Alt_B", "Alt_C", "Alt_D", "Alt_E"),
+                   labels=c("lambda%~%N(list(0, 0.44))>0",
+                            "lambda%~%N(list(0, 0.01))>0",
+                            "lambda%~%N(list(0, 2))>0",
+                            "lambda%~%N(list(0, 0.44))",
+                            "lambda%~%N(list(0, 10))",
+                            "lambda%~%N(list(0, 5))>0"))
+  )
+
+cols=c("Prior"="black", "Post"="#56B4E9")
+lty =c("Prior"="dashed", "Post"="solid")
+p <- ggplot(plot.dat, aes(x=omega, color=type, fill=type, linetype=type))+
+  geom_density(adjust=2, alpha=0.5)+
+  scale_color_manual(values=cols, name=NULL)+
+  scale_fill_manual(values=cols, name=NULL)+
+  scale_linetype_manual(values=lty, name=NULL)+
+  labs(x="Reliability (omega)")+
+  facet_wrap(.~Prior, ncol=3, scales="free_y",
+             labeller = label_parsed)+
+  theme_bw()+
+  theme(
+    panel.grid = element_blank(),
+    legend.position = "bottom"
+  )
+p
+ggsave(filename = "fig/study4_posterior_sensitity_omega.pdf",plot=p,width = 7, height=6,units="in")
+ggsave(filename = "fig/study4_posterior_sensitity_omega.png",plot=p,width = 7, height=6,units="in")
+
+```
+
+
+## Factor Loadings
+
+```{r model4-spec-lambda-comp, cache=TRUE, autodep=TRUE}
+
+for(i in 1:10){
+  # sim prior
+  prior.sims <- data.frame(
+  Base = prior_lambda(1000),
+  Alt_A = prior_lambda_A(1000),
+  Alt_B = prior_lambda_B(1000),
+  Alt_C = prior_lambda_C(1000),
+  Alt_D = prior_lambda_D(1000),
+  Alt_E = prior_lambda_E(1000)
+) %>%
+    pivot_longer(
+      cols=everything(),
+      names_to="Prior",
+      values_to="lambda"
+    ) %>%
+    mutate(
+      Prior = factor(Prior, levels=c("Base", "Alt_A", "Alt_B", "Alt_C", "Alt_D", "Alt_E")),
+      type="Prior",
+      item = paste0("Item ", i)
+    )
+  
+  # extract post
+  post.sims <- data.frame(
+    Base = fit.base_prior$BUGSoutput$sims.matrix[,paste0("lambda[",i,"]")],
+    Alt_A = fit.prior_a$BUGSoutput$sims.matrix[,paste0("lambda[",i,"]")],
+    Alt_B = fit.prior_b$BUGSoutput$sims.matrix[,paste0("lambda[",i,"]")],
+    Alt_C = fit.prior_c$BUGSoutput$sims.matrix[,paste0("lambda[",i,"]")],
+    Alt_D = fit.prior_d$BUGSoutput$sims.matrix[,paste0("lambda[",i,"]")],
+    Alt_E = fit.prior_e$BUGSoutput$sims.matrix[,paste0("lambda[",i,"]")]
+  ) %>%
+    pivot_longer(
+      cols=everything(),
+      names_to="Prior",
+      values_to="lambda"
+    ) %>%
+    mutate(
+      Prior = factor(Prior, levels=c("Base", "Alt_A", "Alt_B", "Alt_C", "Alt_D", "Alt_E")),
+      item = paste0("Item ", i)
+    )
+    
+  
+  if(i == 1){
+    dat_prior_lambda = prior.sims
+    dat_post_lambda = post.sims
+  } else{
+    dat_prior_lambda <- full_join(dat_prior_lambda, prior.sims)
+    dat_post_lambda <- full_join(dat_post_lambda, post.sims)
+  }
+}
+
+dat_prior_lambda <- dat_prior_lambda %>%
+  mutate(
+    item = factor(item, levels=paste0("Item ", 1:10), ordered=T),
+    type="Prior"
+  )
+
+dat_post_lambda <- dat_post_lambda %>%
+  mutate(
+    item = factor(item, levels=paste0("Item ", 1:10), ordered=T),
+    type="Post"
+  )
+
+plot.dat <- full_join(dat_prior_lambda,dat_post_lambda)
+
+cols=c("Prior"="black", "Post"="#56B4E9")
+lty =c("Prior"="dashed", "Post"="solid")
+pi <- list()
+for(i in 1:10){
+pi[[i]] <- plot.dat[plot.dat$item==paste0("Item ",i),] %>%
+  ggplot(aes(x=lambda, color=type, fill=type, linetype=type))+
+    geom_density(adjust=2, alpha=0.5)+
+    scale_color_manual(values=cols, name=NULL)+
+    scale_fill_manual(values=cols, name=NULL)+
+    scale_linetype_manual(values=lty, name=NULL)+
+    #lims(x=c(-1, 1))+
+    labs(x=paste0("lambda[",i,"]"))+
+    facet_wrap(.~Prior, ncol=1, scales="free")+
+    theme_bw()+
+    theme(
+      panel.grid = element_blank(),
+      legend.position = "bottom"
+    )
+  if(i == 1){ 
+    p <- pi[[i]]
+  }
+  if(i > 1){ 
+    p <- p + pi[[i]]
+  }
+}
+
+p <- p + plot_layout(nrow=1)
+p
+ggsave(filename = "fig/study4_posterior_sensitity_lambda.pdf",plot=p,width = 20, height=7,units="in")
+```
+
+
+```{r model4-spec-lambda-std-comp, cache=TRUE, autodep=TRUE}
+
+for(i in 1:10){
+  # sim prior
+  prior.sims <- data.frame(
+  Base = prior_lambda(1000),
+  Alt_A = prior_lambda_A(1000),
+  Alt_B = prior_lambda_B(1000),
+  Alt_C = prior_lambda_C(1000),
+  Alt_D = prior_lambda_D(1000),
+  Alt_E = prior_lambda_E(1000)
+) %>%
+    pivot_longer(
+      cols=everything(),
+      names_to="Prior",
+      values_to="lambda"
+    ) %>%
+    mutate(
+      Prior = factor(Prior, levels=c("Base", "Alt_A", "Alt_B", "Alt_C", "Alt_D", "Alt_E")),
+      type="Prior",
+      item = paste0("Item ", i)
+    )
+  
+  # extract post
+  post.sims <- data.frame(
+    Base = fit.base_prior$BUGSoutput$sims.matrix[,paste0("lambda[",i,"]")],
+    Alt_A = fit.prior_a$BUGSoutput$sims.matrix[,paste0("lambda[",i,"]")],
+    Alt_B = fit.prior_b$BUGSoutput$sims.matrix[,paste0("lambda[",i,"]")],
+    Alt_C = fit.prior_c$BUGSoutput$sims.matrix[,paste0("lambda[",i,"]")],
+    Alt_D = fit.prior_d$BUGSoutput$sims.matrix[,paste0("lambda[",i,"]")],
+    Alt_E = fit.prior_e$BUGSoutput$sims.matrix[,paste0("lambda[",i,"]")]
+  ) %>%
+    pivot_longer(
+      cols=everything(),
+      names_to="Prior",
+      values_to="lambda"
+    ) %>%
+    mutate(
+      Prior = factor(Prior, levels=c("Base", "Alt_A", "Alt_B", "Alt_C", "Alt_D", "Alt_E")),
+      item = paste0("Item ", i)
+    )
+    
+  
+  if(i == 1){
+    dat_prior_lambda = prior.sims
+    dat_post_lambda = post.sims
+  } else{
+    dat_prior_lambda <- full_join(dat_prior_lambda, prior.sims)
+    dat_post_lambda <- full_join(dat_post_lambda, post.sims)
+  }
+}
+
+dat_prior_lambda <- dat_prior_lambda %>%
+  mutate(
+    item = factor(item, levels=paste0("Item ", 1:10), ordered=T),
+    type="Prior"
+  )
+
+dat_post_lambda <- dat_post_lambda %>%
+  mutate(
+    item = factor(item, levels=paste0("Item ", 1:10), ordered=T),
+    type="Post"
+  )
+
+plot.dat <- full_join(dat_prior_lambda,dat_post_lambda)
+
+
+# standardize all estimates
+plot.dat <- plot.dat %>%
+  mutate(
+    lambda = lambda/(sqrt(1 + lambda**2)) 
+  )
+
+cols=c("Prior"="black", "Post"="#56B4E9")
+lty =c("Prior"="dashed", "Post"="solid")
+pi <- list()
+for(i in 1:10){
+pi[[i]] <- plot.dat[plot.dat$item==paste0("Item ",i),] %>%
+  ggplot(aes(x=lambda, color=type, fill=type, linetype=type))+
+    geom_density(adjust=2, alpha=0.5)+
+    scale_color_manual(values=cols, name=NULL)+
+    scale_fill_manual(values=cols, name=NULL)+
+    scale_linetype_manual(values=lty, name=NULL)+
+    lims(x=c(-1, 1))+
+    labs(x=paste0("lambda[",i,"]"))+
+    facet_wrap(.~Prior, ncol=1, scales="free_y")+
+    theme_bw()+
+    theme(
+      panel.grid = element_blank(),
+      legend.position = "bottom"
+    )
+  if(i == 1){ 
+    p <- pi[[i]]
+  }
+  if(i > 1){ 
+    p <- p + pi[[i]]
+  }
+}
+
+p <- p + plot_layout(nrow=1)
+p
+ggsave(filename = "fig/study4_posterior_sensitity_lambda_std.pdf",plot=p,width = 20, height=7,units="in")
+```

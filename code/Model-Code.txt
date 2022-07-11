@@ -1,0 +1,682 @@
+---
+title: "Misclassification in Item Factor Analysis"
+author: "R. Noah Padgett"
+date: "2021-07-27"
+output: html_document
+---
+
+```{r set-up, echo=FALSE}
+
+source("code/load_packages.R")
+options(max.print = 10000, scipen = 10, digits=2)
+
+```
+
+# Simulate Data
+
+Model will be simulated using the following specification
+
+
+
+
+```{r sim-data}
+
+# useful functions
+invlogit <- function(x) {exp(x)/(1+exp(x))}
+logit <- function(x){log(x/(1-x))}
+# Generating Data
+N <- 200 # number of respondents
+J <- 5 # number of items
+C <- 3 # number of response categories
+# ========================= #
+# latent person parameters
+etaCor <- 0.5 # correlation between ability and speediness
+etasd <- c(1,sqrt(0.1))
+eta <- mvtnorm::rmvnorm(
+  N, mean = c(0, 0),
+  sigma = matrix(c(etasd[1], etasd[2]*etaCor,
+                   etasd[2]*etaCor, etasd[2]**2),
+                 ncol = 2))
+eta0 <- matrix(eta[,1],nrow=1) # ability
+eta1 <- matrix(eta[,2],nrow=1) # log speediness
+# ========================= #
+# item parameters
+# item factor loadings
+lambda <- matrix(rep(0.9, J), ncol=1)
+# item latent residual variances
+theta <- c(1 - lambda**2)
+# item thresholds
+tau <- matrix(ncol=C-1, nrow=J)
+for(c in 1:(C-1)){
+  if(c == 1){
+    tau[,1] <- runif(J, -1, -0.33)
+  }
+  if(c > 1){
+    tau[,c] <- tau[,c-1] + runif(J, 0.25, 1)
+  }
+}
+# latent item response
+ystar <- lambda%*%eta0
+ystar <- apply(ystar, 2, FUN = function(x){mvtnorm::rmvnorm(1, x, diag(theta, ncol=J, nrow=J))})
+# response time parameters (copied from Molenaar et al. 2021)
+nu <- matrix(rep(2, J), ncol=1)
+sigma.ei <- matrix(rep(0.25, J), ncol=1)
+rho1 <- 0.1
+#rho2 <- 0
+#delta <- 0
+
+mulogt <- logt <- matrix(nrow=N, ncol=J)
+i<-j <- 1
+for(i in 1:N){
+  for(j in 1:J){
+    # obtain expected log response time
+    mulogt[n,i] <- nu[j, 1] - eta1[1,i] - rho1*abs( eta0[1,i] - sum(tau[j,])/length(tau[j,]) )
+    # sample observed log response time
+    # logRT ~ N(mulogt, sigma.ie)
+    logt[n,i] <- rnorm(1, mulogt[n,i], sqrt(sigma.ei[j,1]))
+  }
+}
+
+# construct missclassification
+# based on latent response time (nu - eta1)
+misclass.time.trans <- function(lrt, c, b, K, diagonal = FALSE){
+  if(c == b){
+    g <- 1/(1 + exp(-lrt))
+    if(diagonal == TRUE){
+      g <- 1
+    }
+  }
+  if(c != b){
+    g <- (1/(K-1))*(1-1/(1 + exp(-lrt)))
+    if(diagonal == TRUE){
+      g <- 0
+    }
+  }
+
+  g
+
+}
+
+gamma <- array(dim=c(N,J,C,C))
+
+for(i in 1:N){for(j in 1:J){for(b in 1:C){for(c in 1:C){
+    gamma[n,i,b,c] <- misclass.time.trans(nu[j, 1] - eta1[1, i], b, c, C)
+}}}}# end loops
+
+
+pi <- pi.gte <- omega <- array(0,dim=c(N, J, C))
+Y <- matrix(nrow=N, ncol=J)
+i <- j <- c <- 1
+for(i in 1:N){
+  for(j in 1:J){
+
+    # GRM model
+    for(c in 2:C){
+      # P(greater than or equal to category c > 1)
+      pi.gte[n,i,c] <- invlogit(ystar[j,i]-tau[j,(c-1)])
+    }
+    # P(greater than or equal to category 1)
+    pi.gte[n,i,1] <- 1
+    # equal to prob.
+    for(c in 1:(C-1)){
+      # P(greater equal to category c < C)
+      pi[n,i,c] <- pi.gte[n,i,c]-pi.gte[n,i,c+1]
+    }
+    # P(greater equal to category C)
+    pi[n,i,C] <- pi.gte[n,i,C]
+
+    # observed category prob (Pr(y=c))
+    for(c in 1:C){
+      for(ct in 1:C){
+        # sum over ct
+        omega[n,i,c] = omega[n,i,c] + gamma[n,i,ct,c]*pi[n,i,ct]
+      }
+      #omega[i, j, c] = gamma[n,i,1,c]*pi[n,i,1] + gamma[n,i,2,c]*pi[n,i,2] + gamma[n,i,3,c]*pi[n,i,3]
+    }
+    Y[n,i] <- sample(x=1:C, size=1, prob=omega[n,i,])
+  }
+}
+
+```
+
+
+# Model 1: Traditional IFA
+
+```{r model1}
+
+# set up estimation
+mydata <- list(
+  y = as.matrix(Y),
+  N = nrow(Y),
+  nit=5
+)
+jags.model <- function(){
+  ### Model
+  for(n in 1:N){
+    for(i in 1:nit){
+      # data model
+      y[n,i] ~ dcat(pi[n,i, ])
+
+      # LRV
+      ystar[n,i] ~ dnorm(lambda[i]*eta[n], invtheta[i])
+
+      # Pr(nu = 3)
+      pi[n,i,3] = phi(ystar[n,i] - tau[i,2])
+      # Pr(nu = 2)
+      pi[n,i,2] = phi(ystar[n,i] - tau[i,1]) - phi(ystar[n,i] - tau[i,2])
+      # Pr(nu = 1)
+      pi[n,i,1] = 1 - phi(ystar[n,i] - tau[i,1])
+    }
+  }
+  ### LRV
+  for(i in 1:nit){
+    theta[i] = 1 - pow(lambda[i],2)
+    invtheta[i] = pow(theta[i], -1)
+  }
+  ### Priors
+  # person parameters
+  for(n in 1:N){
+    eta[n] ~ dnorm(0, 1)
+  }
+  # item parameters
+  for(i in 1:nit){
+    # Thresholds
+    tau[i, 1] ~ dnorm(0.0,0.1)
+    tau[i, 2] ~ dnorm(0, 0.1);T(tau[i, 1],)
+    # loadings
+    lambda[i] ~ dbeta(2,2)
+  }
+}
+
+# vector of all parameters to save
+param_save <- c("lambda", "tau","theta", "pi")
+
+# fit model
+fit1 <- fit <- jags(
+  model.file=jags.model,
+  data=mydata,
+  #inits = start,
+  parameters.to.save = param_save,
+  n.iter=2000,
+  #n.thin = 50,
+  #n.burnin = 0000,
+  n.chains = 2
+)
+
+print(fit)
+
+fit$BUGSoutput$summary[paste0("lambda[",1:J,"]") ,]
+fit$BUGSoutput$summary[paste0("theta[",1:J,"]") ,]
+fit$BUGSoutput$summary[c(paste0("tau[1,",1:(C-1),"]"), paste0("tau[2,",1:(C-1),"]"), paste0("tau[3,",1:(C-1),"]"), paste0("tau[4,",1:(C-1),"]"), paste0("tau[5,",1:(C-1),"]")),]
+
+mydata$y[1,]
+fit$BUGSoutput$summary[paste0("pi[1,1,",1:C,"]") ,]
+fit$BUGSoutput$summary[paste0("pi[1,2,",1:C,"]") ,]
+fit$BUGSoutput$summary[paste0("pi[1,3,",1:C,"]") ,]
+
+mydata$y[42,]
+fit$BUGSoutput$summary[paste0("pi[42,1,",1:3,"]") ,]
+fit$BUGSoutput$summary[paste0("pi[42,2,",1:3,"]") ,]
+fit$BUGSoutput$summary[paste0("pi[42,3,",1:3,"]") ,]
+
+# extract posteriors for all chains
+jags.mcmc <- as.mcmc(fit)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+fit.mcmc <- data.frame(as.matrix(jags.mcmc, chains=T, iters = T))
+colnames(fit.mcmc) <- c("chain", "iter", a)
+
+# Posterior Summary
+# Density
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "tau", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "lambda", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "theta", prob = 0.8)
+# posterior autocorrelation
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "tau")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "lambda")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "theta")
+
+# posterior traceplots
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "theta")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "lambda")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "tau")
+
+# posterior GRB convergence
+fit.mcmc.ggs <- ggmcmc::ggs(jags.mcmc)
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="theta")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="tau")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="lambda")
+
+```
+
+# Model 2: IFA with RT 
+
+
+This model is similar to the BL-IRT model for jointly modeling item responses and response times (Molenaar et al., 2015).
+
+```{r model2}
+# set up estimation - using the code from Molenaar et al. (2021)
+mydata <- list(
+  y = Y,
+  lrt = logt,
+  N = nrow(Y),
+  nit=J
+)
+jags.model <- function(){
+  ### Model
+  for(n in 1:N){
+    for(i in 1:nit){
+      # data model
+      y[n,i] ~ dcat(pi[n,i, ])
+
+      # LRV
+      ystar[n,i] ~ dnorm(lambda[i]*eta[n], invtheta[i])
+
+      # Pr(nu = 3)
+      pi[n,i,3] = phi(ystar[n,i] - tau[i,2])
+      # Pr(nu = 2)
+      pi[n,i,2] = phi(ystar[n,i] - tau[i,1]) - phi(ystar[n,i] - tau[i,2])
+      # Pr(nu = 1)
+      pi[n,i,1] = 1 - phi(ystar[n,i] - tau[i,1])
+      
+      # log-RT model
+      dev[n,i]<-lambda[i]*(eta[n] - (tau[i,1]+tau[i,2])/2)
+      mu.rt[n,i]<- icept[i] - speed[n] - rho2*dev[n,i] - rho1 * abs(dev[n,i]-delta)
+      lrt[n,i]~dnorm(mu.rt[n,i],prec[i])
+      
+    }
+  }
+  ### LRV
+  for(i in 1:nit){
+    theta[i] = 1 - pow(lambda[i],2)
+    invtheta[i] = pow(theta[i], -1)
+  }
+  ### Priors
+  # person parameters
+  for(n in 1:N){
+    eta[n] ~ dnorm(0, 1) # latent ability
+    speed[n]~dnorm(sigma.ts*eta[n],prec.s)  # latent speed
+  }
+  sigma.ts ~ dnorm(0, 0.1)
+  prec.s~dgamma(.1,.1)
+  for(i in 1:nit){
+    # lrt parameters
+    icept[i]~dnorm(0,.1)
+    prec[i]~dgamma(.1,.1)
+    # Thresholds
+    tau[i, 1] ~ dnorm(0.0,0.1)
+    tau[i, 2] ~ dnorm(0, 0.1);T(tau[i, 1],)
+    # loadings
+    lambda[i] ~ dbeta(2,2)
+  }
+  negrho <- -1*rho1
+  rho1~dnorm(0,.1);I(0,)
+  rho2~dnorm(0,.1);I(negrho,rho1)
+  delta~dnorm(0,.1)
+
+  # important parameters
+  sigma.t <- pow(prec.s, -1) + pow(sigma.ts, 2)
+  cor.ts <- sigma.ts/(pow(sigma.t,0.5))
+  
+}
+
+jags.params <- c(
+  # ability measurement model
+  "tau", "lambda", "theta",
+  # speed measurement parameters
+  "delta", "rho1", "rho2", "icept","prec.s", "sigma.t", "sigma.ts", "cor.ts"
+)
+
+
+# fit model
+fit2 <- fit <- jags(
+  model.file=jags.model,
+  data=mydata,
+  #inits = start,
+  parameters.to.save = jags.params,
+  n.iter=2000,
+  #n.thin = 50,
+  #n.burnin = 0000,
+  n.chains = 2
+)
+print(fit)
+
+# extract posteriors for all chains
+jags.mcmc <- as.mcmc(fit)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+fit.mcmc <- data.frame(as.matrix(jags.mcmc, chains=T, iters = T))
+colnames(fit.mcmc) <- c("chain", "iter", a)
+
+# Posterior Summary
+# Density
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "tau", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "lambda", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "theta", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "delta", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "rho", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "icept", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "sigma.t", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "cor.ts", prob = 0.8)
+
+# posterior autocorrelation
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "tau")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "lambda")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "theta")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "delta")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "rho")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "icept")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "sigma.t")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "cor.ts")
+
+# posterior traceplots
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "theta")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "lambda")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "tau")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "delta")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "rho")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "icept")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "sigma.t")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "cor.ts")
+
+# posterior GRB convergence
+fit.mcmc.ggs <- ggmcmc::ggs(jags.mcmc)
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="theta")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="tau")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="lambda")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="delta")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="rho")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="icept")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="sigma.t")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="cor.ts")
+
+```
+
+# Model 3: IFA with RT only
+
+```{r model3}
+
+mydata <- list(
+  y = Y,
+  lrt = logt,
+  N = nrow(Y),
+  nit=J,
+  C = 3
+)
+
+jags.model <- function(){
+  ### Model
+  for(n in 1:N){
+    for(i in 1:nit){
+      # data model
+      y[n,i] ~ dcat(omega[n,i, ])
+
+      # LRV
+      ystar[n,i] ~ dnorm(lambda[i]*eta[n], invtheta[i])
+
+      # Pr(nu = 3)
+      pi[n,i,3] = phi(ystar[n,i] - tau[i,2])
+      # Pr(nu = 2)
+      pi[n,i,2] = phi(ystar[n,i] - tau[i,1]) - phi(ystar[n,i] - tau[i,2])
+      # Pr(nu = 1)
+      pi[n,i,1] = 1 - phi(ystar[n,i] - tau[i,1])
+      
+      
+      # MISCLASSIFICATION MODEL
+      for(c in 1:C){
+        # generate informative prior for misclassificaiton
+        #   parameters based on RT
+        for(ct in 1:C){
+          alpha[n,i,ct,c] <- ifelse(c == ct,
+                                    ilogit(lrt[n,i])*10,
+                                    (1/(C-1))*(1-ilogit(lrt[n,i]))*10
+          )
+        }
+        # sample misclassification parameters using the informative priors
+        gamma[n,i,c,1:C] ~ ddirch(alpha[n,i,c,1:C])
+        # observed category prob (Pr(y=c))
+        omega[n,i, c] = gamma[n,i,c,1]*pi[n,i,1] + 
+                        gamma[n,i,c,2]*pi[n,i,2] + 
+                        gamma[n,i,c,3]*pi[n,i,3]
+      }
+      
+      
+    }
+  }
+  ### LRV
+  for(i in 1:nit){
+    theta[i] = 1 - pow(lambda[i],2)
+    invtheta[i] = pow(theta[i], -1)
+  }
+  ### Priors
+  # person parameters
+  for(n in 1:N){
+    eta[n] ~ dnorm(0, 1)
+  }
+  # item parameters
+  for(i in 1:nit){
+    # Thresholds
+    tau[i, 1] ~ dnorm(0.0,0.1)
+    tau[i, 2] ~ dnorm(0, 0.1);T(tau[i, 1],)
+    # loadings
+    lambda[i] ~ dbeta(2,2)
+  }
+}
+
+# vector of all parameters to save
+param_save <- c("lambda", "tau","theta", "omega", "pi", "gamma", "alpha")
+
+# fit model
+fit3 <- fit <- jags(
+  model.file=jags.model,
+  data=mydata,
+  #inits = start,
+  parameters.to.save = param_save,
+  n.iter=2000,
+  #n.thin = 50,
+  #n.burnin = 1000,
+  n.chains = 2
+)
+
+fit$BUGSoutput$summary[paste0("lambda[",1:J,"]") ,]
+fit$BUGSoutput$summary[paste0("theta[",1:J,"]") ,]
+fit$BUGSoutput$summary[c(paste0("tau[1,",1:(C-1),"]"), paste0("tau[2,",1:(C-1),"]"), paste0("tau[3,",1:(C-1),"]"), paste0("tau[4,",1:(C-1),"]"), paste0("tau[5,",1:(C-1),"]")),]
+
+mydata$y[1,]
+fit$BUGSoutput$summary[paste0("omega[1,1,",1:C,"]") ,]
+fit$BUGSoutput$summary[paste0("omega[1,2,",1:C,"]") ,]
+fit$BUGSoutput$summary[paste0("omega[1,3,",1:C,"]") ,]
+
+mydata$y[42,]
+fit$BUGSoutput$summary[paste0("omega[42,1,",1:3,"]") ,]
+fit$BUGSoutput$summary[paste0("omega[42,2,",1:3,"]") ,]
+fit$BUGSoutput$summary[paste0("omega[42,3,",1:3,"]") ,]
+
+# extract posteriors for all chains
+jags.mcmc <- as.mcmc(fit)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+fit.mcmc <- data.frame(as.matrix(jags.mcmc, chains=T, iters = T))
+colnames(fit.mcmc) <- c("chain", "iter", a)
+
+# Posterior Summary
+# Density
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "tau", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "lambda", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "theta", prob = 0.8)
+
+# posterior autocorrelation
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "tau")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "lambda")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "theta")
+
+# posterior traceplots
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "theta")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "lambda")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "tau")
+
+# posterior GRB convergence
+fit.mcmc.ggs <- ggmcmc::ggs(jags.mcmc)
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="theta")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="tau")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="lambda")
+
+
+```
+
+# Model 4: Full IFA with Misclassification
+
+```{r model4}
+
+mydata <- list(
+  y = Y,
+  lrt = logt,
+  N = nrow(Y),
+  nit=J,
+  C = 3
+)
+jags.model <- function(){
+  ### Model
+  for(n in 1:N){
+    for(i in 1:nit){
+      # data model
+      y[n,i] ~ dcat(omega[n,i, ])
+
+      # LRV
+      ystar[n,i] ~ dnorm(lambda[i]*eta[n], invtheta[i])
+
+      # Pr(nu = 3)
+      pi[n,i,3] = phi(ystar[n,i] - tau[i,2])
+      # Pr(nu = 2)
+      pi[n,i,2] = phi(ystar[n,i] - tau[i,1]) - phi(ystar[n,i] - tau[i,2])
+      # Pr(nu = 1)
+      pi[n,i,1] = 1 - phi(ystar[n,i] - tau[i,1])
+      
+      # log-RT model
+      dev[n,i]<-lambda[i]*(eta[n] - (tau[i,1]+tau[i,2])/2)
+      mu.rt[n,i]<- icept[i] - speed[n] - rho2*dev[n,i] - rho1 * abs(dev[n,i]-delta)
+      lrt[n,i] ~ dnorm(mu.rt[n,i],prec[i])
+      
+      # compute ELRT 
+      ELRT[n,i] = (icept[i] - speed[n])/dev[n,i]
+      
+      # MISCLASSIFICATION MODEL
+      for(c in 1:C){
+        # generate informative prior for misclassificaiton
+        #   parameters based on RT
+        for(ct in 1:C){
+          alpha[n,i,ct,c] <- ifelse(c == ct,
+                                    ilogit(ELRT[n,i])*10,
+                                    (1/(C-1))*(1-ilogit(ELRT[n,i]))*10
+          )
+        }
+        # sample misclassification parameters using the informative priors
+        gamma[n,i,c,1:C] ~ ddirch(alpha[n,i,c,1:C])
+        # observed category prob (Pr(y=c))
+        omega[n,i, c] = gamma[n,i,c,1]*pi[n,i,1] + 
+                        gamma[n,i,c,2]*pi[n,i,2] + 
+                        gamma[n,i,c,3]*pi[n,i,3]
+      }
+
+    }
+  }
+  ### LRV
+  for(i in 1:nit){
+    theta[i] = 1 - pow(lambda[i],2)
+    invtheta[i] = pow(theta[i], -1)
+  }
+  ### Priors
+  # person parameters
+  for(n in 1:N){
+    eta[n] ~ dnorm(0, 1) # latent ability
+    speed[n]~dnorm(sigma.ts*eta[n],prec.s)  # latent speed
+  }
+  sigma.ts ~ dnorm(0, 0.1)
+  prec.s~dgamma(.1,.1)
+  for(i in 1:nit){
+    # lrt parameters
+    icept[i]~dnorm(0,.1)
+    prec[i]~dgamma(.1,.1)
+    # Thresholds
+    tau[i, 1] ~ dnorm(0.0,0.1)
+    tau[i, 2] ~ dnorm(0, 0.1);T(tau[i, 1],)
+    # loadings
+    lambda[i] ~ dbeta(2,2)
+  }
+  negrho <- -1*rho1
+  rho1~dnorm(0,.1);I(0,)
+  rho2~dnorm(0,.1);I(negrho,rho1)
+  delta~dnorm(0,.1)
+
+  # important parameters
+  sigma.t <- pow(prec.s, -1) + pow(sigma.ts, 2)
+  cor.ts <- sigma.ts/(pow(sigma.t,0.5))
+}
+jags.params <- c(
+  # ability measurement model
+  "tau", "lambda", "theta", "pi",
+  # speed measurement parameters
+  "delta", "rho1", "rho2", "icept","prec.s", "sigma.t", "sigma.ts", "cor.ts",
+  # misclassification parameters
+  "omega", "gamma", "alpha", "ELRT"
+)
+
+
+# fit model
+fit4 <- fit <- jags(
+  model.file=jags.model,
+  data=mydata,
+  #inits = start,
+  parameters.to.save = jags.params,
+  n.iter=2000,
+  #n.thin = 50,
+  #n.burnin = 0000,
+  n.chains = 2
+)
+
+# extract posteriors for all chains
+jags.mcmc <- as.mcmc(fit)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+fit.mcmc <- data.frame(as.matrix(jags.mcmc, chains=T, iters = T))
+colnames(fit.mcmc) <- c("chain", "iter", a)
+
+# Posterior Summary
+# Density
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "tau", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "lambda", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "theta", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "delta", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "rho", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "icept", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "sigma.t", prob = 0.8)
+bayesplot::mcmc_areas(fit.mcmc,regex_pars = "cor.ts", prob = 0.8)
+
+# posterior autocorrelation
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "tau")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "lambda")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "theta")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "delta")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "rho")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "icept")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "sigma.t")
+bayesplot::mcmc_acf(fit.mcmc,regex_pars = "cor.ts")
+
+# posterior traceplots
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "theta")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "lambda")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "tau")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "delta")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "rho")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "icept")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "sigma.t")
+bayesplot::mcmc_trace(fit.mcmc,regex_pars = "cor.ts")
+
+# posterior GRB convergence
+fit.mcmc.ggs <- ggmcmc::ggs(jags.mcmc)
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="theta")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="tau")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="lambda")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="delta")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="rho")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="icept")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="sigma.t")
+ggmcmc::ggs_grb(fit.mcmc.ggs, family="cor.ts")
+
+```

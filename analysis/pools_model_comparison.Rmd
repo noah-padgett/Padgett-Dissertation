@@ -1,0 +1,605 @@
+---
+title: "SERA POOLS Study"
+subtitle: "Comparison of Reliability Posterior Distribution"
+author: "R. Noah Padgett"
+date: "2022-02-01"
+output: html_document
+---
+
+```{r set-up, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages & utility functions
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+```
+
+# Model Comparison
+
+## DWLS
+
+```{r}
+library(readxl)
+mydata <- read_excel("data/pools/POOLS_data_2020-11-16.xlsx")
+
+use.var <- c(paste0("Q4_",c(3:5,9,11,15,18)), 
+             paste0("Q5_",c(1:3,5:6,12)), 
+             paste0("Q6_",c(2,5:8, 11)), 
+             paste0("Q7_",c(2, 4:5, 7:8, 14))) 
+
+# trichotomize
+f <- function(x){
+  y=numeric(length(x))
+  for(i in 1:length(x)){
+      if(x[i] < 3){
+        y[i] = 1
+      }
+      if(x[i] == 3){
+        y[i] = 2
+      }
+      if(x[i] > 3){
+        y[i] = 3
+      }
+  }
+  return(y)
+}
+
+mydata <- na.omit(mydata[, use.var]) 
+mydata <- apply(mydata, 2, f) %>%
+  as.data.frame()
+
+psych::describe(
+  mydata
+)
+
+t(apply(mydata,2, table))
+t(apply(mydata,2, function(x){table(x)/length(x)}))
+# print out for paper
+
+mod <- '
+EL =~ 1*Q4_3 + lam44*Q4_4 + lam45*Q4_5 + lam49*Q4_9 + lam411*Q4_11 + lam415*Q4_15 + lam418*Q4_18
+SC =~ 1*Q5_1 + lam52*Q5_2 + lam53*Q5_3 + lam55*Q5_5 + lam56*Q5_6 + lam512*Q5_12
+IN =~ 1*Q6_2 + lam65*Q6_5 + lam66*Q6_6 + lam67*Q6_7 + lam68*Q6_8 + lam611*Q6_11
+EN =~ 1*Q7_2 + lam74*Q7_4 + lam75*Q7_5 + lam77*Q7_7 + lam78*Q7_8 + lam714*Q7_14
+
+# Factor covarainces
+EL ~~ EL + SC + IN + EN
+SC ~~ SC + IN + EN
+IN ~~ IN + EN
+EN ~~ EN
+
+# Factor Reliabilities
+rEL := ((1 + lam44 + lam45 + lam49 + lam411 + lam415 + lam418)**2)/((1 + lam44 + lam45 + lam49 + lam411 + lam415 + lam418)**2 + 7)
+rSC := ((1 + lam52 + lam53 + lam55 + lam56 + lam512)**2)/((1 + lam52 + lam53 + lam55 + lam56 + lam512)**2 + 6)
+rIN := ((1 + lam65 + lam66 + lam67 + lam68 + lam611)**2)/((1 + lam65 + lam66 + lam67 + lam68 + lam611)**2 + 6)
+rEN := ((1 + lam74 + lam75 + lam77 + lam78 + lam714)**2)/((1 + lam74 + lam75 + lam77 + lam78 + lam714)**2 + 6)
+'
+
+fit.dwls <- lavaan::cfa(mod, data=mydata, ordered=T)
+lavaan::summary(fit.dwls, standardized=T, fit.measures=T)
+# Pairwise maximum likelihood (PML) - suppose to most similar to ML/Bayes Posterior
+fit.pml <- lavaan::cfa(mod, data=mydata, ordered=T, estimator="PML")
+lavaan::summary(fit.pml, standardized=T, fit.measures=T)
+
+```
+
+## Comparing Reliability
+
+```{r reli-post}
+
+# simulated induced prior on omega
+prior_lambda <- function(){
+  y <- -1
+  while(y < 0){
+    y <- rnorm(1, 0, 1)
+  }
+  return(y)
+}
+
+prior_omega <- function(lambda, theta){
+  (sum(lambda)**2)/(sum(lambda)**2 + sum(theta))
+}
+nsim=4000
+sim_omega1 <- sim_omega2 <- numeric(nsim)
+for(i in 1:nsim){
+  lam_vec <- c(
+    1, prior_lambda(), prior_lambda(), prior_lambda(),prior_lambda(), prior_lambda(), prior_lambda()
+  )
+  tht_vec <- rep(1, 7)
+  sim_omega1[i] <- prior_omega(lam_vec, tht_vec)
+  sim_omega2[i] <- prior_omega(lam_vec[1:6], tht_vec[1:6])
+}
+prior_data <- data.frame(prior_s_f1=sim_omega1,prior_s_f2=sim_omega2,prior_s_f3=sim_omega2,prior_s_f4=sim_omega2)
+ggplot(prior_data, aes(x=prior_s_f1))+
+  geom_density(adjust=2)+
+  labs(title="Induced prior on omega")+
+  theme_classic()
+
+# read in data
+o1 <- readr::read_csv(paste0(getwd(),"/data/pools/extracted_omega_m1.csv"))
+o2 <- readr::read_csv(paste0(getwd(),"/data/pools/extracted_omega_m2.csv"))
+o3 <- readr::read_csv(paste0(getwd(),"/data/pools/extracted_omega_m3.csv"))
+o4 <- readr::read_csv(paste0(getwd(),"/data/pools/extracted_omega_m4.csv"))
+dat_omega <- cbind(o1[,2:5], o2[,2:5], o3[,2:5], o4[,2:5], prior_data[,1:4])
+
+
+plot.dat <- dat_omega %>%
+  pivot_longer(
+    cols=everything(),
+    names_to = "model",
+    values_to = "est"
+  )%>%
+  mutate(
+    factor = substr(model, 9,10),
+    model = substr(model, 1, 7)
+  )
+sum.dat <- plot.dat %>%
+  group_by(model, factor) %>%
+  summarise(
+    Mean = mean(est),
+    SD = sd(est),
+    Q025 = quantile(est, 0.025),
+    Q1 = quantile(est, 0.25),
+    Median = median(est),
+    Q3 = quantile(est, 0.75),
+    Q975 = quantile(est, 0.975),
+  )
+
+kable(sum.dat,format = "html", digits=3) %>%
+  kable_styling(full_width = T)
+
+
+# reli from DWLS
+reli_est <- data.frame(
+  factor = c('f1', 'f2', 'f3', 'f4'),
+  est    = c(.82, .79, .80, .78)
+)
+
+plot.dat %>%
+  filter(model != 'prior_s')%>%
+ggplot(aes(x=est, y=model, group=interaction(model, factor)))+
+ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize="all", fill="grey75"
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=reli_est, aes(xintercept=est), linetype='dashed')+
+  labs(x="Reliability Estimates",
+       y="Estimating Model")+
+  lims(x=c(0.5, 1))+
+  facet_wrap(.~factor)+
+  theme_classic()
+
+ggplot(plot.dat,aes(x=est, group=interaction(model, factor), color=model, fill=model))+
+  geom_density(alpha=0.25)+
+  facet_wrap(.~factor)+
+  theme_classic()
+
+```
+
+
+## Comparing Factor Correlations
+
+```{r cor-post}
+
+
+prior_cor <- function(sigma){
+  S <- LaplacesDemon::rinvwishart(4, matrix(
+      sigma, ncol=4, nrow=4, byrow=T
+      ))
+  cor <- matrix(nrow=4,ncol=4)
+  for(i in 1:4){
+    for(j in 1:4){
+      cor[i,j] <- S[i,j]/(sqrt(S[i,i])*sqrt(S[j,j]))
+    }
+  }
+  return(c(cor[1,2],cor[1,3],cor[1,4],cor[2,3],cor[2,4],cor[3,4]))
+}
+
+# simulated induced prior on omega
+
+nsim=4000
+sim_cor1 <- sim_cor2 <- sim_cor3 <- matrix(nrow=nsim, ncol=6)
+for(i in 1:nsim){
+  sim_cor1[i,] <- prior_cor(c(diag(ncol=4,nrow=4)))
+  sim_cor2[i,] <- prior_cor(
+      c(
+        1, 0.3, 0.3, 0.3,
+        0.3, 1, 0.3, 0.3,
+        0.3, 0.3, 1, 0.3,
+        0.3, 0.3, 0.3, 1)
+  )
+  sim_cor3[i,] <- prior_cor(
+      c(1.52, 0.92, 0.97, 1.19,
+        0.92, 1.17, 0.74, 1.08,
+        0.97, 0.74, 1.11, 0.98,
+        1.19, 1.08, 0.98, 1.55)
+  )
+
+  
+}
+prior_data1 <- as.data.frame(sim_cor1)
+prior_data2 <- as.data.frame(sim_cor2)
+prior_data3 <- as.data.frame(sim_cor3)
+colnames(prior_data1) <- c(
+  'phi.cor[1,2]','phi.cor[1,3]','phi.cor[1,4]',
+  'phi.cor[2,3]','phi.cor[2,4]','phi.cor[3,4]')
+colnames(prior_data2) <- c(
+  'phi.cor[1,2]','phi.cor[1,3]','phi.cor[1,4]',
+  'phi.cor[2,3]','phi.cor[2,4]','phi.cor[3,4]')
+colnames(prior_data3) <- c(
+  'phi.cor[1,2]','phi.cor[1,3]','phi.cor[1,4]',
+  'phi.cor[2,3]','phi.cor[2,4]','phi.cor[3,4]')
+prior_data1$model <- 'prior'
+prior_data2$model <- 'prior'
+prior_data3$model <- 'prior'
+prior_data1 %>%
+  pivot_longer(
+    cols=contains('phi.cor'),
+    names_to = 'cor',
+    values_to="cor_est"
+  ) %>%
+ggplot(aes(x=cor_est))+
+  geom_density(adjust=2)+
+facet_wrap(.~cor)+
+  labs(title="Induced prior on correlations")+
+  theme_classic()
+
+# read in data
+o1 <- readr::read_csv(paste0(getwd(),"/data/pools/extracted_cor_m1.csv")); o1$model <- 'model_1'
+o2 <- readr::read_csv(paste0(getwd(),"/data/pools/extracted_cor_m2.csv")); o2$model <- 'model_2'
+o3 <- readr::read_csv(paste0(getwd(),"/data/pools/extracted_cor_m3.csv")); o3$model <- 'model_3'
+o4 <- readr::read_csv(paste0(getwd(),"/data/pools/extracted_cor_m4.csv")); o4$model <- 'model_4'
+dat_cor <- full_join(o1[,2:8], o2[,2:8])%>%
+  full_join(o3[,2:8]) %>% 
+  full_join(o4[,2:8]) %>%
+  full_join(prior_data1)
+
+plot.dat.cor <- dat_cor %>%
+  pivot_longer(
+    cols=contains('phi.cor'),
+    names_to = "cor",
+    values_to = "est"
+  )
+sum.dat <- plot.dat.cor %>%
+  group_by(model, cor) %>%
+  summarise(
+    Mean = mean(est),
+    SD = sd(est),
+    Q025 = quantile(est, 0.025),
+    Q1 = quantile(est, 0.25),
+    Median = median(est),
+    Q3 = quantile(est, 0.75),
+    Q975 = quantile(est, 0.975),
+  )
+
+kable(sum.dat,format = "html", digits=3) %>%
+  kable_styling(full_width = T)
+
+
+# cor from DWLS
+cor_est <- data.frame(
+  cor = c(
+  'phi.cor[1,2]','phi.cor[1,3]','phi.cor[1,4]',
+  'phi.cor[2,3]','phi.cor[2,4]','phi.cor[3,4]'),
+  est    = c(.69, .75, .78, .65, .80, .75)
+)
+
+plot.dat.cor %>%
+  filter(model != 'prior')%>%
+ggplot(aes(x=est, y=model, group=interaction(model, cor)))+
+ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize="all", fill="grey75"
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=cor_est, aes(xintercept=est), linetype='dashed')+
+  labs(x="Correlation Estimates",
+       y="Estimating Model")+
+  lims(x=c(-1, 1))+
+  facet_wrap(.~cor)+
+  theme_classic()
+
+ggplot(plot.dat.cor,aes(x=est, group=interaction(model, cor), color=model, fill=model))+
+  geom_density(alpha=0.25)+
+  facet_wrap(.~cor)+
+  theme_classic()
+
+```
+
+
+
+
+# Manuscript Tables and Figures
+
+## Tables
+
+```{r man-tables}
+
+# summary of observed data
+sum.dat <- t(apply(mydata,2, function(x){table(x)/length(x)}))
+print(
+  xtable::xtable(
+    sum.dat,
+    caption = c("POOLS observed data summary proportions")
+    ,align = "lrrr"
+  ),
+  include.rownames=T,
+  booktabs=T
+)
+
+
+sum.dat <- plot.dat %>%
+  group_by(model, factor) %>%
+  summarise(
+    Mean = mean(est),
+    SD = sd(est),
+    Q025 = quantile(est, 0.025),
+    Q1 = quantile(est, 0.25),
+    Median = median(est),
+    Q3 = quantile(est, 0.75),
+    Q975 = quantile(est, 0.975),
+  )
+print(
+  xtable(
+    sum.dat,
+    caption = c("POOLS posterior reliabilities estimates")
+    ,align = "lrrrrrrrrr"
+  ),
+  include.rownames=T,
+  booktabs=T
+)
+
+
+
+
+sum.dat <- plot.dat.cor %>%
+  group_by(model, cor) %>%
+  summarise(
+    Mean = mean(est),
+    SD = sd(est),
+    Q025 = quantile(est, 0.025),
+    Q1 = quantile(est, 0.25),
+    Median = median(est),
+    Q3 = quantile(est, 0.75),
+    Q975 = quantile(est, 0.975),
+  )
+print(
+  xtable(
+    sum.dat,
+    caption = c("POOLS posterior correlation estimates")
+    ,align = "lrrrrrrrrr"
+  ),
+  include.rownames=T,
+  booktabs=T
+)
+
+```
+
+## Figures
+
+```{r man-figures}
+
+reli_est <- data.frame(
+  factor = c('EfL', 'SC', 'IN', 'EnL'),
+  est    = c(.82, .79, .80, .78)
+)
+
+p <- plot.dat %>%
+  filter(model != 'prior_s') %>%
+  mutate(model = factor(model, levels=rev(paste0('model_',1:4)),
+                        labels=rev(paste0('Model ', 1:4))),
+         factor = factor(factor, levels=c('f1','f2','f3','f4'),
+                         labels=c('EfL','SC','IN','EnL')))%>%
+  ggplot(aes(x=est, y=model, group=model))+
+  ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize="all", fill="grey75"
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=reli_est, aes(xintercept=est), linetype='dashed')+
+  #annotate('text', x=0.6,y=4.5,label=expression(omega^2==.8))+
+  labs(x= expression(paste("Reliability Posterior (", omega^2, ")")),
+       y=NULL)+
+  lims(x=c(0.5, 1))+
+  facet_wrap(.~factor, nrow=1)+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank())
+p
+
+ggsave(filename = "fig/pools_posterior_omega.pdf",plot=p,width = 7, height=3,units="in")
+ggsave(filename = "fig/pools_posterior_omega.png",plot=p,width = 7, height=3,units="in")
+ggsave(filename = "fig/pools_posterior_omega.eps",plot=p,width = 7, height=3,units="in")
+
+## Make individual panels for the presentation
+ind.dat <- plot.dat %>%
+  filter(model != 'prior_s') %>%
+  mutate(model = factor(model, levels=rev(paste0('model_',1:4)),
+                        labels=rev(paste0('Model ', 1:4))),
+         factor = factor(factor, levels=c('f1','f2','f3','f4'),
+                         labels=c('EfL','SC','IN','EnL')))
+p <- ind.dat %>%
+  filter(factor == "EfL") %>%
+  ggplot(aes(x=est, y=model, group=model))+
+  ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize="all", fill="grey75"
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=reli_est[1,], aes(xintercept=est), linetype='dashed')+
+  labs(x= expression(paste("Reliability Posterior (", omega^2, ")")),
+       y=NULL,
+       title="Effective Learning")+
+  lims(x=c(0.7, 1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank())
+p
+ggsave(filename = "fig/pools_posterior_omega_EfL.pdf",plot=p,width = 4, height=3,units="in")
+p <- ind.dat %>%
+  filter(factor == "SC") %>%
+  ggplot(aes(x=est, y=model, group=model))+
+  ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize="all", fill="grey75"
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=reli_est[2,], aes(xintercept=est), linetype='dashed')+
+  labs(x= expression(paste("Reliability Posterior (", omega^2, ")")),
+       y=NULL,
+       title="Student Centered Learning")+
+  lims(x=c(0.7, 1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank())
+p
+ggsave(filename = "fig/pools_posterior_omega_SC.pdf",plot=p,width = 4, height=3,units="in")
+
+p <- ind.dat %>%
+  filter(factor == "IN") %>%
+  ggplot(aes(x=est, y=model, group=model))+
+  ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize="all", fill="grey75"
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=reli_est[3,], aes(xintercept=est), linetype='dashed')+
+  labs(x= expression(paste("Reliability Posterior (", omega^2, ")")),
+       y=NULL,
+       title="Interactive Learning")+
+  lims(x=c(0.6, 1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank())
+p
+ggsave(filename = "fig/pools_posterior_omega_IN.pdf",plot=p,width = 4, height=3,units="in")
+p <- ind.dat %>%
+  filter(factor == "EnL") %>%
+  ggplot(aes(x=est, y=model, group=model))+
+  ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize="all", fill="grey75"
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=reli_est[4,], aes(xintercept=est), linetype='dashed')+
+  labs(x= expression(paste("Reliability Posterior (", omega^2, ")")),
+       y=NULL,
+       title="Engaged Learning")+
+  lims(x=c(0.7, 1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank())
+p
+ggsave(filename = "fig/pools_posterior_omega_EnL.pdf",plot=p,width = 4, height=3,units="in")
+
+## correlation results
+cor_est <- data.frame(
+  cor = c(
+  'cor(EfL,SC)','cor(EfL,IN)','cor(EfL,EnL)',
+  'cor(SC,IN)','cor(SC,EnL)','cor(IN,EnL)'),
+  est    = c(.69, .75, .78, .65, .80, .75)
+)
+p <- plot.dat.cor %>%
+  filter(model != 'prior')%>%
+  mutate(
+    model = factor(model, levels=rev(paste0('model_',1:4)),
+                        labels=rev(paste0('Model ', 1:4))),
+    cor = factor(cor, levels=c(
+            'phi.cor[1,2]','phi.cor[1,3]','phi.cor[1,4]',
+            'phi.cor[2,3]','phi.cor[2,4]','phi.cor[3,4]'),
+                 labels=c(
+            'cor(EfL,SC)','cor(EfL,IN)','cor(EfL,EnL)',
+            'cor(SC,IN)','cor(SC,EnL)','cor(IN,EnL)')
+          )
+  ) %>%
+ggplot(aes(x=est, y=model, group=interaction(model, cor)))+
+ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize="all", fill="grey75"
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=cor_est, aes(xintercept=est), linetype='dashed')+
+  labs(x="Correlation Estimates",
+       y=NULL)+
+  lims(x=c(0, 1))+
+  facet_wrap(.~cor)+
+  theme_classic()
+p
+ggsave(filename = "fig/pools_posterior_phi.pdf",plot=p,width = 7, height=4.5,units="in")
+ggsave(filename = "fig/pools_posterior_phi.png",plot=p,width = 7, height=4.5,units="in")
+ggsave(filename = "fig/pools_posterior_phi.eps",plot=p,width = 7, height=4.5,units="in")
+
+
+# individual correl
+ind.plot.dat.cor <- plot.dat.cor %>%
+  filter(model != 'prior')%>%
+  mutate(
+    model = factor(model, levels=rev(paste0('model_',1:4)),
+                        labels=rev(paste0('Model ', 1:4))),
+    cor = factor(cor, levels=c(
+            'phi.cor[1,2]','phi.cor[1,3]','phi.cor[1,4]',
+            'phi.cor[2,3]','phi.cor[2,4]','phi.cor[3,4]'),
+                 labels=c(
+            'cor(EfL,SC)','cor(EfL,IN)','cor(EfL,EnL)',
+            'cor(SC,IN)','cor(SC,EnL)','cor(IN,EnL)')
+          )
+  )
+
+p <- ind.plot.dat.cor %>%
+  filter(cor == "cor(EfL,IN)") %>%
+  ggplot(aes(x=est, y=model, group=interaction(model, cor)))+
+ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize="all", fill="grey75"
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=cor_est[2,], aes(xintercept=est), linetype='dashed')+
+  labs(x="Correlation Estimates",
+       y=NULL,
+       title="Cor(EfN, IN)")+
+  lims(x=c(0.4, 1))+
+  theme_classic()
+p
+ggsave(filename = "fig/pools_posterior_phi_EfN_IN.pdf",plot=p,width = 4, height=3,units="in")
+
+p <- ind.plot.dat.cor %>%
+  filter(cor == "cor(IN,EnL)") %>%
+  ggplot(aes(x=est, y=model, group=interaction(model, cor)))+
+ggdist::stat_halfeye(
+    adjust=2, justification=-0.1,.width=0, point_colour=NA,
+    normalize="all", fill="grey75"
+  ) +
+  geom_boxplot(
+    width=.15, outlier.color = NA, alpha=0.5
+  ) +
+  geom_vline(data=cor_est[4,], aes(xintercept=est), linetype='dashed')+
+  labs(x="Correlation Estimates",
+       y=NULL,
+       title="Cor(IN, EnL)")+
+  lims(x=c(0.4, 1))+
+  theme_classic()
+p
+ggsave(filename = "fig/pools_posterior_phi_IN_EnL.pdf",plot=p,width = 4, height=3,units="in")
+
+```

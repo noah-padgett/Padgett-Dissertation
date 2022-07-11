@@ -1,0 +1,478 @@
+---
+title: 'diffIRT Extraversion Data: Test of Rasch Fit Statistics'
+author: "R. Noah Padgett"
+date: "2021-04-14"
+output: html_document
+---
+
+```{r data}
+
+# test with extraversion data - diffIRT package
+source("code/load_packages.R")
+library(diffIRT)
+options(max.print = 10000, scipen = 10, digits=2, width=200)
+knitr::opts_chunk$set(
+  out.width = "300%", fig.align="center"
+)
+# useful functions
+invlogit <- function(x){exp(x)/(1+exp(x))}
+logit <- function(x){log(x/(1-x))}
+
+data("extraversion")
+```
+
+# Rasch Model: eRm 
+
+```{r fit-eRm}
+# eRm
+fit.R <- eRm::RM(extraversion[,1:10], sum0 = T)
+summary(fit.R)
+pp <- person.parameter(fit.R)
+itemfit(pp)
+
+
+mod0.fit <- itemfit(pp)
+mod0.outfit <- data.frame(
+  model = rep("model[0]", 10),
+  outfitMSQ = mod0.fit$i.outfitMSQ,
+  item = paste0("item[",1:10,"]")
+)
+mod0.infit <- data.frame(
+  model = rep("model[0]", 10),
+  infitMSQ = mod0.fit$i.infitMSQ,
+  item = paste0("item[",1:10,"]")
+)
+```
+
+# Bayesian Rasch Model: JAGS
+
+```{r fit-jags}
+# Rasch model
+mydata <- list(
+  x = extraversion[,1:10],
+  N = nrow(extraversion),
+  nit=10
+)
+jags.model <- function(){
+  ### Model
+  for(p in 1:N){
+    for(i in 1:nit){
+      # Rasch model
+      logit(Prob[p,i]) <- theta[p]-b[i]
+      # observable dist.
+      x[p,i] ~ dbern(Prob[p,i])
+    }
+  }
+  for(p in 1:N){
+    theta[p]~dlogis(0, 1)
+  }
+  # sum0 constraint
+  b[1] <- -sum(b[2:10])
+  for(i in 2:nit){
+    # location parameters
+    b[i] ~ dnorm(0, .1)
+  }
+  # Rasch item fit statistics
+  # deviations
+  for(i in 1:nit){
+    for(p in 1:N){
+      w[p,i] <- Prob[p,i]*(1-Prob[p,i])
+      z[p,i] <- (x[p,i]-Prob[p,i])/pow(w[p,i], 0.5)
+      wz2[p,i] <- w[p,i]*pow(z[p,i],2)
+    }
+    outfitMSQ[i] <- sum(pow(z[,i], 2))/N
+    infitMSQ[i] <- sum(wz2[,i])/sum(w[,i])
+  }
+
+} # end jags model
+
+
+# params to save
+jags.params <- c("b", "outfitMSQ", "infitMSQ")
+
+# fit model
+fit1 <- jags(
+  model.file=jags.model,
+  data=mydata,
+  #inits = start,
+  parameters.to.save = jags.params,
+  n.iter=10000,
+  #n.thin = 50,
+  #n.burnin = 0000,
+  n.chains = 4
+)
+fit <- fit1
+print(fit)
+
+jags.mcmc <- as.mcmc(fit)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+plot.data <- data.frame(as.matrix(jags.mcmc, chains=T, iters = T))
+colnames(plot.data) <- c("chain", "iter", a)
+
+
+plot_title <- ggtitle("Posterior distributions",
+                      "with medians and 80% intervals")
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("b[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("outfitMSQ[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("infitMSQ[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+```
+
+# Bayesian Rasch Model with RT: JAGS
+
+```{r fit-rtmodel}
+
+# set up Rasch response time model
+mydata <- list(
+  x = extraversion[,1:10],
+  lrt = log(extraversion[,11:20]),
+  N = nrow(extraversion),
+  nit=10
+)
+jags.model <- function(){
+  ### Model
+  for(p in 1:N){
+    for(i in 1:nit){
+      # Rasch model
+      logit(Prob[p,i]) <- theta[p]-b[i]
+      # observable dist.
+      x[p,i] ~ dbern(Prob[p,i])
+
+      # log-RT model
+      dev[p,i]<-theta[p] - b[i]
+      mu.rt[p,i]<- icept[i] - speed[p] - abs(dev[p,i])
+      lrt[p,i]~dnorm(mu.rt[p,i],prec[i])
+    }
+  }
+  for(p in 1:N){
+    theta[p]~dlogis(0,1)
+    speed[p]~dnorm(sigma.ts*theta[p],prec.s)
+  }
+  # sum0 constraint
+  b[1] <- -sum(b[2:10])
+  for(i in 2:nit){
+    # location parameters
+    b[i] ~ dnorm(0, .1)
+  }
+  for(i in 1:nit){
+    # lrt parameters
+    icept[i]~dnorm(0,.1)
+    prec[i]~dgamma(.1,.1)
+  }
+  sigma.ts ~ dnorm(0, 0.1)
+  prec.s~dgamma(.1,.1)
+  # important parameters
+  sigma.t <- pow(prec.s, -1) + pow(sigma.ts, 2)
+  cor.ts <- sigma.ts/(pow(sigma.t,0.5))
+  # Rasch item fit statistics
+  # deviations
+  for(i in 1:nit){
+    for(p in 1:N){
+      w[p,i] <- Prob[p,i]*(1-Prob[p,i])
+      z[p,i] <- (x[p,i]-Prob[p,i])/pow(w[p,i], 0.5)
+      wz2[p,i] <- w[p,i]*pow(z[p,i],2)
+    }
+    outfitMSQ[i] <- sum(pow(z[,i], 2))/N
+    infitMSQ[i] <- sum(wz2[,i])/sum(w[,i])
+  }
+
+} # end jags model
+
+
+# params to save
+jags.params <- c("b", "icept","prec","prec.s", "sigma.t", "sigma.ts", "cor.ts", "outfitMSQ", "infitMSQ")
+
+
+# fit model
+fit2 <- jags(
+  model.file=jags.model,
+  data=mydata,
+  #inits = start,
+  parameters.to.save = jags.params,
+  n.iter=10000,
+  #n.thin = 50,
+  #n.burnin = 0000,
+  n.chains = 4
+)
+fit <- fit2
+print(fit)
+
+jags.mcmc <- as.mcmc(fit)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+plot.data <- data.frame(as.matrix(jags.mcmc, chains=T, iters = T))
+colnames(plot.data) <- c("chain", "iter", a)
+
+
+plot_title <- ggtitle("Posterior distributions",
+                      "with medians and 80% intervals")
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("b[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("icept[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("prec[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+
+
+mcmc_areas(
+  plot.data,
+  pars = c("sigma.t", "sigma.ts", "cor.ts"),
+  prob = 0.8) +
+  plot_title
+
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("outfitMSQ[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("infitMSQ[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+
+```
+
+# Bayesian Rasch Model with Misclassification: JAGS
+
+```{r fit-misclass}
+
+# misclassification model
+mydata <- list(
+  x = extraversion[,1:10],
+  lrt = log(extraversion[,11:20]),
+  N = nrow(extraversion),
+  nit=10, ncat=2
+)
+
+jags.model <- function(){
+  ### Model
+  for(p in 1:N){
+    for(i in 1:nit){
+      # Rasch model
+      logit(Prob[p,i,1]) <- theta[p]-b[i]
+      Prob[p,i,2] <- 1 - Prob[p,i,1]
+      # observable dist.
+      x[p,i] ~ dbern(omega[p,i,1])
+
+      # log-RT model
+      dev[p,i]<-theta[p] - b[i]
+      mu.rt[p,i]<- icept[i] - speed[p] - abs(dev[p,i])
+      lrt[p,i]~dnorm(mu.rt[p,i],prec[i])
+
+      # misclassificaiton rates
+      for(c in 1:ncat){
+        for(ct in 1:ncat){
+          gamma[p,i,c,ct] <- ifelse(c == ct,
+                                    ilogit(icept[i] - speed[p]),
+                                    (1/(ncat-1))*(1-ilogit(icept[i] - speed[p]))
+          )
+        }
+      }
+
+      # misclassification weighting
+      for(c in 1:ncat){
+        omega[p,i, c] = gamma[p,i,1,c]*Prob[p,i,1] + gamma[p,i,2,c]*Prob[p,i,2]
+      }
+
+    }
+  }
+  # person parameters
+  for(p in 1:N){
+    theta[p]~dlogis(0,1)
+    speed[p]~dnorm(sigma.ts*theta[p],prec.s)
+  }
+  # sum0 constraint
+  b[1] <- -sum(b[2:10])
+  for(i in 2:nit){
+    # location parameters
+    b[i] ~ dnorm(0, .1)
+  }
+  for(i in 1:nit){
+    # lrt parameters
+    icept[i]~dnorm(0,.1)
+    prec[i]~dgamma(.1,.1)
+  }
+  sigma.ts ~ dnorm(0, 0.1)
+  prec.s~dgamma(.1,.1)
+
+  # important parameters
+  sigma.t <- pow(prec.s, -1) + pow(sigma.ts, 2)
+  cor.ts <- sigma.ts/(pow(sigma.t,0.5))
+  # Rasch item fit statistics
+  # deviations
+  for(i in 1:nit){
+    for(p in 1:N){
+      w[p,i] <- omega[p,i,1]*(1-omega[p,i,1])
+      z[p,i] <- (x[p,i]-omega[p,i,1])/pow(w[p,i], 0.5)
+      wz2[p,i] <- w[p,i]*pow(z[p,i],2)
+    }
+    outfitMSQ[i] <- sum(pow(z[,i], 2))/N
+    infitMSQ[i] <- sum(wz2[,i])/sum(w[,i])
+  }
+
+} # end jags model
+
+
+
+# vector of all parameters to save
+jags.params <- c("b", "icept","prec","prec.s", "sigma.t", "sigma.ts", "cor.ts", "outfitMSQ", "infitMSQ")
+
+# fit model
+fit3 <- jags(
+  model.file=jags.model,
+  data=mydata,
+  parameters.to.save = jags.params,
+  n.iter=10000,
+  n.chains = 4
+)
+fit <- fit3
+print(fit)
+
+jags.mcmc <- as.mcmc(fit)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+plot.data <- data.frame(as.matrix(jags.mcmc, chains=T, iters = T))
+colnames(plot.data) <- c("chain", "iter", a)
+
+
+plot_title <- ggtitle("Posterior distributions",
+                      "with medians and 80% intervals")
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("b[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("icept[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("prec[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+
+
+mcmc_areas(
+  plot.data,
+  pars = c("sigma.t", "sigma.ts", "cor.ts"),
+  prob = 0.8) +
+  plot_title
+
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("outfitMSQ[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+
+mcmc_areas(
+  plot.data,
+  pars = c(paste0("infitMSQ[",1:10,"]")),
+  prob = 0.8) +
+  plot_title
+
+```
+
+
+# Item Fit Comparison
+
+```{r item-fit}
+
+fit1$BUGSoutput$summary[paste0("outfitMSQ[",1:10,"]"),]
+fit2$BUGSoutput$summary[paste0("outfitMSQ[",1:10,"]"),]
+fit3$BUGSoutput$summary[paste0("outfitMSQ[",1:10,"]"),]
+
+fit1$BUGSoutput$summary[paste0("infitMSQ[",1:10,"]"),]
+fit2$BUGSoutput$summary[paste0("infitMSQ[",1:10,"]"),]
+fit3$BUGSoutput$summary[paste0("infitMSQ[",1:10,"]"),]
+
+# plotting over all items
+plot.dat <- cbind(
+  fit1$BUGSoutput$sims.matrix[,paste0("outfitMSQ[",1:10,"]")],
+  fit2$BUGSoutput$sims.matrix[,paste0("outfitMSQ[",1:10,"]")],
+  fit3$BUGSoutput$sims.matrix[,paste0("outfitMSQ[",1:10,"]")]
+) 
+colnames(plot.dat) <- paste0(c(rep("m1",10), rep("m2",10), rep("m3",10)), colnames(plot.dat))
+plot.dat <- plot.dat %>%
+  as.data.frame()%>%
+  pivot_longer(
+    cols=everything(),
+    names_to = "model",
+    values_to = "outfitMSQ"
+  ) %>%
+  mutate(
+    item = paste0("item",substr(model, 12,99)),
+    model = paste0("model[",substr(model, 2,2),"]")
+  )
+
+
+
+ggplot(plot.dat, aes(x=outfitMSQ, group=model, color=model))+
+  geom_density()+
+  geom_vline(xintercept = 1, color="black", linetype="dotted")+
+  geom_vline(data=mod0.outfit, aes(xintercept=outfitMSQ, color="model[0]"),
+             linetype="longdash")+
+  facet_wrap(.~item)+
+  lims(x=c(0,3))+
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+# infit
+plot.dat <- cbind(
+  fit1$BUGSoutput$sims.matrix[,paste0("infitMSQ[",1:10,"]")],
+  fit2$BUGSoutput$sims.matrix[,paste0("infitMSQ[",1:10,"]")],
+  fit3$BUGSoutput$sims.matrix[,paste0("infitMSQ[",1:10,"]")]
+)
+colnames(plot.dat) <- paste0(c(rep("m1",10), rep("m2",10), rep("m3",10)), colnames(plot.dat))
+plot.dat <- plot.dat %>%
+  as.data.frame()%>%
+  pivot_longer(
+    cols=everything(),
+    names_to = "model",
+    values_to = "infitMSQ"
+  ) %>%
+  mutate(
+    item = paste0("item",substr(model, 11,99)),
+    model = paste0("model[",substr(model, 2,2),"]")
+  )
+ggplot(plot.dat, aes(x=infitMSQ, group=model, color=model))+
+  geom_density()+
+  geom_vline(xintercept = 1, color="black", linetype="dotted")+
+  geom_vline(data=mod0.infit, aes(xintercept=infitMSQ, color="model[0]"),
+             linetype="longdash")+
+  facet_wrap(.~item)+
+  lims(x=c(0,3))+
+  theme_bw()+
+  theme(
+    panel.grid = element_blank()
+  )
+
+```

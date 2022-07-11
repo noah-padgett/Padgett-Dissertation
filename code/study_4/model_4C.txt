@@ -1,0 +1,75 @@
+model {
+### Model
+  for(p in 1:N){
+    for(i in 1:nit){
+      # data model
+      y[p,i] ~ dbern(omega[p,i,2])
+
+      # LRV
+      ystar[p,i] ~ dnorm(lambda[i]*eta[p], 1)
+
+      # Pr(nu = 2)
+      pi[p,i,2] = phi(ystar[p,i] - tau[i,1])
+      # Pr(nu = 1)
+      pi[p,i,1] = 1 - phi(ystar[p,i] - tau[i,1])
+
+      # log-RT model
+      dev[p,i]<-lambda[i]*(eta[p] - tau[i,1])
+      mu.lrt[p,i] <- icept[i] - speed[p] - rho * abs(dev[p,i])
+      lrt[p,i] ~ dnorm(mu.lrt[p,i], prec[i])
+
+      # MISCLASSIFICATION MODEL
+      for(c in 1:ncat){
+        # generate informative prior for misclassificaiton
+        #   parameters based on RT
+        for(ct in 1:ncat){
+          alpha[p,i,ct,c] <- ifelse(c == ct,
+                                    ilogit(lrt[p,i]),
+                                    (1/(ncat-1))*(1-ilogit(lrt[p,i]))
+          )
+        }
+        # sample misclassification parameters using the informative priors
+        gamma[p,i,c,1:ncat] ~ ddirch(alpha[p,i,c,1:ncat])
+        # observed category prob (Pr(y=c))
+        omega[p,i, c] = gamma[p,i,c,1]*pi[p,i,1] +
+          gamma[p,i,c,2]*pi[p,i,2]
+      }
+
+    }
+  }
+  ### Priors
+  # person parameters
+  for(p in 1:N){
+    eta[p] ~ dnorm(0, 1) # latent ability
+    speed[p]~dnorm(sigma.ts*eta[p],prec.s)  # latent speed
+  }
+  sigma.ts ~ dnorm(0, 0.1)
+  prec.s ~ dgamma(.1,.1)
+  # transformations
+  sigma.t = pow(prec.s, -1) + pow(sigma.ts, 2) # speed variance
+  cor.ts = sigma.ts/(pow(sigma.t,0.5)) # LV correlation
+
+  for(i in 1:nit){
+    # lrt parameters
+    icept[i]~dnorm(0,.1)
+    prec[i]~dgamma(.1,.1)
+    # Thresholds
+    tau[i, 1] ~ dnorm(0.0,0.1)
+    # loadings
+    lambda[i] ~ dnorm(0, .44)
+    # LRV total variance
+    # total variance = residual variance + fact. Var.
+    theta[i] = 1 + pow(lambda[i],2)
+    # standardized loading
+    lambda.std[i] = lambda[i]/pow(theta[i],0.5)
+  }
+  rho~dnorm(0,.1)I(0,)
+
+  # compute omega
+  lambda_sum[1] = lambda[1]
+  for(i in 2:nit){
+    #lambda_sum (sum factor loadings)
+    lambda_sum[i] = lambda_sum[i-1]+lambda[i]
+  }
+  reli.omega = (pow(lambda_sum[nit],2))/(pow(lambda_sum[nit],2)+nit)
+}

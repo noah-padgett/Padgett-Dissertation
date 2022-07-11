@@ -1,0 +1,790 @@
+---
+title: "Simulation Study 2"
+subtitle: "Credible Interval Coverage"
+author: "R. Noah Padgett"
+date: "2022-01-03"
+output: html_document
+---
+
+```{r setup, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+# results folder
+res_folder <- paste0(w.d, "/data/study_2")
+
+# read in data
+source("code/load_extracted_data.R")
+
+```
+
+# Credible Interval Coverage and Interval Width
+
+The code below identifies whether the credible interval contains the "true" value for each parameter.
+
+```{r study2-identify-coverage}
+
+mydata <- mydata %>%
+  mutate(
+    covered = ifelse(true_value >= post_q025 & true_value <= post_q975, 1, 0),
+    interval_width = post_q975 - post_q025,
+    post_median_bias_est = post_q50 - true_value,
+    post_median_rb_est = (post_q50 - true_value)/true_value*100,
+    # compute convergence
+    converge = ifelse(Rhat - 1.10 < 0, 1, 0)
+  ) %>%
+  filter(converge == 1)
+
+# Update condition labels for plotting
+mydata$condition <- factor(
+  mydata$condition, 
+  levels = 1:24,
+  labels = c(
+    "nCat=2, nItem=  5, N=  500",
+    "nCat=2, nItem=  5, N=2500",
+    "nCat=2, nItem=10, N=  500",
+    "nCat=2, nItem=10, N=2500",
+    "nCat=2, nItem=20, N=  500",
+    "nCat=2, nItem=20, N=2500",
+    "nCat=5, nItem=  5, N=  500",
+    "nCat=5, nItem=  5, N=2500",
+    "nCat=5, nItem=10, N=  500",
+    "nCat=5, nItem=10, N=2500",
+    "nCat=5, nItem=20, N=  500",
+    "nCat=5, nItem=20, N=2500",
+    "nCat=3, nItem=  5, N=  500",
+    "nCat=3, nItem=  5, N=2500",
+    "nCat=3, nItem=10, N=  500",
+    "nCat=3, nItem=10, N=2500",
+    "nCat=3, nItem=20, N=  500",
+    "nCat=3, nItem=20, N=2500",
+    "nCat=7, nItem=  5, N=  500",
+    "nCat=7, nItem=  5, N=2500",
+    "nCat=7, nItem=10, N=  500",
+    "nCat=7, nItem=10, N=2500",
+    "nCat=7, nItem=20, N=  500",
+    "nCat=7, nItem=20, N=2500"
+  )
+)
+
+# columns to keep
+keep_cols <- c("condition", "iter", "N", "N_items", "N_cat", "parameter_group", "covered", "interval_width")
+
+```
+
+# Summarizing Posterior Coveraged
+
+## Factor Loadings ($\lambda$)
+
+```{r study2-summary-coverage-lambda}
+param = "FACTOR LOADING"
+
+cov_dat <- mydata %>%
+  filter(parameter_group == "lambda")
+
+# tabular summary of coverage
+cov_tbl <- cov_dat %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Prop_Coverage = round(mean(covered),2),
+            Avg_Int_Width = mean(interval_width),
+            SD_Int_Width = round(sd(interval_width),2))
+
+kable(cov_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize values
+p1<-ggplot() +
+  stat_summary(
+    data = cov_dat,
+    aes(y = condition, x = interval_width,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Avg_Int_Width),
+             color = "black") +
+  annotate("text", x=-0.25, y=cov_tbl$condition, label=cov_tbl$SD_Int_Width)+
+  annotate("text", x=-.25, y=12.4, label="SD IW")+
+  lims(x=c(-0.5, 2))+
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Prop_Coverage),
+             color = "black") +
+  annotate("text", x=0, y=cov_tbl$condition, label=cov_tbl$Prop_Coverage)+
+  lims(x=c(-0.1,1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+p1 + p2
+
+```
+
+## Item Thresholds ($\tau$)
+
+```{r study2-summary-coverage-tau}
+param = "Item Thresholds"
+
+cov_dat <- mydata %>%
+  filter(parameter_group == "tau")
+
+# tabular summary of coverage
+cov_tbl <- cov_dat %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Prop_Coverage = round(mean(covered),2),
+            Avg_Int_Width = mean(interval_width),
+            SD_Int_Width = round(sd(interval_width),2))
+
+kable(cov_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize values
+p1<-ggplot() +
+  stat_summary(
+    data = cov_dat,
+    aes(y = condition, x = interval_width,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Avg_Int_Width),
+             color = "black") +
+  annotate("text", x=-0.25, y=cov_tbl$condition, label=cov_tbl$SD_Int_Width)+
+  annotate("text", x=-.25, y=12.4, label="SD IW")+
+  lims(x=c(-0.5, 1))+
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Prop_Coverage),
+             color = "black") +
+  annotate("text", x=0, y=cov_tbl$condition, label=cov_tbl$Prop_Coverage)+
+  lims(x=c(-0.1,1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+p1 + p2
+
+
+```
+
+## Latent Response Variance ($\theta$)
+
+```{r study2-summary-coverage-theta}
+param = "Latent Response Variance"
+
+cov_dat <- mydata %>%
+  filter(parameter_group == "theta")
+
+
+# tabular summary of coverage
+cov_tbl <- cov_dat %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Prop_Coverage = round(mean(covered),2),
+            Avg_Int_Width = mean(interval_width),
+            SD_Int_Width = round(sd(interval_width),2))
+
+kable(cov_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize values
+p1<-ggplot() +
+  stat_summary(
+    data = cov_dat,
+    aes(y = condition, x = interval_width,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Avg_Int_Width),
+             color = "black") +
+  annotate("text", x=-0.25, y=cov_tbl$condition, label=cov_tbl$SD_Int_Width)+
+  annotate("text", x=-.25, y=12.4, label="SD IW")+
+  lims(x=c(-0.5, 3))+
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Prop_Coverage),
+             color = "black") +
+  annotate("text", x=0, y=cov_tbl$condition, label=cov_tbl$Prop_Coverage)+
+  lims(x=c(-0.1,1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+p1 + p2
+
+```
+
+## Response Time Intercepts ($\beta_{lrt}$)
+
+```{r study2-summary-coverage-beta}
+param = "RT Intercepts"
+
+cov_dat <- mydata %>%
+  filter(parameter_group == "beta_lrt")
+
+# tabular summary of coverage
+cov_tbl <- cov_dat %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Prop_Coverage = round(mean(covered),2),
+            Avg_Int_Width = mean(interval_width),
+            SD_Int_Width = round(sd(interval_width),2))
+
+kable(cov_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize values
+p1<-ggplot() +
+  stat_summary(
+    data = cov_dat,
+    aes(y = condition, x = interval_width,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Avg_Int_Width),
+             color = "black") +
+  annotate("text", x=-0.25, y=cov_tbl$condition, label=cov_tbl$SD_Int_Width)+
+  annotate("text", x=-.25, y=12.4, label="SD IW")+
+  lims(x=c(-0.5, 0.5))+
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Prop_Coverage),
+             color = "black") +
+  annotate("text", x=0, y=cov_tbl$condition, label=cov_tbl$Prop_Coverage)+
+  lims(x=c(-0.1,1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+p1 + p2
+
+```
+
+## Response Time Precision ($\sigma_{lrt}$)
+
+```{r study2-summary-coverage-sigma-lrt}
+param = "RT Precision"
+
+cov_dat <- mydata %>%
+  filter(parameter_group == "sigma_lrt")
+
+
+# tabular summary of coverage
+cov_tbl <- cov_dat %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Prop_Coverage = round(mean(covered),2),
+            Avg_Int_Width = mean(interval_width),
+            SD_Int_Width = round(sd(interval_width),2))
+
+kable(cov_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize values
+p1<-ggplot() +
+  stat_summary(
+    data = cov_dat,
+    aes(y = condition, x = interval_width,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Avg_Int_Width),
+             color = "black") +
+  annotate("text", x=-0.25, y=cov_tbl$condition, label=cov_tbl$SD_Int_Width)+
+  annotate("text", x=-.25, y=12.4, label="SD IW")+
+  lims(x=c(-0.5, 2))+
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Prop_Coverage),
+             color = "black") +
+  annotate("text", x=0, y=cov_tbl$condition, label=cov_tbl$Prop_Coverage)+
+  lims(x=c(-0.1,1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+p1 + p2
+  
+```
+
+## Response Time Factor Precision ($\sigma_s$)
+
+```{r study2-summary-coverage-sigma-s}
+param = "Speed LV Precision"
+
+cov_dat <- mydata %>%
+  filter(parameter_group == "sigma_s")
+
+
+# tabular summary of coverage
+cov_tbl <- cov_dat %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Prop_Coverage = round(mean(covered),2),
+            Avg_Int_Width = mean(interval_width),
+            SD_Int_Width = round(sd(interval_width),2))
+
+kable(cov_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize values
+p1<-ggplot() +
+  stat_summary(
+    data = cov_dat,
+    aes(y = condition, x = interval_width,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Avg_Int_Width),
+             color = "black") +
+  annotate("text", x=-0.25, y=cov_tbl$condition, label=cov_tbl$SD_Int_Width)+
+  annotate("text", x=-.25, y=12.4, label="SD IW")+
+  lims(x=c(-0.5, 3))+
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Prop_Coverage),
+             color = "black") +
+  annotate("text", x=0, y=cov_tbl$condition, label=cov_tbl$Prop_Coverage)+
+  lims(x=c(-0.1,1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+p1 + p2
+
+```
+
+## Factor Covariance ($\sigma_{st}$)
+
+```{r study2-summary-coverage-sigma-st}
+param = "Latent Covariance"
+
+cov_dat <- mydata %>%
+  filter(parameter_group == "sigma_st")
+
+
+# tabular summary of coverage
+cov_tbl <- cov_dat %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Prop_Coverage = round(mean(covered),2),
+            Avg_Int_Width = mean(interval_width),
+            SD_Int_Width = round(sd(interval_width),2))
+
+kable(cov_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize values
+p1<-ggplot() +
+  stat_summary(
+    data = cov_dat,
+    aes(y = condition, x = interval_width,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Avg_Int_Width),
+             color = "black") +
+  annotate("text", x=-0.25, y=cov_tbl$condition, label=cov_tbl$SD_Int_Width)+
+  annotate("text", x=-.25, y=12.4, label="SD IW")+
+  lims(x=c(-0.5, 0.25))+
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Prop_Coverage),
+             color = "black") +
+  annotate("text", x=0, y=cov_tbl$condition, label=cov_tbl$Prop_Coverage)+
+  lims(x=c(-0.1,1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+p1 + p2
+
+```
+
+## PID Relationship ($\rho$)
+
+```{r study2-summary-coverage-rho}
+param = "PID Relationship"
+
+cov_dat <- mydata %>%
+  filter(parameter_group == "rho")
+
+
+# tabular summary of coverage
+cov_tbl <- cov_dat %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Prop_Coverage = round(mean(covered),2),
+            Avg_Int_Width = mean(interval_width),
+            SD_Int_Width = round(sd(interval_width),2))
+
+kable(cov_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize values
+p1<-ggplot() +
+  stat_summary(
+    data = cov_dat,
+    aes(y = condition, x = interval_width,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Avg_Int_Width),
+             color = "black") +
+  annotate("text", x=-0.25, y=cov_tbl$condition, label=cov_tbl$SD_Int_Width)+
+  annotate("text", x=-.25, y=12.4, label="SD IW")+
+  lims(x=c(-0.5, 0.5))+
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Prop_Coverage),
+             color = "black") +
+  annotate("text", x=0, y=cov_tbl$condition, label=cov_tbl$Prop_Coverage)+
+  lims(x=c(-0.1,1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+p1 + p2
+
+```
+
+
+## Factor Reliability ($\omega$)
+
+```{r study2-summary-coverage-omega}
+param = "RELIABILITY"
+
+cov_dat <- mydata %>%
+  filter(parameter_group == "omega")
+
+
+# tabular summary of coverage
+cov_tbl <- cov_dat %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Prop_Coverage = round(mean(covered),2),
+            Avg_Int_Width = mean(interval_width),
+            SD_Int_Width = round(sd(interval_width),2))
+
+kable(cov_tbl, format="html", digits=3) %>%
+  kable_styling(full_width = T) %>%
+  scroll_box(width="100%",height = "100%")
+
+# visualize values
+p1<-ggplot() +
+  stat_summary(
+    data = cov_dat,
+    aes(y = condition, x = interval_width,
+        group = condition),
+    fun.data = cust.boxplot,
+    geom = "boxplot"
+  ) +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Avg_Int_Width),
+             color = "black") +
+  annotate("text", x=-0.25, y=cov_tbl$condition, label=cov_tbl$SD_Int_Width)+
+  annotate("text", x=-.25, y=12.4, label="SD IW")+
+  lims(x=c(-0.5, 0.5))+
+  theme_bw() +
+  theme(panel.grid = element_blank())
+p2 <- ggplot() +
+  geom_point(data = cov_tbl,
+             aes(y = condition, x = Prop_Coverage),
+             color = "black") +
+  annotate("text", x=0, y=cov_tbl$condition, label=cov_tbl$Prop_Coverage)+
+  lims(x=c(-0.1,1))+
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+p1 + p2
+
+```
+
+
+# Manuscript Figures and Tables (latex formated)
+
+## Tables
+
+```{r latex-tables}
+
+sum_tab <- mydata %>%
+  filter(
+    !is.na(parameter_group)
+    , parameter_group != "lambda (STD)"
+  ) %>%
+  group_by(condition, N_cat, N_items, N, parameter_group) %>%
+  summarise(
+    Prop_Coverage = round(mean(covered)*100,0)
+  )
+
+# part 1: 2 category data
+T1 <- sum_tab %>%
+  filter(N_cat == 2) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = "Prop_Coverage"
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+T1 <- T1[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+
+# part 2: 5 category data
+T2 <- sum_tab %>%
+  filter(N_cat == 5) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = "Prop_Coverage"
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+T2 <- T2[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+Tb12 <- cbind(T1, T2[,3:5])
+colnames(Tb12) <- c(
+  "Parameter", "N", paste0(c(5,10,20), "_c2"),
+  paste0(c(5,10,20), "_c5")
+)
+print(
+  xtable(
+    Tb12
+    , caption = c("Credible interval coverage rate")
+    ,align = "llrrrrrrr",digits = 0
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+
+
+# part 3: 3 category data
+T3 <- sum_tab %>%
+  filter(N_cat == 3) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = "Prop_Coverage"
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+T3 <- T3[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+
+# part 4: 2 category data
+T4 <- sum_tab %>%
+  filter(N_cat == 7) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = "Prop_Coverage"
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+T4 <- T4[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+
+Tb34 <- cbind(T3, T4[,3:5])
+colnames(Tb34) <- c(
+  "Parameter", "N", paste0(c(5,10,20), "_c3"),
+  paste0(c(5,10,20), "_c7")
+)
+print(
+  xtable(
+    Tb34
+    , caption = c("Credible interval coverage rate: 3 and 7 cat")
+    ,align = "llrrrrrrr",digits = 0
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+
+# full combined
+Tb1234 <- cbind(Tb12, Tb34[,3:8])
+print(
+  xtable(
+    Tb1234
+    , caption = c("Credible interval coverage rate all combined")
+    ,align = "llrrrrrrrrrrrrr",digits = 0
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+```
+
+
+
+```{r latex-tables-width}
+
+sum_tab <- mydata %>%
+  filter(
+    !is.na(parameter_group)
+    , parameter_group != "lambda (STD)"
+  ) %>%
+  group_by(condition, N_cat, N_items, N, parameter_group) %>%
+  summarise(
+    avg_width = mean(interval_width),
+    sd_width = round(sd(interval_width),2)
+  )
+
+# part 1: 2 category data
+T1 <- sum_tab %>%
+  filter(N_cat == 2) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = all_of(c("avg_width", "sd_width"))
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+T1 <- T1[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+
+# part 2: 5 category data
+T2 <- sum_tab %>%
+  filter(N_cat == 5) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = all_of(c("avg_width", "sd_width"))
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+T2 <- T2[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+Tb12 <- cbind(T1[,1:5], T2[,3:5], T1[,6:8], T2[,6:8])
+colnames(Tb12) <- c(
+  "Parameter", "N", paste0(c(5,10,20), "_c2"),
+  paste0(c(5,10,20), "_c5"), paste0(c(5,10,20), "_c2"),
+  paste0(c(5,10,20), "_c5")
+)
+print(
+  xtable(
+    Tb12
+    , caption = c("Credible interval widths and SD")
+    ,align = "lllrrrrrrrrrrrr"
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+
+
+# part 3: 3 category data
+T3 <- sum_tab %>%
+  filter(N_cat == 3) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = all_of(c("avg_width", "sd_width"))
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+T3 <- T3[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+
+# part 4: 2 category data
+T4 <- sum_tab %>%
+  filter(N_cat == 7) %>%
+  pivot_wider(
+    id_cols = c("parameter_group", "N")
+    , names_from = "N_items"
+    , values_from = all_of(c("avg_width", "sd_width"))
+  ) %>%
+  arrange(.,parameter_group)
+# reordering of rows to more logical for presentation
+T4 <- T4[c(3:4, 15:18, 1:2, 5:8, 13:14, 11:12, 9:10) ,]
+
+Tb34 <- cbind(T3[,1:5], T4[,3:5], T3[,6:8], T4[,6:8])
+colnames(Tb12) <- c(
+  "Parameter", "N", paste0(c(5,10,20), "_c3"),
+  paste0(c(5,10,20), "_c7"), paste0(c(5,10,20), "_c3"),
+  paste0(c(5,10,20), "_c7")
+)
+print(
+  xtable(
+    Tb34
+    , caption = c("Credible interval widths and SD")
+    ,align = "lllrrrrrrrrrrrr"
+  ),
+  include.rownames=F,
+  booktabs=T
+)
+
+
+```
+
+## Figures
+
+```{r diss-figures-study2}
+cov_dat <- mydata %>%
+  filter(parameter_group == "omega")
+
+cov_tbl <- cov_dat %>%
+  group_by(condition, N_cat, N_items, N) %>%
+  summarise(Prop_Coverage = round(mean(covered),2),
+            Avg_Int_Width = mean(interval_width),
+            SD_Int_Width = round(sd(interval_width),2))
+
+cols <- c("Not Contained"="gray75", "Contained"="black")
+p <- cov_dat %>%
+  group_by(condition) %>%
+  mutate(std_int_width=scale(interval_width,center = FALSE))%>%
+  ungroup()%>%
+  mutate(
+    Coverage=factor(covered, levels=c(0,1), labels=c("Not Contained", "Contained"))
+  ) %>%
+ggplot(aes(x=post_median_rb_est, y=interval_width, shape=Coverage, color=Coverage))+
+  geom_point(alpha=0.75)+
+  geom_vline(xintercept = -10,
+              linetype = "dashed") +
+  geom_vline(xintercept = 10,
+              linetype = "dashed") +
+  lims(x=c(-30,30))+
+  labs(x="Posterior Median Relative Bias", y="Credible Interval Width")+
+  scale_color_manual(values=cols)+
+  facet_wrap(.~condition) +
+  theme_bw() +
+  theme(
+    panel.grid = element_blank(),
+    legend.position = "bottom"
+  )
+p
+
+ggsave(filename = "fig/study2_coverage_omega.pdf",plot=p,width = 7, height=4.25,units="in")
+ggsave(filename = "fig/study2_coverage_omega.png",plot=p,width = 7, height=4.25,units="in")
+ggsave(filename = "fig/study2_coverage_omega.eps",plot=p,width = 7, height=4.25,units="in")
+
+```

@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="R. Noah Padgett" />
+
+<meta name="date" content="2022-01-31" />
+
+<title>Applied Study Conditions</title>
+
+<script src="site_libs/header-attrs-2.7/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-sm-12 col-md-4 col-lg-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-sm-12 col-md-8 col-lg-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Padgett-PhD-Dissertation</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Applied Study Conditions</h1>
+<h4 class="author">R. Noah Padgett</h4>
+<h4 class="date">2022-01-31</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2022-02-16
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 5 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>Padgett-Dissertation/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210401code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210401)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210401code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20210401)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongnoversioncontrol"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>Repository version:</strong> no version control </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongnoversioncontrol" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Tracking code development and connecting the code version to the results is critical for reproducibility. To start using Git, open the Terminal and type <code>git init</code> in your project directory.</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+This project is not being versioned with Git. To obtain the full reproducibility benefits of using workflowr, please see <code>?wflow_start</code>.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<pre class="r"><code># Load packages &amp; utility functions
+source(&quot;code/load_packages.R&quot;)
+source(&quot;code/load_utility_functions.R&quot;)
+# environment options
+options(scipen = 999, digits=3)</code></pre>
+<pre class="r"><code>library(readxl)
+mydata &lt;- read_excel(&quot;data/temp_data_extracted.xlsx&quot;) %&gt;%
+  filter(is.na(EXCLUSION_FLAG)==T)</code></pre>
+<div id="journal-information" class="section level2">
+<h2>Journal Information</h2>
+<pre class="r"><code>mydata %&gt;%
+  select(Journal) %&gt;%
+  table()</code></pre>
+<pre><code>.
+Assessment       EJPA        JID        JPA         PA        PID 
+        51         10         24         25         12         22 </code></pre>
+<pre class="r"><code>mydata %&gt;%
+  select(`Analysis (CFA, EFA, IRT, SEM, etc.)`) %&gt;%
+  table()</code></pre>
+<pre><code>.
+                  CFA               CFA/IRT           Correlation 
+                   70                     8                     2 
+                  EFA               EFA/CFA              ESEM/CFA 
+                    8                     5                     1 
+                  IRT                   LCA             mediation 
+                    9                     1                     1 
+          Moken Scale random-effects models                 Rasch 
+                    1                     1                     4 
+           regression                   SEM 
+                    3                    11 </code></pre>
+</div>
+<div id="data-conditions" class="section level2">
+<h2>Data Conditions</h2>
+<pre class="r"><code>f &lt;- function(x){
+  c(mean(x, na.rm=T), sd(x, na.rm=T), quantile(x, c(0, 0.25, 0.5, 0.75, 1), na.rm=T))
+}
+
+sum_dat &lt;- mydata %&gt;% 
+  summarise(
+    SS = f(`Sample Size`),
+    NLV = f(`Number of Latent Variables`),
+    NOV = f(`Number of Observed Variables`),
+    Min_Ind = f(`Minimum Number of Indicators per Factor`),
+    Avg_Ind = f(`Average Number of Indicators per Factor`),
+    Max_Ind = f(`Maximum Number of Indicators per Factor`),
+    Min_FL = f(abs(`Minimum Factor Loading`)),
+    Avg_FL = f(`Average Factor Loading`),
+    Max_FL = f(`Maximum Factor Loading`),
+    Min_Rel = f(`Min Reliability`),
+    Avg_Rel = f(`Avg Reliability`),
+    Max_Rel = f(`Max Reliability`)
+  ) %&gt;% as.data.frame()
+  
+rownames(sum_dat) &lt;- c(&quot;avg&quot;, &quot;sd&quot;, &quot;min&quot;, &quot;q1&quot;, &quot;median&quot;, &quot;q3&quot;, &quot;max&quot;)
+sum_dat &lt;- t(sum_dat)
+
+kable(sum_dat, format=&quot;html&quot;, digits=2) %&gt;%
+  kable_styling(full_width = T)</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+avg
+</th>
+<th style="text-align:right;">
+sd
+</th>
+<th style="text-align:right;">
+min
+</th>
+<th style="text-align:right;">
+q1
+</th>
+<th style="text-align:right;">
+median
+</th>
+<th style="text-align:right;">
+q3
+</th>
+<th style="text-align:right;">
+max
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+SS
+</td>
+<td style="text-align:right;">
+4217.78
+</td>
+<td style="text-align:right;">
+23241.20
+</td>
+<td style="text-align:right;">
+36.00
+</td>
+<td style="text-align:right;">
+318.00
+</td>
+<td style="text-align:right;">
+603.00
+</td>
+<td style="text-align:right;">
+1451.00
+</td>
+<td style="text-align:right;">
+263683.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NLV
+</td>
+<td style="text-align:right;">
+5.46
+</td>
+<td style="text-align:right;">
+6.93
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2.00
+</td>
+<td style="text-align:right;">
+4.00
+</td>
+<td style="text-align:right;">
+6.00
+</td>
+<td style="text-align:right;">
+60.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NOV
+</td>
+<td style="text-align:right;">
+50.12
+</td>
+<td style="text-align:right;">
+81.58
+</td>
+<td style="text-align:right;">
+5.00
+</td>
+<td style="text-align:right;">
+12.00
+</td>
+<td style="text-align:right;">
+22.50
+</td>
+<td style="text-align:right;">
+41.75
+</td>
+<td style="text-align:right;">
+442.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Min_Ind
+</td>
+<td style="text-align:right;">
+6.86
+</td>
+<td style="text-align:right;">
+6.40
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4.00
+</td>
+<td style="text-align:right;">
+5.00
+</td>
+<td style="text-align:right;">
+8.00
+</td>
+<td style="text-align:right;">
+40.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Avg_Ind
+</td>
+<td style="text-align:right;">
+8.95
+</td>
+<td style="text-align:right;">
+7.00
+</td>
+<td style="text-align:right;">
+2.50
+</td>
+<td style="text-align:right;">
+4.66
+</td>
+<td style="text-align:right;">
+6.22
+</td>
+<td style="text-align:right;">
+10.93
+</td>
+<td style="text-align:right;">
+40.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Max_Ind
+</td>
+<td style="text-align:right;">
+12.93
+</td>
+<td style="text-align:right;">
+15.20
+</td>
+<td style="text-align:right;">
+3.00
+</td>
+<td style="text-align:right;">
+5.00
+</td>
+<td style="text-align:right;">
+8.00
+</td>
+<td style="text-align:right;">
+14.00
+</td>
+<td style="text-align:right;">
+135.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Min_FL
+</td>
+<td style="text-align:right;">
+0.41
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.28
+</td>
+<td style="text-align:right;">
+0.41
+</td>
+<td style="text-align:right;">
+0.51
+</td>
+<td style="text-align:right;">
+0.86
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Avg_FL
+</td>
+<td style="text-align:right;">
+0.64
+</td>
+<td style="text-align:right;">
+0.13
+</td>
+<td style="text-align:right;">
+0.23
+</td>
+<td style="text-align:right;">
+0.56
+</td>
+<td style="text-align:right;">
+0.65
+</td>
+<td style="text-align:right;">
+0.72
+</td>
+<td style="text-align:right;">
+0.93
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Max_FL
+</td>
+<td style="text-align:right;">
+0.85
+</td>
+<td style="text-align:right;">
+0.10
+</td>
+<td style="text-align:right;">
+0.49
+</td>
+<td style="text-align:right;">
+0.80
+</td>
+<td style="text-align:right;">
+0.87
+</td>
+<td style="text-align:right;">
+0.92
+</td>
+<td style="text-align:right;">
+1.08
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Min_Rel
+</td>
+<td style="text-align:right;">
+0.73
+</td>
+<td style="text-align:right;">
+0.13
+</td>
+<td style="text-align:right;">
+0.40
+</td>
+<td style="text-align:right;">
+0.63
+</td>
+<td style="text-align:right;">
+0.71
+</td>
+<td style="text-align:right;">
+0.84
+</td>
+<td style="text-align:right;">
+0.95
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Avg_Rel
+</td>
+<td style="text-align:right;">
+0.81
+</td>
+<td style="text-align:right;">
+0.09
+</td>
+<td style="text-align:right;">
+0.61
+</td>
+<td style="text-align:right;">
+0.74
+</td>
+<td style="text-align:right;">
+0.83
+</td>
+<td style="text-align:right;">
+0.88
+</td>
+<td style="text-align:right;">
+0.95
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Max_Rel
+</td>
+<td style="text-align:right;">
+0.88
+</td>
+<td style="text-align:right;">
+0.08
+</td>
+<td style="text-align:right;">
+0.67
+</td>
+<td style="text-align:right;">
+0.83
+</td>
+<td style="text-align:right;">
+0.90
+</td>
+<td style="text-align:right;">
+0.94
+</td>
+<td style="text-align:right;">
+0.98
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>print(xtable(sum_dat[,c(1:3,5,7)]))</code></pre>
+<pre><code>% latex table generated in R 4.0.5 by xtable 1.8-4 package
+% Wed Feb 16 13:30:50 2022
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrrr}
+  \hline
+ &amp; avg &amp; sd &amp; min &amp; median &amp; max \\ 
+  \hline
+SS &amp; 4217.78 &amp; 23241.20 &amp; 36.00 &amp; 603.00 &amp; 263683.00 \\ 
+  NLV &amp; 5.46 &amp; 6.93 &amp; 1.00 &amp; 4.00 &amp; 60.00 \\ 
+  NOV &amp; 50.12 &amp; 81.58 &amp; 5.00 &amp; 22.50 &amp; 442.00 \\ 
+  Min\_Ind &amp; 6.86 &amp; 6.40 &amp; 1.00 &amp; 5.00 &amp; 40.00 \\ 
+  Avg\_Ind &amp; 8.95 &amp; 7.00 &amp; 2.50 &amp; 6.22 &amp; 40.00 \\ 
+  Max\_Ind &amp; 12.93 &amp; 15.20 &amp; 3.00 &amp; 8.00 &amp; 135.00 \\ 
+  Min\_FL &amp; 0.41 &amp; 0.20 &amp; 0.00 &amp; 0.41 &amp; 0.86 \\ 
+  Avg\_FL &amp; 0.64 &amp; 0.13 &amp; 0.23 &amp; 0.65 &amp; 0.93 \\ 
+  Max\_FL &amp; 0.85 &amp; 0.10 &amp; 0.49 &amp; 0.87 &amp; 1.08 \\ 
+  Min\_Rel &amp; 0.73 &amp; 0.13 &amp; 0.40 &amp; 0.71 &amp; 0.95 \\ 
+  Avg\_Rel &amp; 0.81 &amp; 0.09 &amp; 0.61 &amp; 0.83 &amp; 0.95 \\ 
+  Max\_Rel &amp; 0.88 &amp; 0.08 &amp; 0.67 &amp; 0.90 &amp; 0.98 \\ 
+   \hline
+\end{tabular}
+\end{table}</code></pre>
+<pre class="r"><code>mydata %&gt;%
+  select(`Scale of Indicators (list)`) %&gt;%
+  table()</code></pre>
+<pre><code>.
+                                           11pt 
+                                              1 
+                                            3pt 
+                                              5 
+                                       3pt, 4pt 
+                                              1 
+                                       3pt, 6pt 
+                                              1 
+                                            4pt 
+                                             22 
+                                       4pt, 3pt 
+                                              1 
+                                       4pt, 5pt 
+                                              3 
+                   4pt, 5pt, 5pt, 5pt, 4pt, 5pt 
+                                              1 
+     4pt, 6pt, 4pt, 4pt, 4pt, count, sum-scores 
+                                              1 
+                                            5pt 
+                                             42 
+                                       5pt, 4pt 
+                                              3 
+                                  5pt, 4pt, 4pt 
+                                              1 
+                           5pt, 4pt, sum-scores 
+                                              1 
+                                       5pt, 5pt 
+                                              1 
+                                       5pt, 7pt 
+                                              6 
+                                  5pt, 7pt, 4pt 
+                                              1 
+                                   5pt, parcels 
+                                              1 
+                                            6pt 
+                                              3 
+                                  6pt, 5pt, 4pt 
+                                              1 
+                                       6pt, 7pt 
+                                              1 
+                                            7pt 
+                                             10 
+                     7pt, 5pt, 4pt, dichotomous 
+                                              2 
+                               7pt, dichotomous 
+                                              1 
+                                         counts 
+                                              2 
+                                    dichotomous 
+                                             13 
+                               dichotomous, 3pt 
+                                              1 
+                          dichotomous, 4pt, 5pt 
+                                              1 
+                               dichotomous, 5pt 
+                                              1 
+                          dichotomous, 5pt, 7pt 
+                                              1 
+                                     sum-scores 
+                                             10 
+                      sum-scores, 4pt, 5pt, 7pt 
+                                              1 
+                        sum-scores, dichotomous 
+                                              1 
+sum-scores, dichotomous, 5pt, 7pt, force-choice 
+                                              1 </code></pre>
+<div id="sample-size" class="section level3">
+<h3>Sample Size</h3>
+<pre class="r"><code>p &lt;- mydata %&gt;%
+  mutate(`Sample Size` = ifelse(`Sample Size`&gt;5000, 5000, `Sample Size`))%&gt;%
+  ggplot(aes(x=`Sample Size`))+
+    geom_histogram(aes(y = ..density..), binwidth = 200)+
+    geom_density(adjust=2, fill=&quot;grey&quot;, alpha=0.5)+
+    geom_vline(xintercept = 500, color=&quot;red&quot;)+
+    geom_vline(xintercept = 2500, color=&quot;red&quot;)+
+    scale_x_continuous(breaks=seq(0,5000,500),limits = c(0,5000))+
+    labs(y=NULL,x=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+p</code></pre>
+<pre><code>Warning: Removed 1 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 1 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<p><img src="figure/applied_study_conditions.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggsave(filename = &quot;fig/study0_sample_size.pdf&quot;,plot=p,width = 4, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 1 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 1 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<pre class="r"><code>ggsave(filename = &quot;fig/study0_sample_size.png&quot;,plot=p,width = 4, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 1 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 1 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<pre class="r"><code>ggsave(filename = &quot;fig/study0_sample_size.eps&quot;,plot=p,width = 4, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 1 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 1 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_polygon, x$x, x$y, index): semi-transparency is
+not supported on this device: reported only once per page</code></pre>
+</div>
+<div id="indicators" class="section level3">
+<h3>Indicators</h3>
+<pre class="r"><code>p&lt;-mydata %&gt;%
+  ggplot(aes(x=`Average Number of Indicators per Factor`))+
+    geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill=&quot;grey&quot;, alpha=0.5)+
+    geom_vline(xintercept = 5, color=&quot;red&quot;)+
+    geom_vline(xintercept = 10, color=&quot;red&quot;)+
+    geom_vline(xintercept = 20, color=&quot;red&quot;)+
+    scale_x_continuous(breaks=seq(0,40, 5),limits = c(0,45))+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+p</code></pre>
+<pre><code>Warning: Removed 4 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 4 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<p><img src="figure/applied_study_conditions.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggsave(filename = &quot;fig/study0_indicators.pdf&quot;,plot=p,width = 4, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 4 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 4 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<pre class="r"><code>ggsave(filename = &quot;fig/study0_indicators.png&quot;,plot=p,width = 4, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 4 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 4 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<pre class="r"><code>ggsave(filename = &quot;fig/study0_indicators.eps&quot;,plot=p,width = 4, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 4 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 4 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_polygon, x$x, x$y, index): semi-transparency is
+not supported on this device: reported only once per page</code></pre>
+<pre class="r"><code>mydata %&gt;%
+  ggplot(aes(x=`Minimum Number of Indicators per Factor`))+
+    geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill=&quot;grey&quot;, alpha=0.5)+
+    geom_vline(xintercept = 5, color=&quot;red&quot;)+
+    geom_vline(xintercept = 10, color=&quot;red&quot;)+
+    geom_vline(xintercept = 20, color=&quot;red&quot;)+
+    scale_x_continuous(breaks=seq(0,40, 5),limits = c(0,45))+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )</code></pre>
+<pre><code>Warning: Removed 5 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 5 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<p><img src="figure/applied_study_conditions.Rmd/unnamed-chunk-4-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>mydata %&gt;%
+  ggplot(aes(x=`Maximum Number of Indicators per Factor`))+
+    geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill=&quot;grey&quot;, alpha=0.5)+
+    geom_vline(xintercept = 5, color=&quot;red&quot;)+
+    geom_vline(xintercept = 10, color=&quot;red&quot;)+
+    geom_vline(xintercept = 20, color=&quot;red&quot;)+
+    scale_x_continuous(breaks=seq(0,40, 5),limits = c(0,45))+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )</code></pre>
+<pre><code>Warning: Removed 8 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 8 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<p><img src="figure/applied_study_conditions.Rmd/unnamed-chunk-4-3.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="factor-loadings" class="section level3">
+<h3>Factor Loadings</h3>
+<pre class="r"><code>mydata %&gt;%
+  ggplot(aes(x=`Minimum Factor Loading`))+
+    #geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill=&quot;grey&quot;, alpha=0.5)+
+    geom_vline(xintercept = 0.9, color=&quot;red&quot;)+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )</code></pre>
+<pre><code>Warning: Removed 49 rows containing non-finite values (stat_density).</code></pre>
+<p><img src="figure/applied_study_conditions.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>mydata %&gt;%
+  ggplot(aes(x=`Average Factor Loading`))+
+    #geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill=&quot;grey&quot;, alpha=0.5)+
+    geom_vline(xintercept = 0.9, color=&quot;red&quot;)+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )</code></pre>
+<pre><code>Warning: Removed 49 rows containing non-finite values (stat_density).</code></pre>
+<p><img src="figure/applied_study_conditions.Rmd/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>mydata %&gt;%
+  ggplot(aes(x=`Maximum Factor Loading`))+
+    #geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill=&quot;grey&quot;, alpha=0.5)+
+    geom_vline(xintercept = 0.9, color=&quot;red&quot;)+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )</code></pre>
+<pre><code>Warning: Removed 49 rows containing non-finite values (stat_density).</code></pre>
+<p><img src="figure/applied_study_conditions.Rmd/unnamed-chunk-5-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># combine for plot
+p&lt;-mydata %&gt;%
+  select(`Minimum Factor Loading`, `Average Factor Loading`, `Maximum Factor Loading`)%&gt;%
+  pivot_longer(
+    cols=everything(),
+    names_to=&quot;type&quot;,
+    values_to=&quot;value&quot;
+  )%&gt;%  
+  ggplot(aes(x=value))+
+    geom_histogram(binwidth=0.1,aes(y = ..density..))+
+    geom_density(adjust=2, fill=&quot;grey&quot;, alpha=0.5)+
+    geom_vline(xintercept = 0.9, color=&quot;red&quot;)+
+    scale_x_continuous(breaks=seq(0,1, .25),limits = c(-0.1,1.1))+
+    labs(y=NULL,x=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+p</code></pre>
+<pre><code>Warning: Removed 149 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 149 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<p><img src="figure/applied_study_conditions.Rmd/unnamed-chunk-5-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggsave(filename = &quot;fig/study0_factor_loadings.pdf&quot;,plot=p,width = 4, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 149 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 149 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<pre class="r"><code>ggsave(filename = &quot;fig/study0_factor_loadings.png&quot;,plot=p,width = 4, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 149 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 149 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<pre class="r"><code>ggsave(filename = &quot;fig/study0_factor_loadings.eps&quot;,plot=p,width = 4, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 149 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 149 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_polygon, x$x, x$y, index): semi-transparency is
+not supported on this device: reported only once per page</code></pre>
+</div>
+<div id="reliability" class="section level3">
+<h3>Reliability</h3>
+<pre class="r"><code>mydata %&gt;%
+  ggplot(aes(x=`Min Reliability`))+
+    #geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill=&quot;grey&quot;, alpha=0.5)+
+    geom_vline(xintercept = 0.80, color=&quot;red&quot;)+
+    geom_vline(xintercept = 0.89, color=&quot;red&quot;)+
+    geom_vline(xintercept = 0.94, color=&quot;red&quot;)+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )</code></pre>
+<pre><code>Warning: Removed 23 rows containing non-finite values (stat_density).</code></pre>
+<p><img src="figure/applied_study_conditions.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>mydata %&gt;%
+  ggplot(aes(x=`Avg Reliability`))+
+    #geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill=&quot;grey&quot;, alpha=0.5)+
+    geom_vline(xintercept = 0.80, color=&quot;red&quot;)+
+    geom_vline(xintercept = 0.89, color=&quot;red&quot;)+
+    geom_vline(xintercept = 0.94, color=&quot;red&quot;)+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )</code></pre>
+<pre><code>Warning: Removed 23 rows containing non-finite values (stat_density).</code></pre>
+<p><img src="figure/applied_study_conditions.Rmd/unnamed-chunk-6-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>mydata %&gt;%
+  ggplot(aes(x=`Max Reliability`))+
+    #geom_histogram(binwidth=1,aes(y = ..density..))+
+    geom_density(adjust=2, fill=&quot;grey&quot;, alpha=0.5)+
+    geom_vline(xintercept = 0.80, color=&quot;red&quot;)+
+    geom_vline(xintercept = 0.89, color=&quot;red&quot;)+
+    geom_vline(xintercept = 0.94, color=&quot;red&quot;)+
+    labs(y=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )</code></pre>
+<pre><code>Warning: Removed 23 rows containing non-finite values (stat_density).</code></pre>
+<p><img src="figure/applied_study_conditions.Rmd/unnamed-chunk-6-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># combine for plot
+p&lt;-mydata %&gt;%
+  select(`Min Reliability`, `Avg Reliability`, `Max Reliability`)%&gt;%
+  pivot_longer(
+    cols=everything(),
+    names_to=&quot;type&quot;,
+    values_to=&quot;value&quot;
+  )%&gt;%  
+  ggplot(aes(x=value))+
+    geom_histogram(binwidth=0.05,aes(y = ..density..))+
+    geom_density(adjust=2, fill=&quot;grey&quot;, alpha=0.5)+
+    geom_vline(xintercept = 0.80, color=&quot;red&quot;)+
+    geom_vline(xintercept = 0.89, color=&quot;red&quot;)+
+    geom_vline(xintercept = 0.94, color=&quot;red&quot;)+
+    scale_x_continuous(breaks=seq(0,1, .25),limits = c(0,1))+
+    labs(y=NULL,x=NULL)+
+    theme_classic()+
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.y =element_blank()
+    )
+p</code></pre>
+<pre><code>Warning: Removed 69 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 69 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<p><img src="figure/applied_study_conditions.Rmd/unnamed-chunk-6-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggsave(filename = &quot;fig/study0_reliability.pdf&quot;,plot=p,width = 4, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 69 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 69 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<pre class="r"><code>ggsave(filename = &quot;fig/study0_reliability.png&quot;,plot=p,width = 4, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 69 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 69 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<pre class="r"><code>ggsave(filename = &quot;fig/study0_reliability.eps&quot;,plot=p,width = 4, height=3,units=&quot;in&quot;)</code></pre>
+<pre><code>Warning: Removed 69 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>Warning: Removed 69 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_polygon, x$x, x$y, index): semi-transparency is
+not supported on this device: reported only once per page</code></pre>
+<pre class="r"><code>sum(mydata$`Method of Computing Reliability` == &quot;omega&quot;, na.rm=T)/nrow(mydata)</code></pre>
+<pre><code>[1] 0.16</code></pre>
+</div>
+<div id="response-categories" class="section level3">
+<h3>Response Categories</h3>
+<pre class="r"><code>mydata %&gt;%
+  select(`Scale of Indicators (list)`) %&gt;%
+  table()</code></pre>
+<pre><code>.
+                                           11pt 
+                                              1 
+                                            3pt 
+                                              5 
+                                       3pt, 4pt 
+                                              1 
+                                       3pt, 6pt 
+                                              1 
+                                            4pt 
+                                             22 
+                                       4pt, 3pt 
+                                              1 
+                                       4pt, 5pt 
+                                              3 
+                   4pt, 5pt, 5pt, 5pt, 4pt, 5pt 
+                                              1 
+     4pt, 6pt, 4pt, 4pt, 4pt, count, sum-scores 
+                                              1 
+                                            5pt 
+                                             42 
+                                       5pt, 4pt 
+                                              3 
+                                  5pt, 4pt, 4pt 
+                                              1 
+                           5pt, 4pt, sum-scores 
+                                              1 
+                                       5pt, 5pt 
+                                              1 
+                                       5pt, 7pt 
+                                              6 
+                                  5pt, 7pt, 4pt 
+                                              1 
+                                   5pt, parcels 
+                                              1 
+                                            6pt 
+                                              3 
+                                  6pt, 5pt, 4pt 
+                                              1 
+                                       6pt, 7pt 
+                                              1 
+                                            7pt 
+                                             10 
+                     7pt, 5pt, 4pt, dichotomous 
+                                              2 
+                               7pt, dichotomous 
+                                              1 
+                                         counts 
+                                              2 
+                                    dichotomous 
+                                             13 
+                               dichotomous, 3pt 
+                                              1 
+                          dichotomous, 4pt, 5pt 
+                                              1 
+                               dichotomous, 5pt 
+                                              1 
+                          dichotomous, 5pt, 7pt 
+                                              1 
+                                     sum-scores 
+                                             10 
+                      sum-scores, 4pt, 5pt, 7pt 
+                                              1 
+                        sum-scores, dichotomous 
+                                              1 
+sum-scores, dichotomous, 5pt, 7pt, force-choice 
+                                              1 </code></pre>
+<pre class="r"><code>indCats &lt;- mydata$`Scale of Indicators (list)`
+
+ind2 &lt;- ind3 &lt;- ind4 &lt;- ind5 &lt;- ind6 &lt;- ind7 &lt;- indSS &lt;- numeric(length(indCats))
+for(i in 1:length(indCats)){
+  indi &lt;- str_split(indCats[i], &quot;,&quot;, simplify = T)
+  ind2[i] &lt;- ifelse(any(indi %like% &quot;dichotomous&quot;), 1, 0)
+  ind3[i] &lt;- ifelse(any(indi %like% &quot;3pt&quot;), 1, 0)
+  ind4[i] &lt;- ifelse(any(indi %like% &quot;4pt&quot;), 1, 0)
+  ind5[i] &lt;- ifelse(any(indi %like% &quot;5pt&quot;), 1, 0)
+  ind6[i] &lt;- ifelse(any(indi %like% &quot;6pt&quot;), 1, 0)
+  ind7[i] &lt;- ifelse(any(indi %like% &quot;7pt&quot;), 1, 0)
+  indSS[i] &lt;- ifelse(any(indi %like% &quot;sum-score&quot;), 1, 0)
+}
+
+catDat &lt;- as.data.frame(cbind(ind2, ind3, ind4, ind5, ind6, ind7, indSS))
+
+catDat$multi &lt;- ifelse(rowSums(catDat) &gt; 1, 1, 0)
+
+# summarizing
+mean(ind2)</code></pre>
+<pre><code>[1] 0.153</code></pre>
+<pre class="r"><code>mean(ind3)</code></pre>
+<pre><code>[1] 0.0625</code></pre>
+<pre class="r"><code>mean(ind4)</code></pre>
+<pre><code>[1] 0.278</code></pre>
+<pre class="r"><code>mean(ind5)</code></pre>
+<pre><code>[1] 0.472</code></pre>
+<pre class="r"><code>mean(ind6)</code></pre>
+<pre><code>[1] 0.0486</code></pre>
+<pre class="r"><code>mean(ind7)</code></pre>
+<pre><code>[1] 0.167</code></pre>
+<pre class="r"><code>mean(indSS)</code></pre>
+<pre><code>[1] 0.104</code></pre>
+<pre class="r"><code>mean(catDat$multi)</code></pre>
+<pre><code>[1] 0.222</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.0.5 (2021-03-31)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 22000)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=English_United States.1252 
+[2] LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] readxl_1.3.1         car_3.0-10           carData_3.0-4       
+ [4] mvtnorm_1.1-1        LaplacesDemon_16.1.4 runjags_2.2.0-2     
+ [7] lme4_1.1-26          Matrix_1.3-2         sirt_3.9-4          
+[10] R2jags_0.6-1         rjags_4-12           eRm_1.0-2           
+[13] diffIRT_1.5          statmod_1.4.35       xtable_1.8-4        
+[16] kableExtra_1.3.4     lavaan_0.6-7         polycor_0.7-10      
+[19] bayesplot_1.8.0      ggmcmc_1.5.1.1       coda_0.19-4         
+[22] data.table_1.14.0    patchwork_1.1.1      forcats_0.5.1       
+[25] stringr_1.4.0        dplyr_1.0.5          purrr_0.3.4         
+[28] readr_1.4.0          tidyr_1.1.3          tibble_3.1.0        
+[31] ggplot2_3.3.5        tidyverse_1.3.0      workflowr_1.6.2     
+
+loaded via a namespace (and not attached):
+ [1] minqa_1.2.4        TAM_3.5-19         colorspace_2.0-0   rio_0.5.26        
+ [5] ellipsis_0.3.1     ggridges_0.5.3     rprojroot_2.0.2    fs_1.5.0          
+ [9] rstudioapi_0.13    farver_2.1.0       fansi_0.4.2        lubridate_1.7.10  
+[13] xml2_1.3.2         splines_4.0.5      mnormt_2.0.2       knitr_1.31        
+[17] jsonlite_1.7.2     nloptr_1.2.2.2     broom_0.7.5        dbplyr_2.1.0      
+[21] compiler_4.0.5     httr_1.4.2         backports_1.2.1    assertthat_0.2.1  
+[25] cli_2.3.1          later_1.1.0.1      htmltools_0.5.1.1  tools_4.0.5       
+[29] gtable_0.3.0       glue_1.4.2         Rcpp_1.0.7         cellranger_1.1.0  
+[33] jquerylib_0.1.3    vctrs_0.3.6        svglite_2.0.0      nlme_3.1-152      
+[37] psych_2.0.12       xfun_0.21          ps_1.6.0           openxlsx_4.2.3    
+[41] rvest_1.0.0        lifecycle_1.0.0    MASS_7.3-53.1      scales_1.1.1      
+[45] ragg_1.1.1         hms_1.0.0          promises_1.2.0.1   parallel_4.0.5    
+[49] RColorBrewer_1.1-2 curl_4.3           yaml_2.2.1         sass_0.3.1        
+[53] reshape_0.8.8      stringi_1.5.3      highr_0.8          zip_2.1.1         
+[57] boot_1.3-27        rlang_0.4.10       pkgconfig_2.0.3    systemfonts_1.0.1 
+[61] evaluate_0.14      lattice_0.20-41    labeling_0.4.2     tidyselect_1.1.0  
+[65] GGally_2.1.1       plyr_1.8.6         magrittr_2.0.1     R6_2.5.0          
+[69] generics_0.1.0     DBI_1.1.1          foreign_0.8-81     pillar_1.5.1      
+[73] haven_2.3.1        withr_2.4.1        abind_1.4-5        modelr_0.1.8      
+[77] crayon_1.4.1       utf8_1.1.4         tmvnsim_1.0-2      rmarkdown_2.7     
+[81] grid_4.0.5         CDM_7.5-15         pbivnorm_0.6.0     git2r_0.28.0      
+[85] reprex_1.0.0       digest_0.6.27      webshot_0.5.2      httpuv_1.5.5      
+[89] textshaping_0.3.1  stats4_4.0.5       munsell_0.5.0      viridisLite_0.3.0 
+[93] bslib_0.2.4        R2WinBUGS_2.1-21  </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

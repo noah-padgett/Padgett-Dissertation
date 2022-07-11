@@ -1,0 +1,71 @@
+model {
+  ### Model
+  for(p in 1:N){
+    for(i in 1:nit){
+      # observable dist.
+      y[p,i] ~ dbern(omega[p,i,2])
+      # latent response dist.
+      ystar[p,i] ~ dnorm(lambda[i]*eta[p], 1)
+      # probs
+      Prob[p,i,1] = phi(ystar[p,i]-tau[i])
+      Prob[p,i,2] = 1 - Prob[p,i,1]
+      # log-RT model
+      dev[p,i] = lambda[i]*(eta[p] - tau[i])
+      lrt[p,i] ~ dnorm(icept[i] - speed[p] - rho*abs(dev[p,i]), prec[i])
+      # ELRT
+      logit(ELRT[p,i]) = exp(icept[i] - speed[p])*abs(dev[p,i])
+
+      # misclassificaiton priors
+      for(c in 1:ncat){
+        for(ct in 1:ncat){
+          alpha[p,i,c,ct] <- ifelse(
+            c == ct,
+            ELRT[p,i]*tune,
+            (1-ELRT[p,i])*tune
+          )
+
+        }
+      }
+
+      # misclassification weighting
+      for(c in 1:ncat){
+        # sample misclassification parameters using the informative priors
+        gamma[p,i,c,1:ncat] ~ ddirch(alpha[p,i,c,1:ncat])
+
+        omega[p,i, c] = gamma[p,i,c,1]*Prob[p,i,1] +
+          gamma[p,i,c,2]*Prob[p,i,2]
+      }
+
+    }
+  }
+  # person parameters
+  for(p in 1:N){
+    eta[p]~dnorm(0,1)
+    speed[p]~dnorm(sigma.ts*eta[p],prec.s)
+  }
+  sigma.ts ~ dnorm(0, 0.1)
+  prec.s~dgamma(.1,.1)
+
+  for(i in 1:nit){
+    # lrt parameters
+    icept[i]~dnorm(0,.1)
+    prec[i]~dgamma(.1,.1)
+    # location parameters
+    tau[i] ~ dnorm(0.0,0.1)
+    # factor loadings
+    lambda[i] ~ dnorm(0, .44)T(0,)
+    lambda.std[i] = lambda[i]/pow(theta[i],0.5)
+    # total latent response variance
+    theta[i] = 1 + pow(lambda[i],2)
+  }
+
+  rho ~ dnorm(0, 0.1)T(0,)
+
+  # compute omega
+  lambda_sum[1] = lambda[1]
+  for(i in 2:nit){
+    #lambda_sum (sum factor loadings)
+    lambda_sum[i] = lambda_sum[i-1]+lambda[i]
+  }
+  omega.r = pow(lambda_sum[nit],2)/(pow(lambda_sum[nit], 2)+ (nit))
+}

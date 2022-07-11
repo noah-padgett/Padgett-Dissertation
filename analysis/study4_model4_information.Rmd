@@ -1,0 +1,339 @@
+---
+title: "Study 4: Extroversion Data Analysis"
+subtitle: "Model 4 Results"
+author: "R. Noah Padgett"
+date: "2022-01-17"
+output: html_document
+---
+
+```{r set-up, message=FALSE, error=FALSE, warning=FALSE}
+
+# Load packages & utility functions
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+
+```
+
+
+# Describing the Observed Data
+
+```{r}
+
+# Load diffIRT package with data
+library(diffIRT)
+data("extraversion")
+mydata <- na.omit(extraversion)
+
+# separate data then recombine
+d1 <- mydata %>%
+  as.data.frame() %>%
+  select(contains("X"))%>%
+  mutate(id = 1:n()) %>%
+  pivot_longer(
+    cols=contains("X"),
+    names_to = c("item"),
+    values_to = "Response"
+  ) %>%
+  mutate(
+    item = ifelse(nchar(item)==4,substr(item, 3,3),substr(item, 3,4))
+  )
+d2 <- mydata %>%
+  as.data.frame() %>%
+  select(contains("T"))%>%
+  mutate(id = 1:n()) %>%
+  pivot_longer(
+    cols=starts_with("T"),
+    names_to = c("item"),
+    values_to = "Time"
+  ) %>%
+  mutate(
+    item = ifelse(nchar(item)==4,substr(item, 3,3),substr(item, 3,4))
+  )
+dat <- left_join(d1, d2)
+
+dat_sum <- dat %>%
+  select(item, Response, Time) %>%
+  group_by(item) %>%
+  summarize(
+    M1 = mean(Response, na.rm=T),
+    Mt = mean(Time, na.rm=T),
+    SDt = sd(Time, na.rm=T),
+    Mlogt = mean(log(Time), na.rm=T),
+  )
+
+colnames(dat_sum) <-
+  c(
+    "Item",
+    "Proportion Endorsed",
+    "Mean Response Time",
+    "SD Response Time",
+    "Mean Log Response Time"
+  )
+
+kable(dat_sum, format = "html", digits = 3) %>%
+  kable_styling(full_width = T)
+
+# covariance among items
+kable(cov(mydata[,colnames(mydata) %like% "X"]), digits = 3) %>%
+  kable_styling(full_width = T)
+# correlation matrix
+psych::polychoric(mydata[,colnames(mydata) %like% "X"])
+
+```
+
+# Model 4: Full IFA with Misclassification
+
+## Model details
+
+```{r model4-code}
+
+cat(read_file(paste0(w.d, "/code/study_4/model_4.txt")))
+
+```
+
+## Model results
+
+```{r model4, cache=TRUE, autodep=TRUE}
+
+# Save parameters
+jags.params <- c("tau",
+                 "lambda","lambda.std",
+                 "theta",
+                 "icept",
+                 "prec",
+                 "prec.s",
+                 "sigma.ts",
+                 "rho",
+                 "reli.omega",
+                 # need misclassification matrix
+                 "gamma")
+# initial-values
+jags.inits <- function(){
+    list(
+      "tau"=matrix(c(-0.64, -0.09, -1.05, -1.42, -0.11, -1.29, -1.59, -1.81, -0.93, -1.11), ncol=1, nrow=10),
+      "lambda"=rep(0.7,10),
+      "eta"=rnorm(142),
+      "speed"=rnorm(142),
+      "ystar"=matrix(c(0.7*rep(rnorm(142),10)), ncol=10),
+      "rho"=0.1,
+      "icept"=rep(0, 10),
+      "prec.s"=10,
+      "prec"=rep(4, 10),
+      "sigma.ts"=0.1
+    )
+  }
+jags.data <- list(
+  y = mydata[,1:10],
+  lrt = mydata[,11:20],
+  N = nrow(mydata),
+  nit = 10,
+  ncat = 2
+)
+
+# Run model
+model.fit <-  R2jags::jags(
+  model = paste0(w.d, "/code/study_4/model_4.txt"),
+  parameters.to.save = jags.params,
+  inits = jags.inits,
+  data = jags.data,
+  n.chains = 4,
+  n.burnin = 100,
+  n.iter = 200
+)
+
+model.fit$BUGSoutput$summary[!(rownames(model.fit$BUGSoutput$summary) %like% "gamma"), ]
+
+# extract and reform misclassification parameters
+jags.mcmc <- as.mcmc(model.fit)
+a <- colnames(as.data.frame(jags.mcmc[[1]]))
+fit.mcmc <- data.frame(as.matrix(jags.mcmc, chains = T, iters = T))
+colnames(fit.mcmc) <- c("chain", "iter", a)
+
+for(i in 1:10){
+  # initialize variable
+  a <- b <- c <- d <- numeric(nrow(fit.mcmc))
+  idat <- data.frame(a, b, c, d)
+  colnames(idat) <- paste0(c("a","b","c","d"),i)
+  # combine columns
+  fit.mcmc <- cbind(fit.mcmc, idat)
+
+  # iterate through rows of dataset
+  for(iter in 1:nrow(fit.mcmc)){
+    # update column names to extract infor
+    a <- colnames(fit.mcmc)[colnames(fit.mcmc) %in% paste0("lambda[",i,"]")]
+    b <- colnames(fit.mcmc)[colnames(fit.mcmc) %in% paste0("tau[",i,",1]")]
+    c <- colnames(fit.mcmc)[colnames(fit.mcmc) %in% paste0("gamma[",1:142,",",i,",2,1]")]
+    d <- colnames(fit.mcmc)[colnames(fit.mcmc) %in% paste0("gamma[",1:142,",",i,",2,2]")]
+    
+   # extract information
+    fit.mcmc[iter,paste0("a",i)] <- mean(as.numeric(fit.mcmc[iter,a, drop=T]))
+    fit.mcmc[iter,paste0("b",i)] <- mean(-as.numeric(fit.mcmc[iter,b, drop=T]))
+    fit.mcmc[iter,paste0("c",i)] <- mean(as.numeric(fit.mcmc[iter,c, drop=T]))
+    fit.mcmc[iter,paste0("d",i)] <- mean(as.numeric(fit.mcmc[iter,d, drop=T]))
+  }
+}
+
+keepCols <- c(
+  "chain", "iter",
+  paste0("a",1:10),
+  paste0("b",1:10),
+  paste0("c",1:10),
+  paste0("d",1:10)
+)
+
+irt_4pl_dat <- fit.mcmc %>%
+  select(all_of(keepCols))
+
+
+```
+
+
+
+```{r}
+
+# prob of response
+pr <- function(a, b, c, d, theta){
+  c+(d-c)*exp(a*(theta-b))/(1+exp(a*(theta-b)))
+}
+
+# information function
+irt_4pl_item_information <- function(a, b, c, d, theta){
+  top <- (a**2)*((pr(a, b, c, d, theta)-c)**2)*((d-pr(a, b, c, d, theta))**2)
+  bottom <- ((d-c)**2)*pr(a, b, c, d, theta)*(1-pr(a, b, c, d, theta))
+  # return information
+  top/bottom
+  
+}
+irt_4pl_test_information <- function(a, b, c, d, theta){
+  infoOut <- 0
+  for(i in 1:length(a)){
+    infoOut <- infoOut + 
+      irt_4pl_item_information(a[i], b[i], c[i], d[i], theta)
+  }
+  infoOut
+}
+
+# item
+thetaVec <- seq(-10, 10, 0.01)
+mcmc_item_information <- as.data.frame(matrix(ncol=4, nrow=10*10*length(thetaVec)))
+colnames(mcmc_item_information)<- c("iter", "item", "theta", "value")
+
+mcmc_test_information <- as.data.frame(matrix(ncol=3, nrow=10*length(thetaVec)))
+colnames(mcmc_test_information)<- c("iter", "theta", "value")
+
+rowNum <- rowNumTest <- 1
+for(iter in 1:2){
+  for(t in 1:length(thetaVec)){
+    a <- irt_4pl_dat[iter,paste0("a",1:10)]
+    b <- irt_4pl_dat[iter,paste0("b",1:10)]
+    c <- irt_4pl_dat[iter,paste0("c",1:10)]
+    d <- irt_4pl_dat[iter,paste0("d",1:10)]
+    
+    # test info
+    mcmc_test_information[rowNumTest,1]<- iter
+    mcmc_test_information[rowNumTest,2]<- thetaVec[t]
+    mcmc_test_information[rowNumTest,3]<- irt_4pl_test_information(
+        a, b, c, d, thetaVec[t])
+    rowNumTest <- rowNumTest + 1
+    
+    # item information
+    for(i in 1:10){
+      ai <- a[i]
+      bi <- b[i]
+      ci <- c[i]
+      di <- d[i]
+      
+      mcmc_item_information[rowNum, 1] <- iter
+      mcmc_item_information[rowNum, 2] <- i
+      mcmc_item_information[rowNum, 3] <- thetaVec[t]
+      mcmc_item_information[rowNum, 4] <- irt_4pl_item_information(
+        ai, bi, ci, di, thetaVec[t])
+      
+      rowNum <- rowNum + 1
+    }
+  }
+  cat(".")
+}
+
+mcmc_item_information <- mcmc_item_information %>%
+  filter(iter < 4)
+mcmc_test_information <- mcmc_test_information %>%
+  filter(iter < 4)
+
+mcmc_item_information %>%
+  filter(iter==1)%>% 
+  group_by(item) %>%
+  summarize(
+    M= mean(value),
+    min=min(value),
+    max=max(value)
+  )
+
+mcmc_item_information %>%
+  mutate(
+    item = factor(item, levels=1:10, labels=paste0("item ", 1:10))
+  ) %>%
+  ggplot(aes(x=theta, y=value, group=iter)) +
+    geom_line()+
+    facet_wrap(.~item,scales = "free_y")
+
+
+mcmc_test_information %>%
+  ggplot(aes(x=theta, y=value, group=iter)) +
+    geom_line()
+
+
+```
+
+
+```{r}
+
+thetaVec <- seq(-10, 10, 0.01)
+avg_test_information <- as.data.frame(matrix(ncol=2, nrow=length(thetaVec)))
+colnames(avg_test_information)<- c("theta", "value")
+
+    a <- model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("lambda[",1:10,"]"), 1] 
+    b <- -model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("tau[",1:10,",1]"), 1]
+    c <- c(
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",1,2,1]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",2,2,1]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",3,2,1]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",4,2,1]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",5,2,1]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",6,2,1]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",7,2,1]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",8,2,1]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",9,2,1]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",10,2,1]"), 1])
+    )
+    d <-  c(
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",1,2,2]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",2,2,2]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",3,2,2]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",4,2,2]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",5,2,2]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",6,2,2]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",7,2,2]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",8,2,2]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",9,2,2]"), 1]),
+      mean(model.fit$BUGSoutput$summary[rownames(model.fit$BUGSoutput$summary) %in% paste0("gamma[",1:142,",10,2,2]"), 1])
+    )
+    
+    
+for(i in 1:length(thetaVec)){
+    
+    avg_test_information[i, 1] <- thetaVec[i]
+    avg_test_information[i, 2] <- irt_4pl_test_information(
+        a, b, c, d, thetaVec[i])
+
+}
+
+    
+ggplot() +
+    geom_line(data=mcmc_test_information,aes(x=theta, y=value, group=iter))+
+  geom_line(data=avg_test_information, aes(x=theta, y=value),color="red")
+
+
+```

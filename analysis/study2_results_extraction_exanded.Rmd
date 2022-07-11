@@ -1,0 +1,283 @@
+---
+title: "Monte Carlo Results Extraction"
+subtitle: "Simulation Study 2"
+author: "R. Noah Padgett"
+date: "2022-01-06"
+output: html_document
+---
+
+```{r setup}
+
+# Load packages & utility functions
+source("code/load_packages.R")
+source("code/load_utility_functions.R")
+# environment options
+options(scipen = 999, digits=3)
+ 
+```
+
+## Extraction Set-Up
+
+```{r study-2-results-extract-setup}
+
+# results folder
+res_folder <- paste0(w.d, "/data/study_2")
+
+# CONDITIONS
+CONDITIONS <- list(
+  N = rep(c(500, 2500), 12),
+  N_cat = c(rep(2,6), rep(5,6), rep(3,6) , rep(7,6)),
+  N_items = rep(c(5,5,10,10,20,20),4)
+)
+
+# extract info data.frame
+Ncon = 24
+Niter = 100
+Npara =  20*6+20*6+4 # just need max
+
+cNames <- c(
+  "condition", "iter", "N", "N_items", "N_cat", "parameter", "post_mean", "post_sd", "post_q025", "post_q25", "post_q50", "post_q75", "post_q975", "Rhat", "n.eff", "DIC", "pD", "start_time", "end_time", "elapsed_time"
+)
+res_out <- as.data.frame(matrix(ncol=length(cNames), nrow=Ncon*Niter*Npara)) # will be too big but easy to reduce later filled it
+colnames(res_out) <- cNames
+cond_number <- 1
+iter <- 1
+res_dat_row_iterator <- 1
+
+```
+
+## Run Extraction Recursively Through Folders
+
+```{r study-2-results-extract, eval=F}
+for(cond_number in 1:Ncon){
+  
+  cat("\n Condition:\t", cond_number)
+  
+  # extract condition info
+  N <- CONDITIONS$N[cond_number]
+  N_cat <- CONDITIONS$N_cat[cond_number]
+  N_items <- CONDITIONS$N_items[cond_number]
+
+  # get run information to fill in
+  run_info <- read.delim(paste0(res_folder, "/cond_",cond_number,"/sim_run_info_cond_", cond_number,".txt"), header=FALSE)
+  
+  colnames(run_info) <- c("skip", "condition", "iteration", "start_time", "end_time", "elapsed_time", "DIC", "pD")
+  
+  Niter = length(unique(run_info$iteration))
+  
+
+  for(iter in 1:Niter){
+
+    # subset to iteration
+    run_info_i <- filter(run_info, iteration == iter)
+    if(nrow(run_info_i) > 1){
+      run_info_i <- run_info_i[nrow(run_info_i),]
+    }
+
+    # get posterior summary data
+    post_summary <- read.delim(paste0(res_folder, "/cond_",cond_number,"/sim_summary_cond_", cond_number,"_iter_",iter,".txt"), row.names=1)
+
+    post_sum_nrow <- nrow(post_summary)
+    post_sum_rownames <- rownames(post_summary)
+
+    # fill in results data.frame
+    iter_ps <- 1
+    for(iter_ps in 1:post_sum_nrow){
+      res_out[res_dat_row_iterator, 1] <- cond_number
+      res_out[res_dat_row_iterator, 2] <- iter
+      res_out[res_dat_row_iterator, 3] <- N
+      res_out[res_dat_row_iterator, 4] <- N_items
+      res_out[res_dat_row_iterator, 5] <- N_cat
+      res_out[res_dat_row_iterator, 6] <- post_sum_rownames[iter_ps]
+      res_out[res_dat_row_iterator, 7:15] <- post_summary[iter_ps, ]
+      res_out[res_dat_row_iterator, 16:20] <- run_info_i[c("DIC", "pD", "start_time", "end_time", "elapsed_time")]
+
+      # update row number
+      res_dat_row_iterator = res_dat_row_iterator + 1
+    }
+    if(iter %% 10 == 0){
+      cat(".")
+    }
+  }
+}
+
+```
+
+
+Reformat the output for ease of use later. This helps in creating tables and figures for the manuscript(s).
+
+```{r study-2-results-format, eval=F}
+# Remove over initialized rows at bottom.
+res_out <- na.omit(res_out)
+
+# true parameter values
+true_params <- list(
+  lambda = 0.9 # factor loadings (standardized)
+  , tau = NULL # item thresholds
+  , theta = 1 + 0.9**2 # total variance of latent response variables
+  , beta_lrt = 1.5 # intercept for response time
+  , sigma_lrt = 1/0.25 # precision of obs. RT
+  , sigma_s = 1/0.1 # precision of Latent Speed Variable
+  , sigma_st = sqrt(0.1)*0.23 # covariance between factors
+  , rho = 0.1 # relationship between PID and response time
+  , omega = NULL # factor reliability
+)
+
+# Item Thresholds
+  # Tau depends on N_cat, N_items
+  getTau <- function(N_cat, N_items, lambda=0.9, seed=1){
+  set.seed(seed)
+  if(N_cat == 2){
+    tau <- matrix(
+      runif(N_items, -0.5, 0.5),
+      ncol=N_cat - 1,
+      nrow=N_items,
+      byrow=T
+    )
+    tau = -tau
+  }
+  if(N_cat > 2 & N_cat < 7){
+    tau <- matrix(ncol=N_cat-1, nrow=N_items)
+    for(c in 1:(N_cat-1)){
+      if(c == 1){
+        tau[,1] <- runif(N_items, -1, -0.33)
+      }
+      if(c > 1){
+        tau[,c] <- tau[,c-1] + runif(N_items, 0.25, 1)
+      }
+    }
+  }
+  if(N_cat == 7){
+        tau <- matrix(ncol=N_cat-1, nrow=N_items)
+        for(c in 1:(N_cat-1)){
+      if(c == 1){
+        tau[,1] <- runif(N_items, -2, -1.33)
+      }
+      if(c > 1){
+        tau[,c] <- tau[,c-1] + runif(N_items, 0.33, 1.0)
+      }
+    }
+  }
+  tau = tau*lambda
+  return(tau)
+}
+  getTauValue <- function(x, p){
+      # subset to just the values inside brackets
+      p1 <- str_sub(str_sub(p, 5), 0, nchar(str_sub(p, 5))-1)
+      
+      outvalue <- 0
+      nc <- ncol(x)
+      nr <- nrow(x)
+      if(nc == 1){
+        ind = as.numeric(p1)
+        outvalue = x[ind,1]
+      }
+      if(nc > 1){
+        ind <- as.numeric(
+            str_split(
+              p1, pattern=",", simplify = T
+            )
+          )
+        outvalue = x[ind[1], ind[2]]
+      }
+      return(outvalue)
+    }
+# factor reliability
+# depends on N_items & std. lambda
+getOmega <- function(lambda, N_items){
+  (lambda*N_items)**2/((lambda*N_items)**2 + N_items)
+}
+
+# create parameter group labels & add true values
+res_out$parameter_group <- ""
+res_out$true_value <- 0
+i <- 1
+for(i in 1:nrow(res_out)) {
+  val <- res_out$parameter[i]
+  # factor loadings
+  if (val %like% "lambda" && !(val %like% "lambda.std")) {
+    res_out$parameter_group[i] = "lambda"
+    res_out$true_value[i] = true_params$lambda
+  }
+  
+  if (val %like% "lambda.std") {
+    res_out$parameter_group[i] = "lambda (STD)"
+    res_out$true_value[i] = true_params$lambda
+  }
+  
+  if (val %like% "tau") {
+    res_out$parameter_group[i] = "tau"
+    
+    # extract tau
+    tauIter <- getTau(res_out$N_cat[i], res_out$N_items[i])
+    res_out$true_value[i] <- getTauValue(tauIter, res_out$parameter[i])
+  }
+  
+  if (val %like% "theta") {
+    res_out$parameter_group[i] = "theta"
+    res_out$true_value[i] = true_params$theta
+  }
+  
+  if (val %like% "prec" && !(val %like% "prec.s")) {
+    res_out$parameter_group[i] = "sigma_lrt"
+    res_out$true_value[i] = true_params$sigma_lrt
+  }
+  
+  if (val %like% "icept") {
+    res_out$parameter_group[i] = "beta_lrt"
+    res_out$true_value[i] = true_params$beta_lrt
+  }
+  
+  if (val == "prec.s") {
+    res_out$parameter_group[i] = "sigma_s"
+    res_out$true_value[i] = true_params$sigma_s
+  }
+  
+  if (val == "sigma.ts") {
+    res_out$parameter_group[i] = "sigma_st"
+    res_out$true_value[i] = -true_params$sigma_st
+  }
+  
+  if (val == "rho") {
+    res_out$parameter_group[i] = "rho"
+    res_out$true_value[i] = true_params$rho
+  }
+  
+  if (val == "reli.omega") {
+    res_out$parameter_group[i] = "omega"
+    res_out$true_value[i] = getOmega(0.9, res_out$N_items[i])
+  }
+}
+
+```
+
+
+## Extracted Data
+
+```{r study-2-pull-in-data, include=FALSE}
+
+res_out <- readr::read_csv(
+  file = paste0(res_folder, "/simulation_summary_data_2022_02_12.csv"),
+  col_types = "fiffffddddddddiddTTdfd")
+
+```
+
+Below is a sample of the extracted data.
+
+```{r study-2-results-extract-display}
+
+display_rows <- sample(1:nrow(res_out), size = 1000)
+
+kable(res_out[display_rows, ], format="html", digits=3) %>%
+  kable_styling(full_width = T)%>%
+  scroll_box(height="500px", width="100%")
+
+```
+
+## SAVE DATA
+
+```{r save-data, eval=F}
+
+write.csv(res_out, paste0(res_folder, "/simulation_summary_data_", get_date(), ".csv"), row.names = F)
+
+```
